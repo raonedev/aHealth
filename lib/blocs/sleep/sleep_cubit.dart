@@ -14,9 +14,9 @@ class SleepCubit extends Cubit<SleepState> {
   Future<void> getSleepData() async {
     emit(SleepLoadingState());
 
-    final endtime = DateTime.now();
-    final fromtime = DateTime(endtime.year, endtime.month, endtime.day-1);
-    // log("from ${fromtime.toIso8601String()} to ${endtime.toIso8601String()} ");
+    final endTime = DateTime.now();
+    final fromTime = DateTime(endTime.year, endTime.month, endTime.day-1);
+    // log("from ${fromTime.toIso8601String()} to ${endTime.toIso8601String()} ");
     bool stepsPermission = await Health().hasPermissions([HealthDataType.SLEEP_SESSION]) ?? false;
     if (!stepsPermission) {
       stepsPermission = await Health().requestAuthorization(
@@ -28,8 +28,8 @@ class SleepCubit extends Cubit<SleepState> {
     try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.SLEEP_SESSION],
-        startTime: fromtime,
-        endTime: endtime,
+        startTime: fromTime,
+        endTime: endTime,
       );
       if(healthData.isEmpty){
         emit(const SleepFailedState(errorMessage: "0"));
@@ -60,6 +60,37 @@ class SleepCubit extends Cubit<SleepState> {
       getSleepData();
     }else{
       emit(const SleepFailedState(errorMessage: "failed to add data"));
+    }
+  }
+
+  Future<void> deleteToadySleepData()async{
+    emit(SleepLoadingState());
+
+    final endTime = DateTime.now();
+    final fromTime = DateTime(endTime.year, endTime.month, endTime.day-1);
+    bool stepsPermission = await Health().hasPermissions([HealthDataType.SLEEP_SESSION]) ?? false;
+    if (!stepsPermission) {
+      stepsPermission = await Health().requestAuthorization(
+        [HealthDataType.SLEEP_SESSION],
+        permissions: [HealthDataAccess.READ_WRITE],
+      );
+    }
+
+    try{
+      bool success = true;
+      success &= await Health().delete(
+        type: HealthDataType.SLEEP_SESSION,
+        startTime: fromTime,
+        endTime: endTime,
+      );
+      if(success){
+        getSleepData();
+      }else{
+        emit(const SleepFailedState(errorMessage: "cant able to delete sleep data"));
+      }
+
+    }catch (e){
+      emit(SleepFailedState(errorMessage: e.toString()));
     }
   }
 }

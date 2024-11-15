@@ -286,6 +286,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
+                    leading: IconButton(onPressed: (){
+                      context.read<SleepCubit>().deleteToadySleepData();
+                    }, icon: const Icon(Icons.delete_outline_rounded,color: Colors.red,)),
                     title: const Text("Sleep"),
                     subtitle: BlocBuilder<SleepCubit, SleepState>(
                       builder: (context, state) {
@@ -328,6 +331,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
+                    leading: IconButton(onPressed: (){
+                      context.read<WaterCubit>().decreaseLastWaterData();
+                    }, icon: const Icon(Icons.minimize_rounded)),
                     title: const Text("Water"),
                     subtitle: BlocBuilder<WaterCubit, WaterState>(
                       builder: (context, state) {
