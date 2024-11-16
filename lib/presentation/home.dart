@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:ahealth/presentation/chatscreen.dart';
 import 'package:ahealth/presentation/nutritionpage.dart';
 
 import '../blocs/height/height_cubit.dart';
@@ -507,6 +508,14 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){}, icon: const Icon(CupertinoIcons.home)),label: "home"),
+          BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (_)=>const ChatScreen()));
+          }, icon: const Icon(CupertinoIcons.chat_bubble_fill)),label: "chat"),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
