@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:ahealth/presentation/chatscreen.dart';
 import 'package:ahealth/presentation/nutritionpage.dart';
+import 'package:lottie/lottie.dart';
 
 import '../blocs/height/height_cubit.dart';
 import '../blocs/initialized/init_app_cubit.dart';
@@ -49,7 +50,7 @@ class HomeScreen extends StatelessWidget {
               // isDefaultAction: true,
               child: const Text("Done"),
               onPressed: () {
-                if(weight!=null){
+                if (weight != null) {
                   context.read<WeightCubit>().addWeight(wrightInKg: weight!);
                 }
                 Navigator.pop(context);
@@ -132,15 +133,17 @@ class HomeScreen extends StatelessWidget {
               actions: [
                 CupertinoDialogAction(
                   child: const Text("Done"),
-                  onPressed: () async{
-                    if(from!=null && to!=null){
-                      if(from!.isBefore(to!)){
+                  onPressed: () async {
+                    if (from != null && to != null) {
+                      if (from!.isBefore(to!)) {
                         Duration difference = to!.difference(from!);
                         int minutesDifference = difference.inMinutes.abs();
                         log("minutesDifference: $minutesDifference");
-                        context.read<SleepCubit>().addSleep(startingTime: from!, endTime: to!);
+                        context
+                            .read<SleepCubit>()
+                            .addSleep(startingTime: from!, endTime: to!);
                         Navigator.pop(context);
-                      }else{
+                      } else {
                         log("from should be less than to");
                       }
                     }
@@ -178,7 +181,7 @@ class HomeScreen extends StatelessWidget {
               // isDefaultAction: true,
               child: const Text("Done"),
               onPressed: () {
-                if(height!=null){
+                if (height != null) {
                   context.read<HeightCubit>().addHeight(heightInMeter: height!);
                 }
                 Navigator.pop(context);
@@ -233,48 +236,67 @@ class HomeScreen extends StatelessWidget {
           }
         },
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
+          child: CustomScrollView(
+            slivers: [
+               SliverAppBar(
+                pinned: true,
+                expandedHeight: 150,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [
+                        Colors.amber.withOpacity(0.5),
+                        Colors.blue.withOpacity(0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      )
+                    ),
+                  ),
+                  title: Text('A-Health'),
+                  titlePadding: EdgeInsets.symmetric(vertical: 5,horizontal: 16),
+                ),
+              ),
+              SliverList(
+                  delegate: SliverChildListDelegate([
                 //steps
                 Container(
                   margin:const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  padding: const EdgeInsets.all(16),
-                  width: double.maxFinite,
-                  height: 100,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
                     color: const Color.fromARGB(255, 255, 242, 204),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Steps"),
-                      BlocBuilder<StepsCubit, StepsState>(
-                        builder: (context, state) {
-                          if (state is StepLoadingState) {
-                            return const CupertinoActivityIndicator(); // Default case
-                          } else if (state is StepFailed) {
-                            if (state.errorMessage == "NULL")
-                              return const Text('0');
-                            return Text(state.errorMessage);
-                          } else if (state is StepSuccessState) {
-                            num noOfSteps = 0;
-                            for (final step in state.stepModel) {
-                              if (step.value != null) {
-                                // log("step "+step.value!.numericValue.toString());
-                                noOfSteps += step.value!.numericValue ?? 0;
-                              }
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: Transform.scale(
+                        scale: 1.5,
+                        child: Lottie.asset(
+                          'assets/lottieanimations/walkingmen.json',
+                        )),
+                    title: const Text("Steps"),
+                    subtitle: BlocBuilder<StepsCubit, StepsState>(
+                      builder: (context, state) {
+                        if (state is StepLoadingState) {
+                          return const CupertinoActivityIndicator(); // Default case
+                        } else if (state is StepFailed) {
+                          if (state.errorMessage == "NULL")
+                            return const Text('0');
+                          return Text(state.errorMessage);
+                        } else if (state is StepSuccessState) {
+                          num noOfSteps = 0;
+                          for (final step in state.stepModel) {
+                            if (step.value != null) {
+                              // log("step "+step.value!.numericValue.toString());
+                              noOfSteps += step.value!.numericValue ?? 0;
                             }
-                            return Text(
-                                "$noOfSteps  from platform ${state.stepModel.isNotEmpty ? state.stepModel[0].sourcePlatform : ''}");
-                          } else {
-                            return Text("unknown state ${state.toString()}");
                           }
-                        },
-                      )
-                    ],
+                          return Text(
+                              "$noOfSteps  from platform ${state.stepModel.isNotEmpty ? state.stepModel[0].sourcePlatform : ''}");
+                        } else {
+                          return Text("unknown state ${state.toString()}");
+                        }
+                      },
+                    ),
                   ),
                 ),
                 //sleep
@@ -287,9 +309,15 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
-                    leading: IconButton(onPressed: (){
-                      context.read<SleepCubit>().deleteToadySleepData();
-                    }, icon: const Icon(Icons.delete_outline_rounded,color: Colors.red,)),
+                    leading: IconButton(
+                      onPressed: () {
+                        context.read<SleepCubit>().deleteToadySleepData();
+                      },
+                      icon: Transform.scale(
+                          scale: 1.5,
+                          child: Lottie.asset(
+                              'assets/lottieanimations/sleep.json')),
+                    ),
                     title: const Text("Sleep"),
                     subtitle: BlocBuilder<SleepCubit, SleepState>(
                       builder: (context, state) {
@@ -325,16 +353,22 @@ class HomeScreen extends StatelessWidget {
                 ),
                 //water
                 Container(
-                  margin:const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color.fromARGB(255, 255, 242, 204),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
-                    leading: IconButton(onPressed: (){
-                      context.read<WaterCubit>().decreaseLastWaterData();
-                    }, icon: const Icon(Icons.minimize_rounded)),
+                    leading: Transform.scale(
+                        scale: 2,
+                        child: Lottie.asset(
+                          'assets/lottieanimations/girl_drinking_water.json',
+                        )),
+                    // leading: IconButton(onPressed: (){
+                    //   context.read<WaterCubit>().decreaseLastWaterData();
+                    // }, icon: const Icon(Icons.minimize_rounded)),
                     title: const Text("Water"),
                     subtitle: BlocBuilder<WaterCubit, WaterState>(
                       builder: (context, state) {
@@ -363,7 +397,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     trailing: IconButton(
                         onPressed: () {
-                           context.read<WaterCubit>().addWater(waterInLiter: 0.25);
+                          context
+                              .read<WaterCubit>()
+                              .addWater(waterInLiter: 0.25);
                         },
                         icon: const Icon(Icons.add)),
                   ),
@@ -379,6 +415,10 @@ class HomeScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
                     title: const Text("Weight"),
+                    leading: Transform.scale(
+                        scale: 1.5,
+                        child: Lottie.asset(
+                            'assets/lottieanimations/weightscale.json')),
                     subtitle: BlocBuilder<WeightCubit, WeightState>(
                       builder: (context, state) {
                         if (state is WeightLoading) {
@@ -431,6 +471,10 @@ class HomeScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
                     title: const Text("Height"),
+                    leading: Transform.scale(
+                        scale: 2,
+                        child: Lottie.asset(
+                            'assets/lottieanimations/pullup.json')),
                     subtitle: BlocBuilder<HeightCubit, HeightState>(
                       builder: (context, state) {
                         if (state is HeightLoading) {
@@ -464,7 +508,8 @@ class HomeScreen extends StatelessWidget {
                 ),
                 //Nutrition
                 Container(
-                  margin:const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color.fromARGB(255, 255, 242, 204),
                     borderRadius: BorderRadius.circular(16),
@@ -472,6 +517,10 @@ class HomeScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
                     title: const Text("Nutrition"),
+                    leading: Transform.scale(
+                        scale: 1.5,
+                        child:
+                            Lottie.asset('assets/lottieanimations/food.json')),
                     subtitle: BlocBuilder<NutritionCubit, NutritionState>(
                       builder: (context, state) {
                         if (state is NutritionLoading) {
@@ -498,43 +547,73 @@ class HomeScreen extends StatelessWidget {
                       },
                     ),
                     trailing: IconButton(
-                        onPressed: ()  {
-                          Navigator.push(context, MaterialPageRoute(builder: (_)=>const NutritionPage()));
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const NutritionPage()));
                         },
                         icon: const Icon(Icons.add)),
                   ),
                 ),
-              ],
-            ),
+                //WORKOUT
+                Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 255, 242, 204),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    title: const Text("Workout"),
+                    leading: Transform.scale(
+                        scale: 2,
+                        child: Lottie.asset(
+                            'assets/lottieanimations/workout.json')),
+                    subtitle: const Text("Comming Soon"),
+                  ),
+                )
+              ])),
+            ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){}, icon: const Icon(CupertinoIcons.home)),label: "home"),
-          BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (_)=>const ChatScreen()));
-          }, icon: const Icon(CupertinoIcons.chat_bubble_fill)),label: "chat"),
-        ],
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: [
+      //     BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){}, icon: const Icon(CupertinoIcons.home)),label: "home"),
+      //     BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){
+      //       Navigator.push(context, MaterialPageRoute(builder: (_)=>const ChatScreen()));
+      //     }, icon: const Icon(CupertinoIcons.chat_bubble_fill)),label: "chat"),
+      //   ],
+      // ),
+      floatingActionButton: SizedBox(
+        width: 100,
+        height: 100,
+        child: GestureDetector(
+          onTap: () => Navigator.push(
+              context, MaterialPageRoute(builder: (_) => const ChatScreen())),
+          child: Lottie.asset('assets/lottieanimations/trainer.json'),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // final now = DateTime.now();
-          // final midnight = DateTime(now.year, now.month, now.day);
-          // List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-          //   types: [HealthDataType.NUTRITION],
-          //   startTime: midnight,
-          //   endTime: now,
-          // );
-          // if(healthData.isNotEmpty){
-          //   log(healthData[0].toJson().toString());
-          // }else{
-          //   log("its empty");
-          // }
-          loadData(context);
-        },
-        child: const Icon(Icons.refresh),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     // final now = DateTime.now();
+      //     // final midnight = DateTime(now.year, now.month, now.day);
+      //     // List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+      //     //   types: [HealthDataType.NUTRITION],
+      //     //   startTime: midnight,
+      //     //   endTime: now,
+      //     // );
+      //     // if(healthData.isNotEmpty){
+      //     //   log(healthData[0].toJson().toString());
+      //     // }else{
+      //     //   log("its empty");
+      //     // }
+      //     loadData(context);
+      //   },
+      //   child: const Icon(Icons.refresh),
+      // ),
     );
   }
 
