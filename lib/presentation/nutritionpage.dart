@@ -69,7 +69,7 @@ class _NutritionPageState extends State<NutritionPage> {
   void initState() {
     _model = GenerativeModel(
       model: 'gemini-1.5-flash', // Specify the AI model
-      apiKey: GeminiAPIKeys, // API Key for authentication
+      apiKey: geminiAPIKeys, // API Key for authentication
     );
     super.initState();
   }

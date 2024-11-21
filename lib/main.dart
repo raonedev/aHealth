@@ -1,3 +1,4 @@
+import 'package:ahealth/blocs/food_search/food_search_cubit.dart';
 import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
 
 import 'blocs/height/height_cubit.dart';
@@ -42,6 +43,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => NutritionCubit(),
+        ),
+        BlocProvider(
+          create: (context) => FoodSearchCubit(),
         ),
 
       ],

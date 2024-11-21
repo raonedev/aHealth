@@ -1,9 +1,10 @@
 import 'dart:developer';
+import 'package:ahealth/presentation/searchscreen.dart';
 
-import 'package:ahealth/presentation/chatscreen.dart';
-import 'package:ahealth/presentation/nutritionpage.dart';
+import 'chatscreen.dart';
+import 'nutritionpage.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lottie/lottie.dart';
-
 import '../blocs/height/height_cubit.dart';
 import '../blocs/initialized/init_app_cubit.dart';
 import '../blocs/nutrition/nutrition_cubit.dart';
@@ -196,6 +197,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(onPressed: ()=>Navigator.push(context,MaterialPageRoute(builder: (_)=>const SearchScreen())), icon: const Icon(CupertinoIcons.search))
+        ],
+      ),
       body: BlocListener<InitAppCubit, InitAppState>(
         listener: (context, state) {
           if (state is InitAppLoading) {
@@ -236,190 +242,119 @@ class HomeScreen extends StatelessWidget {
           }
         },
         child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-               SliverAppBar(
-                pinned: true,
-                expandedHeight: 150,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [
-                        Colors.amber.withOpacity(0.5),
-                        Colors.blue.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      )
-                    ),
-                  ),
-                  title: Text('A-Health'),
-                  titlePadding: EdgeInsets.symmetric(vertical: 5,horizontal: 16),
-                ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 16),
+            child: MasonryGridView(
+              gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Two columns
               ),
-              SliverList(
-                  delegate: SliverChildListDelegate([
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              children: [
                 //steps
-                Container(
-                  margin:const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: Transform.scale(
-                        scale: 1.5,
-                        child: Lottie.asset(
-                          'assets/lottieanimations/walkingmen.json',
-                        )),
-                    title: const Text("Steps"),
-                    subtitle: BlocBuilder<StepsCubit, StepsState>(
-                      builder: (context, state) {
-                        if (state is StepLoadingState) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is StepFailed) {
-                          if (state.errorMessage == "NULL")
-                            return const Text('0');
-                          return Text(state.errorMessage);
-                        } else if (state is StepSuccessState) {
-                          num noOfSteps = 0;
-                          for (final step in state.stepModel) {
-                            if (step.value != null) {
-                              // log("step "+step.value!.numericValue.toString());
-                              noOfSteps += step.value!.numericValue ?? 0;
-                            }
+                healthCard(
+                  context: context,
+                  title: 'Steps',
+                  lottieString: 'assets/lottieanimations/walkingmen.json',
+                  cubit: BlocBuilder<StepsCubit, StepsState>(
+                    builder: (context, state) {
+                      if (state is StepLoadingState) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is StepFailed) {
+                        if (state.errorMessage == "NULL") return const Text('0');
+                        return Text(state.errorMessage);
+                      } else if (state is StepSuccessState) {
+                        num noOfSteps = 0;
+                        for (final step in state.stepModel) {
+                          if (step.value != null) {
+                            // log("step "+step.value!.numericValue.toString());
+                            noOfSteps += step.value!.numericValue ?? 0;
                           }
-                          return Text(
-                              "$noOfSteps  from platform ${state.stepModel.isNotEmpty ? state.stepModel[0].sourcePlatform : ''}");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
                         }
-                      },
-                    ),
+                        // return Text("$noOfSteps  from platform ${state.stepModel.isNotEmpty ? state.stepModel[0].sourcePlatform : ''}");
+                        return Text('$noOfSteps');
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
                   ),
                 ),
-                //sleep
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: IconButton(
-                      onPressed: () {
-                        context.read<SleepCubit>().deleteToadySleepData();
-                      },
-                      icon: Transform.scale(
-                          scale: 1.5,
-                          child: Lottie.asset(
-                              'assets/lottieanimations/sleep.json')),
-                    ),
-                    title: const Text("Sleep"),
-                    subtitle: BlocBuilder<SleepCubit, SleepState>(
-                      builder: (context, state) {
-                        if (state is SleepLoadingState) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is SleepFailedState) {
-                          return const Text('failed to load steps');
-                        } else if (state is SleepSuccessState) {
-                          num sleepTimeInMinutes = 0;
-                          for (final step in state.sleepModel) {
-                            if (step.value != null) {
-                              sleepTimeInMinutes +=
-                                  step.value!.numericValue ?? 0;
-                            }
-                          }
-                          return Text(
-                              "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
+                const SizedBox(height: 75),
+
+                //Nutrition
+                healthCard(
+                  context: context,
+                  title: 'Nutrition',
+                  lottieString: 'assets/lottieanimations/food.json',
+                  cubit: BlocBuilder<NutritionCubit, NutritionState>(
+                    builder: (context, state) {
+                      if (state is NutritionLoading) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is NutritionFailed) {
+                        // log('error in water load',error: state.errorMessage);
+                        return Text(state.errorMessage);
+                      } else if (state is NutritionSuccess) {
+                        if (state.nutritionModel.isNotEmpty) {
+                          return Column(
+                            children: List.generate(
+                              state.nutritionModel.length,
+                                  (index) {
+                                return Text(
+                                    '${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
+                              },
+                            ),
+                          );
                         }
-                      },
-                    ),
-                    trailing: IconButton(
-                        onPressed: () async {
-                          showSleepDialog(context);
-                          // bool isAdded = await context.read<WaterCubit>().addWater(waterInLiter: 0.25);
-                          // if (isAdded) {
-                          //   context.read<WaterCubit>().getWaterData();
-                          // }
-                        },
-                        icon: const Icon(Icons.add)),
+                        return const Text("No Weight Data");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
                   ),
+                  onAdd: () =>  Navigator.push(context,MaterialPageRoute(builder: (_) => const NutritionPage())),
                 ),
+
                 //water
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: Transform.scale(
-                        scale: 2,
-                        child: Lottie.asset(
-                          'assets/lottieanimations/girl_drinking_water.json',
-                        )),
-                    // leading: IconButton(onPressed: (){
-                    //   context.read<WaterCubit>().decreaseLastWaterData();
-                    // }, icon: const Icon(Icons.minimize_rounded)),
-                    title: const Text("Water"),
-                    subtitle: BlocBuilder<WaterCubit, WaterState>(
-                      builder: (context, state) {
-                        if (state is WaterLoadingState) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is WaterFailed) {
-                          // log('error in water load',error: state.errorMessage);
-                          if (state.errorMessage == "NULL") {
-                            return const Text('0 Liter');
-                          } else {
-                            return Text(state.errorMessage);
-                          }
-                        } else if (state is WaterSuccessState) {
-                          num waterInLiter = 0;
-                          for (final water in state.waterModel) {
-                            if (water.value != null) {
-                              waterInLiter += water.value!.numericValue ?? 0;
-                            }
-                          }
-                          return Text(
-                              "${(waterInLiter).toStringAsFixed(2)} Liter");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
+                healthCard(
+                  context: context,
+                  title: "Water",
+                  lottieString: 'assets/lottieanimations/girl_drinking_water.json',
+                  cubit: BlocBuilder<WaterCubit, WaterState>(
+                  builder: (context, state) {
+                    if (state is WaterLoadingState) {
+                      return const CupertinoActivityIndicator(); // Default case
+                    } else if (state is WaterFailed) {
+                      // log('error in water load',error: state.errorMessage);
+                      if (state.errorMessage == "NULL") {
+                        return const Text('0 Liter');
+                      } else {
+                        return Text(state.errorMessage);
+                      }
+                    } else if (state is WaterSuccessState) {
+                      num waterInLiter = 0;
+                      for (final water in state.waterModel) {
+                        if (water.value != null) {
+                          waterInLiter += water.value!.numericValue ?? 0;
                         }
-                      },
-                    ),
-                    trailing: IconButton(
-                        onPressed: () {
-                          context
-                              .read<WaterCubit>()
-                              .addWater(waterInLiter: 0.25);
-                        },
-                        icon: const Icon(Icons.add)),
-                  ),
+                      }
+                      return Text(
+                          "${(waterInLiter).toStringAsFixed(2)} Liter");
+                    } else {
+                      return Text("unknown state ${state.toString()}");
+                    }
+                  },
                 ),
+                  onAdd: () {
+                    context.read<WaterCubit>().addWater(waterInLiter: 0.25);
+                  },
+                ),
+
                 //weight
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    title: const Text("Weight"),
-                    leading: Transform.scale(
-                        scale: 1.5,
-                        child: Lottie.asset(
-                            'assets/lottieanimations/weightscale.json')),
-                    subtitle: BlocBuilder<WeightCubit, WeightState>(
+                healthCard(
+                  context: context,
+                  title: 'Weight',
+                    lottieString: 'assets/lottieanimations/weightscale.json',
+                    cubit: BlocBuilder<WeightCubit, WeightState>(
                       builder: (context, state) {
                         if (state is WeightLoading) {
                           return const CupertinoActivityIndicator(); // Default case
@@ -439,7 +374,7 @@ class HomeScreen extends StatelessWidget {
                           if (state.weightModel.isNotEmpty) {
                             return Text(
                               state.weightModel[0].value != null
-                                  ? ("${state.weightModel[0].value!.numericValue} ${state.weightModel[0].unit}")
+                                  ? ("${state.weightModel[0].value!.numericValue} Kg")
                                   : '0 Kg',
                             );
                           }
@@ -449,133 +384,70 @@ class HomeScreen extends StatelessWidget {
                         }
                       },
                     ),
-                    trailing: IconButton(
-                        onPressed: () async {
-                          showWeightDialog(context);
-                          // bool isAdded =await context.read<WeightCubit>().addWeight(wrightInKg: 0.25);
-                          // if(isAdded){
-                          //   context.read<WeightCubit>().getWeightData();
-                          // }
-                        },
-                        icon: const Icon(Icons.add)),
-                  ),
+                    onAdd: () => showWeightDialog(context),
                 ),
-                // height
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    title: const Text("Height"),
-                    leading: Transform.scale(
-                        scale: 2,
-                        child: Lottie.asset(
-                            'assets/lottieanimations/pullup.json')),
-                    subtitle: BlocBuilder<HeightCubit, HeightState>(
-                      builder: (context, state) {
-                        if (state is HeightLoading) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is HeightFailed) {
-                          // log('error in water load',error: state.errorMessage);
 
-                          return Text(state.errorMessage);
-                        } else if (state is HeightSuccess) {
-                          if (state.heightModel.isNotEmpty) {
-                            return Text(state.heightModel[0].value != null
-                                ? ("${(state.heightModel[0].value!.numericValue)?.toStringAsFixed(2)} ${state.heightModel[0].unit}")
-                                : 'UNKNOWN');
-                          }
-                          return const Text("No Height Data");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
+                // height
+                healthCard(
+                  context: context,
+                  title: 'Height',
+                  lottieString: 'assets/lottieanimations/pullup.json',
+                  cubit: BlocBuilder<HeightCubit, HeightState>(
+                    builder: (context, state) {
+                      if (state is HeightLoading) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is HeightFailed) {
+                        // log('error in water load',error: state.errorMessage);
+
+                        return Text(state.errorMessage);
+                      } else if (state is HeightSuccess) {
+                        if (state.heightModel.isNotEmpty) {
+                          return Text(state.heightModel[0].value != null
+                              ? ("${(state.heightModel[0].value!.numericValue)?.toStringAsFixed(2)} ${state.heightModel[0].unit}")
+                              : 'UNKNOWN');
                         }
-                      },
+                        return const Text("No Height Data");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }},
                     ),
-                    trailing: IconButton(
-                        onPressed: () async {
-                          showHeightDialog(context);
-                          // bool isAdded =await context.read<WeightCubit>().addWeight(wrightInKg: 0.25);
-                          // if(isAdded){
-                          //   context.read<WeightCubit>().getWeightData();
-                          // }
-                        },
-                        icon: const Icon(Icons.add)),
-                  ),
+                    onAdd: () => showHeightDialog(context),
                 ),
-                //Nutrition
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    title: const Text("Nutrition"),
-                    leading: Transform.scale(
-                        scale: 1.5,
-                        child:
-                            Lottie.asset('assets/lottieanimations/food.json')),
-                    subtitle: BlocBuilder<NutritionCubit, NutritionState>(
-                      builder: (context, state) {
-                        if (state is NutritionLoading) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is NutritionFailed) {
-                          // log('error in water load',error: state.errorMessage);
-                          return Text(state.errorMessage);
-                        } else if (state is NutritionSuccess) {
-                          if (state.nutritionModel.isNotEmpty) {
-                            return Column(
-                              children: List.generate(
-                                state.nutritionModel.length,
-                                (index) {
-                                  return Text(
-                                      '${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
-                                },
-                              ),
-                            );
+                //sleep
+                healthCard(
+                  context: context,
+                  title: "Sleep Session",
+                  lottieString: 'assets/lottieanimations/sleep.json',
+                  cubit: BlocBuilder<SleepCubit, SleepState>(
+                    builder: (context, state) {
+                      if (state is SleepLoadingState) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is SleepFailedState) {
+                        return const Text('failed to load steps');
+                      } else if (state is SleepSuccessState) {
+                        num sleepTimeInMinutes = 0;
+                        for (final step in state.sleepModel) {
+                          if (step.value != null) {
+                            sleepTimeInMinutes += step.value!.numericValue ?? 0;
                           }
-                          return const Text("No Weight Data");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
                         }
-                      },
-                    ),
-                    trailing: IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const NutritionPage()));
-                        },
-                        icon: const Icon(Icons.add)),
+                        return Text(
+                            "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
                   ),
+                  onAdd: () {
+                    log("sleep");
+                    showSleepDialog(context);
+                  },
                 ),
                 //WORKOUT
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 242, 204),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    title: const Text("Workout"),
-                    leading: Transform.scale(
-                        scale: 2,
-                        child: Lottie.asset(
-                            'assets/lottieanimations/workout.json')),
-                    subtitle: const Text("Comming Soon"),
-                  ),
-                )
-              ])),
-            ],
+                healthCard(title: 'Workout', lottieString: 'assets/lottieanimations/workout.json', cubit: const Text("Comming Soon"), context: context)
+
+              ],
+            ),
           ),
         ),
       ),
@@ -614,6 +486,49 @@ class HomeScreen extends StatelessWidget {
       //   },
       //   child: const Icon(Icons.refresh),
       // ),
+    );
+  }
+
+  Stack healthCard({
+    required String title,
+    required String lottieString,
+    required Widget cubit,
+    required BuildContext context,
+    VoidCallback?  onAdd,
+  }) {
+    return Stack(
+      children: [
+        Container(
+          height: MediaQuery.of(context).size.height*0.28,
+          padding: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 242, 204),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale:0.8,
+                child: Lottie.asset(
+                  lottieString,
+                ),
+              ),
+              Text(title),
+              cubit,
+            ],
+          ),
+        ),
+        onAdd != null
+            ? Positioned(
+            bottom: 10,
+            right: 0,
+            child:IconButton(onPressed:() {
+              log("onADD");
+              onAdd();
+            }, icon: const Icon(Icons.add)))
+            : const SizedBox(),
+      ],
     );
   }
 
