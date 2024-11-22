@@ -130,21 +130,31 @@ NutritionModel copyWith({  String? uuid,
 
 class ValueFood {
   ValueFood({
-      String? name, 
-      double? calories,
-      double? protein,
-      double? fat,
-      double? carbs,
-      double? calcium,
-      double? cholesterol,
-      double? fiber,
-      double? iron,
-      double? potassium,
-      double? sodium,
-      double? sugar,
-      double? quantity,
-      String? unit,
-  }){
+    String? name,
+    double? calories,
+    double? protein,
+    double? fat,
+    double? carbs,
+    double? calcium,
+    double? cholesterol,
+    double? fiber,
+    double? iron,
+    double? potassium,
+    double? sodium,
+    double? sugar,
+    double? quantity,
+    String? unit,
+    String? servingDescription,
+    String? metricServingAmount,
+    String? metricServingUnit,
+    String? numberOfUnits,
+    String? measurementDescription,
+    double? saturatedFat,
+    double? polyunsaturatedFat,
+    double? monounsaturatedFat,
+    double? vitaminA,
+    double? vitaminC,
+  }) {
     _name = name;
     _calories = calories;
     _protein = protein;
@@ -157,10 +167,19 @@ class ValueFood {
     _potassium = potassium;
     _sodium = sodium;
     _sugar = sugar;
-    _quantity=quantity;
-    _unit=unit;
-
-}
+    _quantity = quantity;
+    _unit = unit;
+    _servingDescription = servingDescription;
+    _metricServingAmount = metricServingAmount;
+    _metricServingUnit = metricServingUnit;
+    _numberOfUnits = numberOfUnits;
+    _measurementDescription = measurementDescription;
+    _saturatedFat = saturatedFat;
+    _polyunsaturatedFat = polyunsaturatedFat;
+    _monounsaturatedFat = monounsaturatedFat;
+    _vitaminA = vitaminA;
+    _vitaminC = vitaminC;
+  }
 
   ValueFood.fromJson(dynamic json) {
     _name = json['name'];
@@ -175,9 +194,20 @@ class ValueFood {
     _potassium = json['potassium'];
     _sodium = json['sodium'];
     _sugar = json['sugar'];
-    _unit = json['unit'];
     _quantity = json['quantity'];
+    _unit = json['unit'];
+    _servingDescription = json['servingDescription'];
+    _metricServingAmount = json['metricServingAmount'];
+    _metricServingUnit = json['metricServingUnit'];
+    _numberOfUnits = json['numberOfUnits'];
+    _measurementDescription = json['measurementDescription'];
+    _saturatedFat = json['saturatedFat'];
+    _polyunsaturatedFat = json['polyunsaturatedFat'];
+    _monounsaturatedFat = json['monounsaturatedFat'];
+    _vitaminA = json['vitaminA'];
+    _vitaminC = json['vitaminC'];
   }
+
   String? _name;
   double? _calories;
   double? _protein;
@@ -192,50 +222,69 @@ class ValueFood {
   double? _sugar;
   double? _quantity;
   String? _unit;
-ValueFood copyWith({  String? name,
-  double? calories,
-  double? protein,
-  double? fat,
-  double? carbs,
-  double? calcium,
-  double? cholesterol,
-  double? fiber,
-  double? iron,
-  double? potassium,
-  double? sodium,
-  double? sugar,
-  double? quantity,
-  String? unit,
-}) => ValueFood(  name: name ?? _name,
-  calories: calories ?? _calories,
-  protein: protein ?? _protein,
-  fat: fat ?? _fat,
-  carbs: carbs ?? _carbs,
-  calcium: calcium ?? _calcium,
-  cholesterol: cholesterol ?? _cholesterol,
-  fiber: fiber ?? _fiber,
-  iron: iron ?? _iron,
-  potassium: potassium ?? _potassium,
-  sodium: sodium ?? _sodium,
-  sugar: sugar ?? _sugar,
-  quantity: quantity??_quantity,
-  unit: unit??_unit,
-);
-  String? get name => _name;
-  double? get calories => _calories;
-  double? get protein => _protein;
-  double? get fat => _fat;
-  double? get carbs => _carbs;
-  double? get calcium => _calcium;
-  double? get cholesterol => _cholesterol;
-  double? get fiber => _fiber;
-  double? get iron => _iron;
-  double? get potassium => _potassium;
-  double? get sodium => _sodium;
-  double? get sugar => _sugar;
-  double? get quantity => _quantity;
-  String? get unit => _unit;
+  String? _servingDescription;
+  String? _metricServingAmount;
+  String? _metricServingUnit;
+  String? _numberOfUnits;
+  String? _measurementDescription;
+  double? _saturatedFat;
+  double? _polyunsaturatedFat;
+  double? _monounsaturatedFat;
+  double? _vitaminA;
+  double? _vitaminC;
 
+  ValueFood copyWith({
+    String? name,
+    double? calories,
+    double? protein,
+    double? fat,
+    double? carbs,
+    double? calcium,
+    double? cholesterol,
+    double? fiber,
+    double? iron,
+    double? potassium,
+    double? sodium,
+    double? sugar,
+    double? quantity,
+    String? unit,
+    String? servingDescription,
+    String? metricServingAmount,
+    String? metricServingUnit,
+    String? numberOfUnits,
+    String? measurementDescription,
+    double? saturatedFat,
+    double? polyunsaturatedFat,
+    double? monounsaturatedFat,
+    double? vitaminA,
+    double? vitaminC,
+  }) =>
+      ValueFood(
+        name: name ?? _name,
+        calories: calories ?? _calories,
+        protein: protein ?? _protein,
+        fat: fat ?? _fat,
+        carbs: carbs ?? _carbs,
+        calcium: calcium ?? _calcium,
+        cholesterol: cholesterol ?? _cholesterol,
+        fiber: fiber ?? _fiber,
+        iron: iron ?? _iron,
+        potassium: potassium ?? _potassium,
+        sodium: sodium ?? _sodium,
+        sugar: sugar ?? _sugar,
+        quantity: quantity ?? _quantity,
+        unit: unit ?? _unit,
+        servingDescription: servingDescription ?? _servingDescription,
+        metricServingAmount: metricServingAmount ?? _metricServingAmount,
+        metricServingUnit: metricServingUnit ?? _metricServingUnit,
+        numberOfUnits: numberOfUnits ?? _numberOfUnits,
+        measurementDescription: measurementDescription ?? _measurementDescription,
+        saturatedFat: saturatedFat ?? _saturatedFat,
+        polyunsaturatedFat: polyunsaturatedFat ?? _polyunsaturatedFat,
+        monounsaturatedFat: monounsaturatedFat ?? _monounsaturatedFat,
+        vitaminA: vitaminA ?? _vitaminA,
+        vitaminC: vitaminC ?? _vitaminC,
+      );
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -253,8 +302,43 @@ ValueFood copyWith({  String? name,
     map['sugar'] = _sugar;
     map['quantity'] = _quantity;
     map['unit'] = _unit;
+    map['servingDescription'] = _servingDescription;
+    map['metricServingAmount'] = _metricServingAmount;
+    map['metricServingUnit'] = _metricServingUnit;
+    map['numberOfUnits'] = _numberOfUnits;
+    map['measurementDescription'] = _measurementDescription;
+    map['saturatedFat'] = _saturatedFat;
+    map['polyunsaturatedFat'] = _polyunsaturatedFat;
+    map['monounsaturatedFat'] = _monounsaturatedFat;
+    map['vitaminA'] = _vitaminA;
+    map['vitaminC'] = _vitaminC;
 
     return map;
   }
 
+  // Add getters for all the fields
+  String? get name => _name;
+  double? get calories => _calories;
+  double? get protein => _protein;
+  double? get fat => _fat;
+  double? get carbs => _carbs;
+  double? get calcium => _calcium;
+  double? get cholesterol => _cholesterol;
+  double? get fiber => _fiber;
+  double? get iron => _iron;
+  double? get potassium => _potassium;
+  double? get sodium => _sodium;
+  double? get sugar => _sugar;
+  double? get quantity => _quantity;
+  String? get unit => _unit;
+  String? get servingDescription => _servingDescription;
+  String? get metricServingAmount => _metricServingAmount;
+  String? get metricServingUnit => _metricServingUnit;
+  String? get numberOfUnits => _numberOfUnits;
+  String? get measurementDescription => _measurementDescription;
+  double? get saturatedFat => _saturatedFat;
+  double? get polyunsaturatedFat => _polyunsaturatedFat;
+  double? get monounsaturatedFat => _monounsaturatedFat;
+  double? get vitaminA => _vitaminA;
+  double? get vitaminC => _vitaminC;
 }

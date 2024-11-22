@@ -57,11 +57,6 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // final List<dynamic>  servingData = data['food']['servings']['serving'];
-        // // Example: Accessing individual servings
-        // for (var serving in servingData) {
-        //   dev.log('Serving Description: ${serving['serving_description']}, Calories: ${serving['calories']}');
-        // }
 
         dev.log(response.body.toString());
         

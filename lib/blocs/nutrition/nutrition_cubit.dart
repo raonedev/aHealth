@@ -44,27 +44,46 @@ class NutritionCubit extends Cubit<NutritionState> {
     }
   }
 
-  Future<bool> addNutritionData({required MealType mealType,required NutritionModel nutritionModel})async{
+  // Helper function to determine meal type based on the hour of the day
+  MealType _getMealType(int hour) {
+    if (hour >= 5 && hour < 11) {
+      return MealType.BREAKFAST;
+    } else if (hour >= 11 && hour < 16) {
+      return MealType.LUNCH;
+    } else if (hour >= 16 && hour < 21) {
+      return MealType.DINNER;
+    } else {
+      return MealType.SNACK; // Default to 'snack' for late-night or early hours
+    }
+  }
+
+  Future<bool> addNutritionData({required ValueFood valueFood})async{
+    emit(NutritionLoading());
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(minutes: 20));
+
     bool success = true;
-    if(nutritionModel.value!=null){
-      success &= await Health().writeMeal(
-          mealType: mealType,
+    success &= await Health().writeMeal(
+          mealType: _getMealType(now.hour),
           startTime: earlier,
           endTime: now,
-          caloriesConsumed: nutritionModel.value!.calories,
-          protein: nutritionModel.value!.protein,
-          fatTotal: nutritionModel.value!.fat,
-          carbohydrates: nutritionModel.value!.carbs,
-          calcium: nutritionModel.value!.calcium,
-          cholesterol: nutritionModel.value!.cholesterol,
-          fiber: nutritionModel.value!.fiber,
-          iron: nutritionModel.value!.iron,
-          potassium: nutritionModel.value!.potassium,
-          sodium: nutritionModel.value!.sodium,
-          sugar: nutritionModel.value!.sugar,
-          name: nutritionModel.value!.name,
+          caloriesConsumed: valueFood.calories,
+          protein: valueFood.protein,
+          fatTotal: valueFood.fat,
+          carbohydrates: valueFood.carbs,
+          calcium: valueFood.calcium,
+          cholesterol: valueFood.cholesterol,
+          fiber: valueFood.fiber,
+          iron: valueFood.iron,
+          potassium: valueFood.potassium,
+          sodium: valueFood.sodium,
+          sugar: valueFood.sugar,
+          name: valueFood.name,
+          vitaminC: valueFood.vitaminC,
+          vitaminA: valueFood.vitaminA,
+          fatMonounsaturated: valueFood.monounsaturatedFat,
+
+          recordingMethod: RecordingMethod.manual
           // caffeine: 0.002,
           // vitaminA: 0.001,
           // vitaminC: 0.002,
@@ -90,11 +109,14 @@ class NutritionCubit extends Cubit<NutritionState> {
           // molybdenum: 0.027,
           // chloride: 0.028,
           // chromium: 0.029,
-          recordingMethod: RecordingMethod.manual);
-      return success;
+          );
+    if(success){
+      getNutritionData();
     }else{
-      return false;
+      emit(NutritionFailed(errorMessage: "failed to add Nutririons"));
     }
+      return success;
+
 
 
 

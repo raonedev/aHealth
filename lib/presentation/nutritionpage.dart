@@ -45,19 +45,29 @@ You are an AI that provides nutritional information about food items. Your respo
 [
   {
     "name": "String",
-    "calories": double,
-    "protein": double,
-    "fat": double,
-    "carbs": double,
-    "calcium": double,
-    "cholesterol": double,
-    "fiber": double,
-    "iron": double,
-    "potassium": double,
-    "sodium": double,
-    "sugar": double,
-    "quantity": double,
-    "unit": "String"
+    "calories": "double",
+    "protein": "double",
+    "fat": "double",
+    "carbs": "double",
+    "calcium": "double",
+    "cholesterol": "double",
+    "fiber": "double",
+    "iron": "double",
+    "potassium": "double",
+    "sodium": "double",
+    "sugar": "double",
+    "quantity": "double",
+    "unit": "String",
+    "servingDescription": "String",
+    "metricServingAmount": "String",
+    "metricServingUnit": "String",
+    "numberOfUnits": "String",
+    "measurementDescription": "String",
+    "saturatedFat": "double",
+    "polyunsaturatedFat": "double",
+    "monounsaturatedFat": "double",
+    "vitaminA": "double",
+    "vitaminC": "double"
   }
 ]
 

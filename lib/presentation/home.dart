@@ -279,9 +279,8 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 75),
-
                 //Nutrition
+
                 healthCard(
                   context: context,
                   title: 'Nutrition',
@@ -299,8 +298,7 @@ class HomeScreen extends StatelessWidget {
                             children: List.generate(
                               state.nutritionModel.length,
                                   (index) {
-                                return Text(
-                                    '${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
+                                return Text('${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
                               },
                             ),
                           );
@@ -460,12 +458,15 @@ class HomeScreen extends StatelessWidget {
       //   ],
       // ),
       floatingActionButton: SizedBox(
-        width: 100,
-        height: 100,
+        width: 70,
+        height: 70,
         child: GestureDetector(
           onTap: () => Navigator.push(
               context, MaterialPageRoute(builder: (_) => const ChatScreen())),
-          child: Lottie.asset('assets/lottieanimations/trainer.json'),
+          child: CircleAvatar(
+            backgroundColor: Colors.white,
+              child: Image.asset('assets/icons/img_1.png',width: 50),
+          ),
         ),
       ),
       // floatingActionButton: FloatingActionButton(
@@ -499,7 +500,7 @@ class HomeScreen extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: MediaQuery.of(context).size.height*0.28,
+          constraints: const BoxConstraints(minHeight: 200,minWidth: 400),
           padding: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: const Color.fromARGB(255, 255, 242, 204),
