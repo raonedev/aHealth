@@ -23,6 +23,5 @@ final class SleepFailedState extends SleepState{
   final String errorMessage;
   const SleepFailedState({required this.errorMessage});
   @override
-  // TODO: implement props
   List<Object?> get props => [errorMessage];
 }

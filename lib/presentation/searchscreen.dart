@@ -1,4 +1,5 @@
 import 'package:ahealth/blocs/food_search/food_search_cubit.dart';
+import 'package:ahealth/presentation/fooddetailscreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,7 +58,13 @@ class _SearchScreenState extends State<SearchScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: CupertinoListTile(
-
+                      onTap: () {
+                        if(food.foodId!=null){
+                          Navigator.push(context, MaterialPageRoute(builder: (_)=>FoodDetailScreen(foodId: food.foodId!)));
+                        }else{
+                          dev.log("unable to get foodId");
+                        }
+                      },
                       title: Text(food.foodName??'null'),
                       subtitle: Text(
                         food.foodDescription ?? 'null',

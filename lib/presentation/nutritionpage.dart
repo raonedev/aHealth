@@ -39,26 +39,30 @@ class _NutritionPageState extends State<NutritionPage> {
 
   // The prompt that instructs the AI on what to return (JSON nutritional data)
   final String prompt = """
-    You are an AI that detects the nutritional information of food items. Consider the appropriate unit (such as "piece", "g", or "ml") of the detected food, and adjust the nutrient values accordingly. Your response must be in the following JSON format:
-    [
-      {
-        "name": "String",
-        "calories": double,
-        "protein": double,
-        "fat": double,
-        "carbs": double,
-        "calcium": double,
-        "cholesterol": double,
-        "fiber": double,
-        "iron": double,
-        "potassium": double,
-        "sodium": double,
-        "sugar": double,
-        "quantity:double,
-        "unit":"String"
-      }
-    ]
-    Please provide only the JSON data as specified, without any additional text or explanation.
+  
+You are an AI that provides nutritional information about food items. Your response must strictly adhere to this JSON structure:
+
+[
+  {
+    "name": "String",
+    "calories": double,
+    "protein": double,
+    "fat": double,
+    "carbs": double,
+    "calcium": double,
+    "cholesterol": double,
+    "fiber": double,
+    "iron": double,
+    "potassium": double,
+    "sodium": double,
+    "sugar": double,
+    "quantity": double,
+    "unit": "String"
+  }
+]
+
+Respond with only the JSON String with no Markdown formatting like ( ```json), no explanations, no extra characters. The response should start and end with the JSON brackets ([ and ]) only.
+  
   """;
 
   // List to store the parsed food items from the AI's JSON response
@@ -185,16 +189,26 @@ class _NutritionPageState extends State<NutritionPage> {
       final response = await _model.generateContent(content);
 
       // Log the AI's response for debugging
-      log(response.text ?? "No response");
+      log("response: ${response.text ?? "No response"}");
 
       if (response.text != null) {
-        // Parse the response text as JSON and update the list of food items
-        List<dynamic> jsonList = jsonDecode(response.text!);
-        setState(() {
-          // Convert each JSON item to a FoodModel instance
-          foodItemList =
-              jsonList.map((json) => ValueFood.fromJson(json)).toList();
-        });
+        // Extract the JSON part using regex to remove non-JSON characters
+        RegExp regex = RegExp(r'```json\n([\s\S]+?)\n```');
+        Match? match = regex.firstMatch(response.text!);
+
+        if (match != null) {
+          String jsonString = match.group(1)!;
+
+          //log extracted json
+          log("jsonString: $jsonString");
+
+          // Parse the response text as JSON and update the list of food items
+          List<dynamic> jsonList = jsonDecode(jsonString);
+          setState(() {
+            foodItemList = jsonList.map((json) => ValueFood.fromJson(json)).toList();
+          });
+        }
+
       }
     } catch (e) {
       // Log any errors encountered

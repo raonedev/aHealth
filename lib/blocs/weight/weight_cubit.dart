@@ -1,4 +1,4 @@
-import '../../models/WeightModel.dart';
+import '../../models/weightmodel.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';

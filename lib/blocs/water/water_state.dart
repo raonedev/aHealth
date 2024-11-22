@@ -24,6 +24,5 @@ final class WaterFailed extends WaterState{
   final String errorMessage;
   const WaterFailed({required this.errorMessage});
   @override
-  // TODO: implement props
   List<Object?> get props => [errorMessage];
 }
