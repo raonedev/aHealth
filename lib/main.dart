@@ -1,6 +1,8 @@
 import 'package:ahealth/blocs/food_search/food_search_cubit.dart';
-import 'package:ahealth/blocs/fooddetail/food_detail_cubit.dart';
-import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
+import 'blocs/fooddetail/food_detail_cubit.dart';
+import 'blocs/nutrition/nutrition_cubit.dart';
+import 'models/FoodSearchModel.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'blocs/height/height_cubit.dart';
 import 'blocs/initialized/init_app_cubit.dart';
@@ -12,7 +14,10 @@ import 'presentation/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter(); // Initialize Hive for Flutter
+  Hive.registerAdapter(FoodsAdapter()); // Register the Foods adapter
   runApp(const MyApp());
 }
 
