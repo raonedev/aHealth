@@ -10,6 +10,7 @@ import 'blocs/sleep/sleep_cubit.dart';
 import 'blocs/step/step_cubit.dart';
 import 'blocs/water/water_cubit.dart';
 import 'blocs/weight/weight_cubit.dart';
+import 'models/FoodWithServingsModel.dart';
 import 'presentation/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,6 +19,11 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter(); // Initialize Hive for Flutter
   Hive.registerAdapter(FoodsAdapter()); // Register the Foods adapter
+  Hive.registerAdapter(FoodWithServingsModelAdapter());
+  Hive.registerAdapter(FoodAdapter());
+  Hive.registerAdapter(ServingsAdapter());
+  Hive.registerAdapter(ServingAdapter());
+  
   runApp(const MyApp());
 }
 

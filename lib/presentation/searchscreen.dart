@@ -26,9 +26,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> initialized() async {
-    await Hive.openBox(searchFoodLocationHIve);
+    await Hive.openBox(searchFoodLocationHive);
     setState(() {
-      searchFoodBox = Hive.box(searchFoodLocationHIve);
+      searchFoodBox = Hive.box(searchFoodLocationHive);
     });
   }
 
@@ -116,12 +116,12 @@ class _SearchScreenState extends State<SearchScreen> {
       child: CupertinoListTile(
         onTap: () {
           if (food.foodId != null && searchFoodBox != null) {
-            searchFoodBox!.put(food.foodId!, food);
-            dev.log("food is put in local");
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => FoodDetailScreen(foodId: food.foodId!)));
+
+            if(searchFoodBox?.get(food.foodId)==null){
+              searchFoodBox!.put(food.foodId!, food);
+              dev.log("food is put in local");
+            }
+            Navigator.push(context,MaterialPageRoute(builder: (_) => FoodDetailScreen(foodId: food.foodId!)));
           } else {
             dev.log("unable to get foodId");
           }

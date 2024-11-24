@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../../config/appconstants.dart';
 import '../../models/FoodWithServingsModel.dart';
 import '../../secrets/secrets.dart';
 import 'package:bloc/bloc.dart';
@@ -14,11 +17,21 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
   FoodDetailCubit() : super(FoodDetailInitial());
 
   void fetchFoodDetails(String foodId) async {
+    emit(FoodDetailLoading());
     if(foodId.isEmpty){
       emit(const FoodDetailFailed(errorMessage: "foodId not found"));
       return;
     }
-    emit(FoodDetailLoading());
+    //first found locally
+    await Hive.openBox(foodDetailLocationHive);
+    Box foodDetailBox= Hive.box(foodDetailLocationHive);
+    FoodWithServingsModel? isFoodFound = foodDetailBox.get(foodId);
+    if(isFoodFound!=null){
+      dev.log("foodDetail from cache");
+      emit(FoodDetailSuccess(foodWithServingsModel: isFoodFound));
+      return;
+    }
+
     const String url = "https://platform.fatsecret.com/rest/server.api";
 
     // Step 1: OAuth Parameters
@@ -54,13 +67,13 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
     // Step 6: Send the request
     try {
       final response = await http.get(requestUri);
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        dev.log(response.body.toString());
-        
-        emit(FoodDetailSuccess(foodWithServingsModel: FoodWithServingsModel.fromJson(data)));
+        // dev.log(response.body.toString());
+        FoodWithServingsModel foodServingModel = FoodWithServingsModel.fromJson(data);
+        foodDetailBox.put(foodId, foodServingModel);
+        dev.log("foodDetail added of id $foodId");
+        emit(FoodDetailSuccess(foodWithServingsModel: foodServingModel));
 
 
       } else {

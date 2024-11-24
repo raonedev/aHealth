@@ -1,2 +1,3 @@
 //hive location
-const String searchFoodLocationHIve = "searchFoods";
+const String searchFoodLocationHive = "searchFoods";
+const String foodDetailLocationHive = "foodDetails";

@@ -1,13 +1,10 @@
 import 'package:ahealth/blocs/fooddetail/food_detail_cubit.dart';
 import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
-
-// import 'package:ahealth/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:health/health.dart';
-
 import '../models/NutritionModel.dart';
+// import 'dart:developer' as dev;
 
 class FoodDetailScreen extends StatefulWidget {
   const FoodDetailScreen({super.key, required this.foodId});
@@ -45,19 +42,11 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
               children: [
                 Column(
                   children: [
-                    if (state.foodWithServingsModel.food != null)
-                      Text(state.foodWithServingsModel.food!.foodName ??
-                          "NULL Name"),
-                    if (state.foodWithServingsModel.food != null ||
-                        state.foodWithServingsModel.food!.servings != null ||
-                        state.foodWithServingsModel.food!.servings!.serving !=
-                            null ||
-                        state.foodWithServingsModel.food!.servings!.serving!
-                            .isNotEmpty)
+                    if (state.foodWithServingsModel.food != null) Text(state.foodWithServingsModel.food!.foodName ??"NULL Name"),
+                    if (state.foodWithServingsModel.food != null || state.foodWithServingsModel.food!.servings != null || state.foodWithServingsModel.food!.servings!.serving != null || state.foodWithServingsModel.food!.servings!.serving!.isNotEmpty)
                       Expanded(
                         child: ListView.builder(
-                          itemCount: state.foodWithServingsModel.food!.servings!
-                              .serving!.length,
+                          itemCount: state.foodWithServingsModel.food!.servings!.serving!.length,
                           itemBuilder: (context, index) {
                             final serving = state.foodWithServingsModel.food!
                                 .servings!.serving![index];
@@ -134,7 +123,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             servingDescription: serving.servingDescription,
                             sodium: double.parse(serving.sodium ?? '0')/1000,
                             sugar: double.parse(serving.sugar ?? '0'),
-                            vitaminA: double.parse(serving.vitaminA ?? '0'),
+                            vitaminA: double.parse(serving.vitaminA ?? '0')/1000,
                             vitaminC: double.parse(serving.vitaminC ?? '0')/1000,
                           );
                           if(valueFood!=null){
