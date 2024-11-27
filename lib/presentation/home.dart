@@ -1,5 +1,8 @@
 import 'dart:developer';
+import 'package:ahealth/config/appenums.dart';
+import 'package:ahealth/presentation/chartscreen.dart';
 import 'package:ahealth/presentation/searchscreen.dart';
+import 'package:health/health.dart';
 
 import 'chatscreen.dart';
 import 'nutritionpage.dart';
@@ -253,6 +256,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 //steps
                 healthCard(
+                  healthType: HealthDataType.STEPS,
                   context: context,
                   title: 'Steps',
                   lottieString: 'assets/lottieanimations/walkingmen.json',
@@ -282,6 +286,7 @@ class HomeScreen extends StatelessWidget {
                 //Nutrition
 
                 healthCard(
+                  healthType: HealthDataType.NUTRITION,
                   context: context,
                   title: 'Nutrition',
                   lottieString: 'assets/lottieanimations/food.json',
@@ -314,6 +319,7 @@ class HomeScreen extends StatelessWidget {
 
                 //water
                 healthCard(
+                  healthType: HealthDataType.WATER,
                   context: context,
                   title: "Water",
                   lottieString: 'assets/lottieanimations/girl_drinking_water.json',
@@ -349,6 +355,7 @@ class HomeScreen extends StatelessWidget {
 
                 //weight
                 healthCard(
+                  healthType: HealthDataType.WEIGHT,
                   context: context,
                   title: 'Weight',
                     lottieString: 'assets/lottieanimations/weightscale.json',
@@ -367,8 +374,7 @@ class HomeScreen extends StatelessWidget {
                           //     waterInLiter+=water.value!.numericValue??0;
                           //   }
                           // }
-                          log(state.weightModel[0].value!.numericValue
-                              .toString());
+                          log(state.weightModel[0].value!.numericValue.toString());
                           if (state.weightModel.isNotEmpty) {
                             return Text(
                               state.weightModel[0].value != null
@@ -387,6 +393,7 @@ class HomeScreen extends StatelessWidget {
 
                 // height
                 healthCard(
+                  healthType: HealthDataType.HEIGHT,
                   context: context,
                   title: 'Height',
                   lottieString: 'assets/lottieanimations/pullup.json',
@@ -413,6 +420,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 //sleep
                 healthCard(
+                  healthType: HealthDataType.SLEEP_SESSION,
                   context: context,
                   title: "Sleep Session",
                   lottieString: 'assets/lottieanimations/sleep.json',
@@ -423,14 +431,14 @@ class HomeScreen extends StatelessWidget {
                       } else if (state is SleepFailedState) {
                         return const Text('failed to load steps');
                       } else if (state is SleepSuccessState) {
-                        num sleepTimeInMinutes = 0;
-                        for (final step in state.sleepModel) {
-                          if (step.value != null) {
-                            sleepTimeInMinutes += step.value!.numericValue ?? 0;
-                          }
-                        }
-                        return Text(
-                            "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
+                        num sleepTimeInMinutes = state.sleepModel[0].value?.numericValue??0;
+                        // for (final step in state.sleepModel) {
+                        //   log(step.value!.numericValue.toString());
+                        //   if (step.value != null) {
+                        //     sleepTimeInMinutes += step.value!.numericValue ?? 0;
+                        //   }
+                        // }
+                        return Text("${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
                       } else {
                         return Text("unknown state ${state.toString()}");
                       }
@@ -442,7 +450,9 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 //WORKOUT
-                healthCard(title: 'Workout', lottieString: 'assets/lottieanimations/workout.json', cubit: const Text("Comming Soon"), context: context)
+                healthCard(
+                  healthType: HealthDataType.WORKOUT,
+                    title: 'Workout', lottieString: 'assets/lottieanimations/workout.json', cubit: const Text("Comming Soon"), context: context)
 
               ],
             ),
@@ -490,46 +500,50 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Stack healthCard({
+  Widget healthCard({
     required String title,
     required String lottieString,
     required Widget cubit,
     required BuildContext context,
+    required HealthDataType healthType,
     VoidCallback?  onAdd,
   }) {
-    return Stack(
-      children: [
-        Container(
-          constraints: const BoxConstraints(minHeight: 200,minWidth: 400),
-          padding: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 255, 242, 204),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Transform.scale(
-                scale:0.8,
-                child: Lottie.asset(
-                  lottieString,
+    return GestureDetector(
+      onTap: () => Navigator.push(context,MaterialPageRoute(builder: (_)=> ChartScreen(healthType: healthType,))),
+      child: Stack(
+        children: [
+          Container(
+            constraints: const BoxConstraints(minHeight: 200,minWidth: 400),
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 255, 242, 204),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Transform.scale(
+                  scale:0.8,
+                  child: Lottie.asset(
+                    lottieString,
+                  ),
                 ),
-              ),
-              Text(title),
-              cubit,
-            ],
+                Text(title),
+                cubit,
+              ],
+            ),
           ),
-        ),
-        onAdd != null
-            ? Positioned(
-            bottom: 10,
-            right: 0,
-            child:IconButton(onPressed:() {
-              log("onADD");
-              onAdd();
-            }, icon: const Icon(Icons.add)))
-            : const SizedBox(),
-      ],
+          onAdd != null
+              ? Positioned(
+              bottom: 10,
+              right: 0,
+              child:IconButton(onPressed:() {
+                log("onADD");
+                onAdd();
+              }, icon: const Icon(Icons.add)))
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 

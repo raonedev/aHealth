@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import '../../models/NutritionModel.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -47,12 +49,16 @@ class NutritionCubit extends Cubit<NutritionState> {
   // Helper function to determine meal type based on the hour of the day
   MealType _getMealType(int hour) {
     if (hour >= 5 && hour < 11) {
+      log('breakfast');
       return MealType.BREAKFAST;
     } else if (hour >= 11 && hour < 16) {
+      log('lunch');
       return MealType.LUNCH;
-    } else if (hour >= 16 && hour < 21) {
+    } else if (hour >= 19 && hour < 23) {
+      log('dinner');
       return MealType.DINNER;
     } else {
+      log('snack');
       return MealType.SNACK; // Default to 'snack' for late-night or early hours
     }
   }

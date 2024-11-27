@@ -48,13 +48,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         child: ListView.builder(
                           itemCount: state.foodWithServingsModel.food!.servings!.serving!.length,
                           itemBuilder: (context, index) {
-                            final serving = state.foodWithServingsModel.food!
-                                .servings!.serving![index];
+                            final serving = state.foodWithServingsModel.food!.servings!.serving![index];
                             return Container(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 8),
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: (selectIndex == null)
                                     ? const Color(0xffe1d4c1)
@@ -75,10 +72,8 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                     });
                                   }
                                 },
-                                title:
-                                    Text(serving.servingDescription ?? 'decs'),
-                                subtitle: Text(
-                                    "${serving.metricServingAmount} ${serving.metricServingUnit}\ncalories : ${serving.calories} | carbohydrate : ${serving.carbohydrate} | protein : 0.${serving.protein} | \nfat : ${serving.fat} | saturated_fat : ${serving.saturatedFat} | polyunsaturated_fat : ${serving.polyunsaturatedFat} | \ncholesterol : ${serving.cholesterol} | sodium : ${serving.sodium} | potassium : ${serving.potassium} | fiber : ${serving.fiber}"),
+                                title:Text(serving.servingDescription ?? 'decs'),
+                                subtitle: Text("${serving.metricServingAmount} ${serving.metricServingUnit}\ncalories : ${serving.calories} | carbohydrate : ${serving.carbohydrate} | protein : ${serving.protein} | \nfat : ${serving.fat} | saturated_fat : ${serving.saturatedFat} | polyunsaturated_fat : ${serving.polyunsaturatedFat} | \ncholesterol : ${serving.cholesterol} | sodium : ${serving.sodium} | potassium : ${serving.potassium} | fiber : ${serving.fiber}\n Calcium : ${serving.calcium}"),
                               ),
                             );
                           },
@@ -99,32 +94,32 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
-                          final serving = state.foodWithServingsModel.food!.servings!.serving![selectIndex!];
+                          final serving = state.foodWithServingsModel.food?.servings?.serving?[selectIndex!];
                           valueFood = ValueFood(
                             name: state.foodWithServingsModel.food!.foodName ??"NULL Name",
-                            unit: serving.metricServingUnit,
-                            quantity: double.parse(serving.metricServingAmount ?? '0'),
-                            calcium: double.parse(serving.calcium ?? '0')/1000,
-                            calories: double.parse(serving.calories ?? '0'),
-                            carbs: double.parse(serving.carbohydrate ?? '0'),
-                            cholesterol:double.parse(serving.cholesterol ?? '0'),
-                            fat: double.parse(serving.fat ?? '0'),
-                            fiber: double.parse(serving.fiber ?? '0'),
-                            iron: double.parse(serving.iron ?? '0')/1000,
-                            measurementDescription:serving.measurementDescription,
-                            metricServingAmount: serving.metricServingAmount,
-                            metricServingUnit: serving.metricServingUnit,
-                            monounsaturatedFat:double.parse(serving.monounsaturatedFat ?? '0'),
-                            numberOfUnits: serving.numberOfUnits,
-                            polyunsaturatedFat:double.parse(serving.polyunsaturatedFat ?? '0'),
-                            potassium: double.parse(serving.potassium ?? '0')/1000,
-                            protein: double.parse(serving.protein ?? '0'),
-                            saturatedFat:double.parse(serving.saturatedFat ?? '0'),
-                            servingDescription: serving.servingDescription,
-                            sodium: double.parse(serving.sodium ?? '0')/1000,
-                            sugar: double.parse(serving.sugar ?? '0'),
-                            vitaminA: double.parse(serving.vitaminA ?? '0')/1000,
-                            vitaminC: double.parse(serving.vitaminC ?? '0')/1000,
+                            unit: serving?.metricServingUnit,
+                            quantity: double.parse(serving?.metricServingAmount ?? '0'),
+                            calcium: double.parse(serving?.calcium ?? '0')/1000,//convert milligram to gram
+                            calories: double.parse(serving?.calories ?? '0'),
+                            carbs: double.parse(serving?.carbohydrate ?? '0'),
+                            cholesterol:double.parse(serving?.cholesterol ?? '0')/1000,//convert milligram to gram
+                            fat: double.parse(serving?.fat ?? '0'),
+                            fiber: double.parse(serving?.fiber ?? '0'),
+                            iron: double.parse(serving?.iron ?? '0')/1000,//convert milligram to gram
+                            measurementDescription:serving?.measurementDescription,
+                            metricServingAmount: serving?.metricServingAmount,
+                            metricServingUnit: serving?.metricServingUnit,
+                            monounsaturatedFat:double.parse(serving?.monounsaturatedFat ?? '0'),
+                            numberOfUnits: serving?.numberOfUnits,
+                            polyunsaturatedFat:double.parse(serving?.polyunsaturatedFat ?? '0'),
+                            potassium: double.parse(serving?.potassium ?? '0')/1000,//convert milligram to gram
+                            protein: double.parse(serving?.protein ?? '0'),
+                            saturatedFat:double.parse(serving?.saturatedFat ?? '0'),
+                            servingDescription: serving?.servingDescription,
+                            sodium: double.parse(serving?.sodium ?? '0')/1000,//convert milligram to gram
+                            sugar: double.parse(serving?.sugar ?? '0'),
+                            vitaminA: double.parse(serving?.vitaminA ?? '0'),
+                            vitaminC: double.parse(serving?.vitaminC ?? '0')/1000,//convert milligram to gram
                           );
                           if(valueFood!=null){
                             context.read<NutritionCubit>().addNutritionData( valueFood: valueFood!);
