@@ -1,4 +1,9 @@
+import 'package:ahealth/blocs/charts/sleep_chart/sleep_chart_cubit.dart';
+import 'package:ahealth/blocs/charts/step_chart/step_chart_cubit.dart';
+import 'package:ahealth/blocs/charts/water_chart/water_chart_cubit.dart';
+import 'package:ahealth/blocs/charts/weight_chart/weight_chart_cubit.dart';
 import 'package:ahealth/blocs/food_search/food_search_cubit.dart';
+import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
 import 'models/FoodSearchModel.dart';
@@ -61,6 +66,21 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => FoodDetailCubit(),
+        ),
+        BlocProvider(
+          create: (context) => StepChartCubit(),
+        ),
+        BlocProvider(
+          create: (context) => HeightChartCubit(),
+        ),
+        BlocProvider(
+          create: (context) => SleepChartCubit(),
+        ),
+        BlocProvider(
+          create: (context) => WaterChartCubit(),
+        ),
+        BlocProvider(
+          create: (context) => WeightChartCubit(),
         ),
       ],
       child: MaterialApp(
