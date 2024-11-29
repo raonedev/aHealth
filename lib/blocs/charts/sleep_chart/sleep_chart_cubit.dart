@@ -11,39 +11,31 @@ part 'sleep_chart_state.dart';
 class SleepChartCubit extends Cubit<SleepChartState> {
   SleepChartCubit() : super(SleepChartsLoading());
 
-  Future<void> getWeekDataFromNow()async{
-    if (state is SleepChartsWeekSuccess) {
+  Future<void> getDataFromNow()async{
+    if (state is SleepChartsSuccess) {
       log('Week data is already loaded. Skipping execution.');
       return;
     }
 
     emit(SleepChartsLoading());
-    List<double> data = [];
+    List<double> dataWeek = [];
     for (var i = 0; i < 7; i++) {
       double total = await getDataForDay(
         date: DateTime.now().subtract(const Duration(days: 7)).add(Duration(days: i)),
         healthType: HealthDataType.SLEEP_SESSION,
       );
-      data.add(total);
+      dataWeek.add(total);
     }
-    emit(SleepChartsWeekSuccess(data: data));
-  }
+    emit(SleepChartsSuccess(dataWeek: dataWeek,dataMonth: const []));
 
-  Future<void> getMonthDataFromNow()async{
-    if (state is SleepChartsMonthSuccess) {
-      log('Month data is already loaded. Skipping execution.');
-      return;
-    }
-
-    emit(SleepChartsLoading());
-    List<double> data = [];
+    List<double> dataMonth = [];
     for (var i = 0; i < 30; i++) {
       double total = await getDataForDay(
         date: DateTime.now().subtract(const Duration(days: 30)).add(Duration(days: i)),
         healthType: HealthDataType.SLEEP_SESSION,
       );
-      data.add(total);
+      dataMonth.add(total);
     }
-    emit(SleepChartsMonthSuccess(data: data));
+    emit(SleepChartsSuccess(dataWeek: dataWeek,dataMonth: dataMonth));
   }
 }

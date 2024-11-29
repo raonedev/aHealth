@@ -18,19 +18,11 @@ final class HeightChartsFailed extends HeightChartState{
   List<Object?> get props => [errorMessage];
 }
 
-final class HeightChartsWeekSuccess extends HeightChartState{
-  final List<double> data;
+final class HeightChartsSuccess extends HeightChartState{
+  final List<double> dataWeek;
+  final List<double> dataMonth;
 
-  const HeightChartsWeekSuccess({required this.data});
+  const HeightChartsSuccess({required this.dataWeek,required this.dataMonth});
   @override
-  List<Object?> get props => [data];
-}
-
-///month data
-final class HeightChartsMonthSuccess extends HeightChartState{
-  final List<double> data;
-
-  const HeightChartsMonthSuccess({required this.data});
-  @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [dataWeek,dataMonth];
 }

@@ -17,19 +17,11 @@ final class WeightChartsFailed extends WeightChartState{
   List<Object?> get props => [errorMessage];
 }
 
-final class WeightChartsWeekSuccess extends WeightChartState{
-  final List<double> data;
+final class WeightChartsSuccess extends WeightChartState{
+  final List<double> dataWeek;
+  final List<double> dataMonth;
 
-  const WeightChartsWeekSuccess({required this.data});
+  const WeightChartsSuccess({required this.dataWeek,required this.dataMonth});
   @override
-  List<Object?> get props => [data];
-}
-
-///month data
-final class WeightChartsMonthSuccess extends WeightChartState{
-  final List<double> data;
-
-  const WeightChartsMonthSuccess({required this.data});
-  @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [dataWeek,dataMonth];
 }

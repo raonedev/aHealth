@@ -118,7 +118,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             servingDescription: serving?.servingDescription,
                             sodium: double.parse(serving?.sodium ?? '0')/1000,//convert milligram to gram
                             sugar: double.parse(serving?.sugar ?? '0'),
-                            vitaminA: double.parse(serving?.vitaminA ?? '0'),
+                            vitaminA: double.parse(serving?.vitaminA ?? '0')/1000,//convert milligram to gram
                             vitaminC: double.parse(serving?.vitaminC ?? '0')/1000,//convert milligram to gram
                           );
                           if(valueFood!=null){

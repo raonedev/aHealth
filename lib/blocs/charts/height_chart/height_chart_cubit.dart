@@ -11,39 +11,32 @@ part 'height_chart_state.dart';
 class HeightChartCubit extends Cubit<HeightChartState> {
   HeightChartCubit() : super(HeightChartsLoading());
 
-  Future<void> getWeekDataFromNow()async{
-    if (state is HeightChartsWeekSuccess) {
+  Future<void> getDataFromNow()async{
+    if (state is HeightChartsSuccess) {
       log('Week data is already loaded. Skipping execution.');
       return;
     }
 
     emit(HeightChartsLoading());
-    List<double> data = [];
+    List<double> dataWeek = [];
     for (var i = 0; i < 7; i++) {
       double total = await getDataForDay(
         date: DateTime.now().subtract(const Duration(days: 7)).add(Duration(days: i)),
         healthType: HealthDataType.HEIGHT,
       );
-      data.add(total);
+      dataWeek.add(total);
     }
-    emit(HeightChartsWeekSuccess(data: data));
-  }
+    emit(HeightChartsSuccess(dataWeek: dataWeek,dataMonth: const []));
 
-  Future<void> getMonthDataFromNow()async{
-    if (state is HeightChartsMonthSuccess) {
-      log('Month data is already loaded. Skipping execution.');
-      return;
-    }
 
-    emit(HeightChartsLoading());
-    List<double> data = [];
+    List<double> dataMonth = [];
     for (var i = 0; i < 30; i++) {
       double total = await getDataForDay(
         date: DateTime.now().subtract(const Duration(days: 30)).add(Duration(days: i)),
         healthType: HealthDataType.HEIGHT,
       );
-      data.add(total);
+      dataMonth.add(total);
     }
-    emit(HeightChartsMonthSuccess(data: data));
+    emit(HeightChartsSuccess(dataWeek: dataWeek,dataMonth: dataMonth));
   }
 }

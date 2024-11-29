@@ -16,19 +16,13 @@ final class WaterChartFailed extends WaterChartState{
   List<Object?> get props => [errorMessage];
 }
 
-final class WaterChartWeekSuccess extends WaterChartState{
-  final List<double> data;
+final class WaterChartSuccess extends WaterChartState{
+  final List<double> dataWeek;
+  final List<double> dataMonth;
 
-  const WaterChartWeekSuccess({required this.data});
+  const WaterChartSuccess({required this.dataWeek,required this.dataMonth});
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [dataWeek,dataMonth];
 }
 
-///month data
-final class WaterChartMonthSuccess extends WaterChartState{
-  final List<double> data;
 
-  const WaterChartMonthSuccess({required this.data});
-  @override
-  List<Object?> get props => [data];
-}

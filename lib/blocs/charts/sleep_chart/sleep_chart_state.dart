@@ -3,9 +3,6 @@ part of 'sleep_chart_cubit.dart';
 sealed class SleepChartState extends Equatable {
   const SleepChartState();
 }
-
-
-
 final class SleepChartsLoading extends SleepChartState{
   @override
   List<Object?> get props => [];
@@ -18,19 +15,12 @@ final class SleepChartsFailed extends SleepChartState{
   List<Object?> get props => [errorMessage];
 }
 
-final class SleepChartsWeekSuccess extends SleepChartState{
-  final List<double> data;
+final class SleepChartsSuccess extends SleepChartState{
+  final List<double> dataWeek;
+  final List<double> dataMonth;
 
-  const SleepChartsWeekSuccess({required this.data});
+  const SleepChartsSuccess({required this.dataWeek,required this.dataMonth});
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [dataWeek,dataMonth];
 }
 
-///month data
-final class SleepChartsMonthSuccess extends SleepChartState{
-  final List<double> data;
-
-  const SleepChartsMonthSuccess({required this.data});
-  @override
-  List<Object?> get props => [data];
-}
