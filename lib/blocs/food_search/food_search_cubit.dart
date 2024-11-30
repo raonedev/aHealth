@@ -26,7 +26,7 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     final String nonce = Random().nextInt(1 << 32).toString();
 
     final Map<String, String> oauthParams = {
-      'oauth_consumer_key': fatSecretConsumerKey,
+      'oauth_consumer_key': FAT_SECRET_CONSUMER_KEY,
       'oauth_signature_method': 'HMAC-SHA1',
       'oauth_timestamp': timestamp,
       'oauth_nonce': nonce,
@@ -43,7 +43,7 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     final signatureBaseString = '$method&${Uri.encodeComponent(url)}&${Uri.encodeComponent(paramString)}';
 
     // Sign the Base String
-    final signingKey = '${Uri.encodeComponent(fatSecretConsumerSecret)}&';
+    final signingKey = '${Uri.encodeComponent(FAT_SECRET_CONSUMER_SECRET)}&';
     final hmac = Hmac(sha1, utf8.encode(signingKey));
     final digest = hmac.convert(utf8.encode(signatureBaseString));
     final signature = base64Encode(digest.bytes);

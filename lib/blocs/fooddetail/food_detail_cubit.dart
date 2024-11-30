@@ -36,7 +36,7 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
 
     // Step 1: OAuth Parameters
     final oauthParams = {
-      'oauth_consumer_key': fatSecretConsumerKey,
+      'oauth_consumer_key': FAT_SECRET_CONSUMER_KEY,
       'oauth_nonce': DateTime.now().millisecondsSinceEpoch.toString(),
       'oauth_signature_method': 'HMAC-SHA1',
       'oauth_timestamp': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
@@ -52,7 +52,7 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
     final signatureBaseString = 'GET&${Uri.encodeComponent(url)}&${Uri.encodeComponent(baseString)}';
 
     // Step 3: Generate the HMAC-SHA1 signature
-    final signingKey = '${Uri.encodeComponent(fatSecretConsumerSecret)}&'; // No token secret for 2-legged OAuth
+    final signingKey = '${Uri.encodeComponent(FAT_SECRET_CONSUMER_SECRET)}&'; // No token secret for 2-legged OAuth
     final hmacSha1 = Hmac(sha1, utf8.encode(signingKey));
     final digest = hmacSha1.convert(utf8.encode(signatureBaseString));
     final oauthSignature = base64Encode(digest.bytes);

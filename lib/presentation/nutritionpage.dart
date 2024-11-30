@@ -83,7 +83,7 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
   void initState() {
     _model = GenerativeModel(
       model: 'gemini-1.5-flash', // Specify the AI model
-      apiKey: geminiAPIKeys, // API Key for authentication
+      apiKey: GEMINI_API_KEY, // API Key for authentication
     );
     super.initState();
   }

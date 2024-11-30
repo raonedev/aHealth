@@ -1,0 +1,60 @@
+name: "Build & Release"
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: macos-latest
+    steps:
+      # Step 1: Checkout the code
+      - uses: actions/checkout@v3
+
+      # Step 2: Create secrets.dart dynamically
+      - name: Create secrets.dart
+        run: |
+          mkdir -p lib/secrets
+          echo "const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > lib/secrets/secrets.dart
+          echo "const String FAT_SECRET_CONSUMER_KEY = '${{ secrets.FAT_SECRET_CONSUMER_KEY }}';" >> lib/secrets/secrets.dart
+          echo "const String FAT_SECRET_CONSUMER_SECRET = '${{ secrets.FAT_SECRET_CONSUMER_SECRET }}';" >> lib/secrets/secrets.dart
+
+      # Step 3: Set up Flutter environment
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+
+      # Step 4: Set up Java environment
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '12'
+
+      # Step 5: Build the release APK
+      - name: Build Android APK
+        run: flutter build apk --release --split-per-abi
+
+      # Step 6: Build the release IPA
+      - name: Build iOS IPA
+        run: |
+          flutter build ios --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r app.ipa Payload
+
+      # Step 7: Upload artifacts to GitHub Releases
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
+          tag: v1.0.${{ github.run_number }}
+            token: ${{ secrets.TOKEN }}
