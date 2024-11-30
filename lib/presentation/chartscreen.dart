@@ -13,9 +13,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:health/health.dart';
-// import 'dart:developer' as dev;
-
-///TODO:week and month chart
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key, required this.healthType});
