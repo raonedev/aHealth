@@ -23,6 +23,7 @@ jobs:
           echo "const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > lib/secrets/secrets.dart
           echo "const String FAT_SECRET_CONSUMER_KEY = '${{ secrets.FAT_SECRET_CONSUMER_KEY }}';" >> lib/secrets/secrets.dart
           echo "const String FAT_SECRET_CONSUMER_SECRET = '${{ secrets.FAT_SECRET_CONSUMER_SECRET }}';" >> lib/secrets/secrets.dart
+          cat lib/secrets/secrets.dart 
 
       # Step 3: Set up Flutter environment
       - uses: subosito/flutter-action@v2
