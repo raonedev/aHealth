@@ -41,15 +41,15 @@ jobs:
         run: flutter build apk --release --split-per-abi
 
       # Step 6: Build the release IPA
-      - name: Build iOS IPA
-        run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+#      - name: Build iOS IPA
+#        run: |
+#          flutter build ios --no-codesign
+#          cd build/ios/iphoneos
+#          mkdir Payload
+#          cd Payload
+#          ln -s ../Runner.app
+#          cd ..
+#          zip -r app.ipa Payload
 
       # Step 7: Upload artifacts to GitHub Releases
       - name: Push to Releases
