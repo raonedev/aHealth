@@ -29,21 +29,18 @@ class _ChartScreenState extends State<ChartScreen> {
 
   DateTime today = DateTime.now();
 
-
- 
-
   Future<void> getChartData() async {
     (widget.healthType == HealthDataType.STEPS)
         ? context.read<StepChartCubit>().getDataFromNow()
         : (widget.healthType == HealthDataType.WATER)
-        ? context.read<WaterChartCubit>().getDataFromNow()
-        : (widget.healthType == HealthDataType.SLEEP_SESSION)
-        ? context.read<SleepChartCubit>().getDataFromNow()
-        : (widget.healthType == HealthDataType.WEIGHT)
-        ? context.read<WeightChartCubit>().getDataFromNow()
-        : (widget.healthType == HealthDataType.HEIGHT)
-        ? context.read<HeightChartCubit>().getDataFromNow()
-        : emptyFun();
+            ? context.read<WaterChartCubit>().getDataFromNow()
+            : (widget.healthType == HealthDataType.SLEEP_SESSION)
+                ? context.read<SleepChartCubit>().getDataFromNow()
+                : (widget.healthType == HealthDataType.WEIGHT)
+                    ? context.read<WeightChartCubit>().getDataFromNow()
+                    : (widget.healthType == HealthDataType.HEIGHT)
+                        ? context.read<HeightChartCubit>().getDataFromNow()
+                        : emptyFun();
   }
 
   @override
@@ -65,10 +62,7 @@ class _ChartScreenState extends State<ChartScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             child: SizedBox(
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width,
+              width: MediaQuery.of(context).size.width,
               child: CupertinoSlidingSegmentedControl<int>(
                 groupValue: selectedValue,
                 onValueChanged: (value) {
@@ -76,11 +70,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     selectedValue = value;
                   });
                 },
-                children: const {
-                  0: Text("WEEK"),
-                  1: Text("MONTH")
-                },
-
+                children: const {0: Text("WEEK"), 1: Text("MONTH")},
               ),
             ),
           ),
@@ -88,14 +78,14 @@ class _ChartScreenState extends State<ChartScreen> {
           (widget.healthType == HealthDataType.STEPS)
               ? _step()
               : (widget.healthType == HealthDataType.WATER)
-              ? _water()
-              : (widget.healthType == HealthDataType.SLEEP_SESSION)
-              ? _sleep()
-              : (widget.healthType == HealthDataType.WEIGHT)
-              ? _weight()
-              : (widget.healthType == HealthDataType.HEIGHT)
-              ? _height()
-              : const Text('Something went wrong'),
+                  ? _water()
+                  : (widget.healthType == HealthDataType.SLEEP_SESSION)
+                      ? _sleep()
+                      : (widget.healthType == HealthDataType.WEIGHT)
+                          ? _weight()
+                          : (widget.healthType == HealthDataType.HEIGHT)
+                              ? _height()
+                              : const Text('Something went wrong'),
         ],
       ),
     );
@@ -108,20 +98,17 @@ class _ChartScreenState extends State<ChartScreen> {
           return const Center(
             child: CupertinoActivityIndicator(),
           );
-        }
-        else if (state is StepChartsFailed) {
+        } else if (state is StepChartsFailed) {
           return Center(
             child: Text(state.errorMessage),
           );
-        }
-        else if (state is StepChartsSuccess) {
-          if(selectedValue==0){
+        } else if (state is StepChartsSuccess) {
+          if (selectedValue == 0) {
             return chartWeekWidget(data: state.weekData);
-          }else{
+          } else {
             return chartMonthWidget(data: state.monthData);
           }
-        }
-        else {
+        } else {
           return Text("UNKNOWN STATE $state");
         }
       },
@@ -135,20 +122,17 @@ class _ChartScreenState extends State<ChartScreen> {
           return const Center(
             child: CupertinoActivityIndicator(),
           );
-        }
-        else if (state is WaterChartFailed) {
+        } else if (state is WaterChartFailed) {
           return Center(
             child: Text(state.errorMessage),
           );
-        }
-        else if (state is WaterChartSuccess) {
-          if(selectedValue==0){
+        } else if (state is WaterChartSuccess) {
+          if (selectedValue == 0) {
             return chartWeekWidget(data: state.dataWeek);
-          }else{
+          } else {
             return chartMonthWidget(data: state.dataMonth);
           }
-        }
-        else {
+        } else {
           return Text("UNKNOWN STATE $state");
         }
       },
@@ -162,20 +146,17 @@ class _ChartScreenState extends State<ChartScreen> {
           return const Center(
             child: CupertinoActivityIndicator(),
           );
-        }
-        else if (state is SleepChartsFailed) {
+        } else if (state is SleepChartsFailed) {
           return Center(
             child: Text(state.errorMessage),
           );
-        }
-        else if (state is SleepChartsSuccess) {
-           if(selectedValue==0){
+        } else if (state is SleepChartsSuccess) {
+          if (selectedValue == 0) {
             return chartWeekWidget(data: state.dataWeek);
-          }else{
+          } else {
             return chartMonthWidget(data: state.dataMonth);
           }
-        }
-        else {
+        } else {
           return Text("UNKNOWN STATE $state");
         }
       },
@@ -189,20 +170,17 @@ class _ChartScreenState extends State<ChartScreen> {
           return const Center(
             child: CupertinoActivityIndicator(),
           );
-        }
-        else if (state is WeightChartsFailed) {
+        } else if (state is WeightChartsFailed) {
           return Center(
             child: Text(state.errorMessage),
           );
-        }
-        else if (state is WeightChartsSuccess) {
-           if(selectedValue==0){
+        } else if (state is WeightChartsSuccess) {
+          if (selectedValue == 0) {
             return chartWeekWidget(data: state.dataWeek);
-          }else{
+          } else {
             return chartMonthWidget(data: state.dataMonth);
           }
-        }
-        else {
+        } else {
           return Text("UNKNOWN STATE $state");
         }
       },
@@ -216,20 +194,17 @@ class _ChartScreenState extends State<ChartScreen> {
           return const Center(
             child: CupertinoActivityIndicator(),
           );
-        }
-        else if (state is HeightChartsFailed) {
+        } else if (state is HeightChartsFailed) {
           return Center(
             child: Text(state.errorMessage),
           );
-        }
-        else if (state is HeightChartsSuccess) {
-           if(selectedValue==0){
+        } else if (state is HeightChartsSuccess) {
+          if (selectedValue == 0) {
             return chartWeekWidget(data: state.dataWeek);
-          }else{
+          } else {
             return chartMonthWidget(data: state.dataMonth);
           }
-        }
-        else {
+        } else {
           return Text("UNKNOWN STATE $state");
         }
       },
@@ -237,6 +212,9 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget chartWeekWidget({required List<double> data}) {
+
+    final today = DateTime.now();
+    final startDate = today.subtract(const Duration(days: 7));
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -260,14 +238,25 @@ class _ChartScreenState extends State<ChartScreen> {
                 );
               },
             ),
-            titlesData:  FlTitlesData(
+            titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
+                  interval: 1, // Show titles every 5 days
                   getTitlesWidget: (value, meta) {
-                    DateTime date = DateTime(today.year, today.month, value.toInt());
-                    String dayAbbreviation = DateFormat('EEE').format(date);
-                    return Text(dayAbbreviation);
+                    int dayIndex = value.toInt();
+                    if (dayIndex < 0 || dayIndex >= data.length) {
+                      return const SizedBox.shrink();
+                    }
+                    DateTime date = startDate.add(Duration(days: dayIndex));
+                    String formattedDate = DateFormat('EEE').format(date);
+                    return SideTitleWidget(
+                      axisSide: meta.axisSide,
+                      child: Text(
+                        formattedDate,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -275,20 +264,25 @@ class _ChartScreenState extends State<ChartScreen> {
                 axisNameWidget: (widget.healthType == HealthDataType.STEPS)
                     ? const Text("Steps")
                     : (widget.healthType == HealthDataType.WATER)
-                    ? const Text("LITER")
-                    : (widget.healthType == HealthDataType.SLEEP_SESSION)
-                    ? const Text("MINUTES")
-                    : (widget.healthType == HealthDataType.WEIGHT)
-                    ? const Text("KG")
-                    : (widget.healthType == HealthDataType.HEIGHT)
-                    ? const Text("METER")
-                    : const Text("UNKNOWN"),
-                sideTitles:  SideTitles(
+                        ? const Text("LITER")
+                        : (widget.healthType == HealthDataType.SLEEP_SESSION)
+                            ? const Text("HOURS")
+                            : (widget.healthType == HealthDataType.WEIGHT)
+                                ? const Text("KG")
+                                : (widget.healthType == HealthDataType.HEIGHT)
+                                    ? const Text("METER")
+                                    : const Text("UNKNOWN"),
+                sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize:(widget.healthType == HealthDataType.STEPS || widget.healthType == HealthDataType.SLEEP_SESSION)?50: 30,
-                  // getTitlesWidget: (value, meta) {
-                  //   return Text(value.toString(),style: const TextStyle(fontSize: 10),);
-                  // },
+                  reservedSize: (widget.healthType == HealthDataType.STEPS )
+                      ? 50
+                      : 30,
+                  getTitlesWidget: (value, meta) {
+                    return Text(
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(value/60).toStringAsFixed(1):value.toStringAsFixed(1),
+                      style: const TextStyle(fontSize: 10),
+                    );
+                  },
                 ),
               ),
               topTitles: const AxisTitles(
@@ -312,7 +306,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   // spots: List.generate(thirtyDays.length, (index) => FlSpot(index.toDouble(), thirtyDays[index]),),
 
                   spots: List.generate(
-                    data.length, (index) =>FlSpot(today.subtract(const Duration(days: 7)).add(Duration(days: index)).day.toDouble(), data[index]),
+                    data.length, (index) => FlSpot(index.toDouble(), data[index]),
                   ),
                   belowBarData: BarAreaData(
                     show: true,
@@ -333,8 +327,6 @@ class _ChartScreenState extends State<ChartScreen> {
     final today = DateTime.now();
     final startDate = today.subtract(const Duration(days: 30));
 
-
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -342,7 +334,6 @@ class _ChartScreenState extends State<ChartScreen> {
         width: double.infinity,
         child: LineChart(
           LineChartData(
-
             gridData: FlGridData(
               show: true,
               drawVerticalLine: true,
@@ -352,7 +343,6 @@ class _ChartScreenState extends State<ChartScreen> {
                   strokeWidth: 0.1,
                 );
               },
-
               getDrawingVerticalLine: (value) {
                 return const FlLine(
                   color: Colors.grey,
@@ -367,8 +357,9 @@ class _ChartScreenState extends State<ChartScreen> {
                   interval: 5, // Show titles every 5 days
                   getTitlesWidget: (value, meta) {
                     int dayIndex = value.toInt();
-                    if (dayIndex < 0 || dayIndex >= data.length) return const SizedBox.shrink();
-
+                    if (dayIndex < 0 || dayIndex >= data.length) {
+                      return const SizedBox.shrink();
+                    }
                     DateTime date = startDate.add(Duration(days: dayIndex));
                     String formattedDate = "${date.day}/${date.month}";
                     return SideTitleWidget(
@@ -391,19 +382,24 @@ class _ChartScreenState extends State<ChartScreen> {
                 axisNameWidget: (widget.healthType == HealthDataType.STEPS)
                     ? const Text("Steps")
                     : (widget.healthType == HealthDataType.WATER)
-                    ? const Text("LITER")
-                    : (widget.healthType == HealthDataType.SLEEP_SESSION)
-                    ? const Text("MINUTES")
-                    : (widget.healthType == HealthDataType.WEIGHT)
-                    ? const Text("KG")
-                    : (widget.healthType == HealthDataType.HEIGHT)
-                    ? const Text("METER")
-                    : const Text("UNKNOWN"),
-                sideTitles:  SideTitles(
+                        ? const Text("LITER")
+                        : (widget.healthType == HealthDataType.SLEEP_SESSION)
+                            ? const Text("HOURS")
+                            : (widget.healthType == HealthDataType.WEIGHT)
+                                ? const Text("KG")
+                                : (widget.healthType == HealthDataType.HEIGHT)
+                                    ? const Text("METER")
+                                    : const Text("UNKNOWN"),
+                sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize:(widget.healthType == HealthDataType.STEPS || widget.healthType == HealthDataType.SLEEP_SESSION)?50: 30,
+                  reservedSize: (widget.healthType == HealthDataType.STEPS )
+                      ? 50
+                      : 30,
                   getTitlesWidget: (value, meta) {
-                    return Text(value.toString(),style: const TextStyle(fontSize: 10),);
+                    return Text(
+                        (widget.healthType == HealthDataType.SLEEP_SESSION)?(value/60).toStringAsFixed(1):value.toStringAsFixed(1),
+                      style: const TextStyle(fontSize: 10),
+                    );
                   },
                 ),
               ),
@@ -420,7 +416,7 @@ class _ChartScreenState extends State<ChartScreen> {
                 isStrokeCapRound: true,
                 spots: List.generate(
                   data.length,
-                      (index) => FlSpot(index.toDouble(), data[index]),
+                  (index) => FlSpot(index.toDouble(), data[index]),
                 ),
                 belowBarData: BarAreaData(
                   show: true,
@@ -438,64 +434,62 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-
 // Widget chartMonthWidget({required List<double> data}) {
-  //   return Padding(
-  //     padding: const EdgeInsets.all(8.0),
-  //     child: SizedBox(
-  //       height: 300,
-  //       width: double.infinity,
-  //       child: LineChart(
-  //         LineChartData(
-  //           gridData: FlGridData(
-  //             show: true,
-  //             drawVerticalLine: true,
-  //             getDrawingHorizontalLine: (value) {
-  //               return const FlLine(
-  //                 color: Colors.grey,
-  //                 strokeWidth: 0.1,
-  //               );
-  //             },
-  //             getDrawingVerticalLine: (value) {
-  //               return const FlLine(
-  //                 color: Colors.grey,
-  //                 strokeWidth: 0.1,
-  //               );
-  //             },
-  //           ),
-  //           titlesData: const FlTitlesData(
-  //             topTitles: AxisTitles(
-  //               sideTitles: SideTitles(showTitles: false),
-  //             ),
-  //             rightTitles: AxisTitles(
-  //               sideTitles: SideTitles(showTitles: false),
-  //             ),
-  //           ),
-  //           lineBarsData: [
-  //             LineChartBarData(
-  //                 preventCurveOverShooting: true,
-  //                 color: Colors.green,
-  //                 barWidth: 3,
-  //                 isCurved: true,
-  //                 dotData: const FlDotData(
-  //                   show: false,
-  //                 ),
-  //                 isStrokeCapRound: true,
-  //                 // spots: List.generate(data.length, (index) =>FlSpot(today.subtract(Duration(days: data.length)).add(Duration(days: index)).day.toDouble(), data[index]),),
-  //                 spots: List.generate(data.length, (index) =>FlSpot(index.toDouble(), data[index]),),
-  //                 belowBarData: BarAreaData(
-  //                   show: true,
-  //                   color: Colors.green.withOpacity(0.2),
-  //                 ),
-  //                 shadow: const Shadow(
-  //                   color: Colors.grey,
-  //                   offset: Offset(0, 1),
-  //                 )),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
+//   return Padding(
+//     padding: const EdgeInsets.all(8.0),
+//     child: SizedBox(
+//       height: 300,
+//       width: double.infinity,
+//       child: LineChart(
+//         LineChartData(
+//           gridData: FlGridData(
+//             show: true,
+//             drawVerticalLine: true,
+//             getDrawingHorizontalLine: (value) {
+//               return const FlLine(
+//                 color: Colors.grey,
+//                 strokeWidth: 0.1,
+//               );
+//             },
+//             getDrawingVerticalLine: (value) {
+//               return const FlLine(
+//                 color: Colors.grey,
+//                 strokeWidth: 0.1,
+//               );
+//             },
+//           ),
+//           titlesData: const FlTitlesData(
+//             topTitles: AxisTitles(
+//               sideTitles: SideTitles(showTitles: false),
+//             ),
+//             rightTitles: AxisTitles(
+//               sideTitles: SideTitles(showTitles: false),
+//             ),
+//           ),
+//           lineBarsData: [
+//             LineChartBarData(
+//                 preventCurveOverShooting: true,
+//                 color: Colors.green,
+//                 barWidth: 3,
+//                 isCurved: true,
+//                 dotData: const FlDotData(
+//                   show: false,
+//                 ),
+//                 isStrokeCapRound: true,
+//                 // spots: List.generate(data.length, (index) =>FlSpot(today.subtract(Duration(days: data.length)).add(Duration(days: index)).day.toDouble(), data[index]),),
+//                 spots: List.generate(data.length, (index) =>FlSpot(index.toDouble(), data[index]),),
+//                 belowBarData: BarAreaData(
+//                   show: true,
+//                   color: Colors.green.withOpacity(0.2),
+//                 ),
+//                 shadow: const Shadow(
+//                   color: Colors.grey,
+//                   offset: Offset(0, 1),
+//                 )),
+//           ],
+//         ),
+//       ),
+//     ),
+//   );
+// }
 }
