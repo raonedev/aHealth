@@ -212,6 +212,9 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget chartWeekWidget({required List<double> data}) {
+
+    final today = DateTime.now();
+    final startDate = today.subtract(const Duration(days: 7));
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -239,11 +242,21 @@ class _ChartScreenState extends State<ChartScreen> {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
+                  interval: 1, // Show titles every 5 days
                   getTitlesWidget: (value, meta) {
-                    DateTime date =
-                        DateTime(today.year, today.month, value.toInt());
-                    String dayAbbreviation = DateFormat('EEE').format(date);
-                    return Text(dayAbbreviation);
+                    int dayIndex = value.toInt();
+                    if (dayIndex < 0 || dayIndex >= data.length) {
+                      return const SizedBox.shrink();
+                    }
+                    DateTime date = startDate.add(Duration(days: dayIndex));
+                    String formattedDate = DateFormat('EEE').format(date);
+                    return SideTitleWidget(
+                      axisSide: meta.axisSide,
+                      child: Text(
+                        formattedDate,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -293,14 +306,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   // spots: List.generate(thirtyDays.length, (index) => FlSpot(index.toDouble(), thirtyDays[index]),),
 
                   spots: List.generate(
-                    data.length,
-                    (index) => FlSpot(
-                        today
-                            .subtract(const Duration(days: 7))
-                            .add(Duration(days: index))
-                            .day
-                            .toDouble(),
-                        data[index]),
+                    data.length, (index) => FlSpot(index.toDouble(), data[index]),
                   ),
                   belowBarData: BarAreaData(
                     show: true,
