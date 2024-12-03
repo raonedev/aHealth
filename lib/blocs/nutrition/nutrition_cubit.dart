@@ -70,6 +70,7 @@ class NutritionCubit extends Cubit<NutritionState> {
 
     bool success = true;
     success &= await Health().writeMeal(
+
           mealType: _getMealType(now.hour),
           startTime: earlier,
           endTime: now,
@@ -88,7 +89,6 @@ class NutritionCubit extends Cubit<NutritionState> {
           vitaminC: valueFood.vitaminC,
           vitaminA: valueFood.vitaminA,
           fatMonounsaturated: valueFood.monounsaturatedFat,
-
           recordingMethod: RecordingMethod.manual
           // caffeine: 0.002,
           // vitaminA: 0.001,

@@ -1,10 +1,11 @@
 import 'dart:developer';
-import 'package:ahealth/config/appenums.dart';
+// import 'package:ahealth/config/appenums.dart';
 import 'package:ahealth/presentation/chartscreen.dart';
 import 'package:ahealth/presentation/searchscreen.dart';
 import 'package:health/health.dart';
 
 import 'chatscreen.dart';
+import 'nitritiondetailscreen.dart';
 import 'nutritionpage.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lottie/lottie.dart';
@@ -202,7 +203,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(onPressed: ()=>Navigator.push(context,MaterialPageRoute(builder: (_)=>const SearchScreen())), icon: const Icon(CupertinoIcons.search))
+          IconButton(
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SearchScreen())),
+              icon: const Icon(CupertinoIcons.search))
         ],
       ),
       body: BlocListener<InitAppCubit, InitAppState>(
@@ -246,9 +250,10 @@ class HomeScreen extends StatelessWidget {
         },
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: MasonryGridView(
-              gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+              gridDelegate:
+                  const SliverSimpleGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, // Two columns
               ),
               mainAxisSpacing: 16,
@@ -265,7 +270,9 @@ class HomeScreen extends StatelessWidget {
                       if (state is StepLoadingState) {
                         return const CupertinoActivityIndicator(); // Default case
                       } else if (state is StepFailed) {
-                        if (state.errorMessage == "NULL") return const Text('0');
+                        if (state.errorMessage == "NULL") {
+                          return const Text('0');
+                        }
                         return Text(state.errorMessage);
                       } else if (state is StepSuccessState) {
                         num noOfSteps = 0;
@@ -302,19 +309,32 @@ class HomeScreen extends StatelessWidget {
                           return Column(
                             children: List.generate(
                               state.nutritionModel.length,
-                                  (index) {
-                                return Text('${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
+                              (index) {
+                                return ListTile(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => NutritionDetailScreen(nutritionModel: state.nutritionModel[index]),
+                                      ),
+                                    );
+                                  },
+                                  title: Text(state.nutritionModel[index].value?.name ?? ""),
+                                  subtitle: Text("calories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}"),
+                                );
+                                //return Text('${state.nutritionModel[index].value?.name ?? ""}\ncalories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}, protein ${state.nutritionModel[index].value!.protein?.toStringAsFixed(2)}, fat ${state.nutritionModel[index].value!.fat?.toStringAsFixed(2)}, carbs ${state.nutritionModel[index].value!.carbs?.toStringAsFixed(2)},');
                               },
                             ),
                           );
                         }
-                        return const Text("No Weight Data");
+                        return const Text("No Nutrition Data");
                       } else {
                         return Text("unknown state ${state.toString()}");
                       }
                     },
                   ),
-                  onAdd: () =>  Navigator.push(context,MaterialPageRoute(builder: (_) => const NutritionPage())),
+                  onAdd: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const NutritionPage())),
                 ),
 
                 //water
@@ -322,32 +342,33 @@ class HomeScreen extends StatelessWidget {
                   healthType: HealthDataType.WATER,
                   context: context,
                   title: "Water",
-                  lottieString: 'assets/lottieanimations/girl_drinking_water.json',
+                  lottieString:
+                      'assets/lottieanimations/girl_drinking_water.json',
                   cubit: BlocBuilder<WaterCubit, WaterState>(
-                  builder: (context, state) {
-                    if (state is WaterLoadingState) {
-                      return const CupertinoActivityIndicator(); // Default case
-                    } else if (state is WaterFailed) {
-                      // log('error in water load',error: state.errorMessage);
-                      if (state.errorMessage == "NULL") {
-                        return const Text('0 Liter');
-                      } else {
-                        return Text(state.errorMessage);
-                      }
-                    } else if (state is WaterSuccessState) {
-                      num waterInLiter = 0;
-                      for (final water in state.waterModel) {
-                        if (water.value != null) {
-                          waterInLiter += water.value!.numericValue ?? 0;
+                    builder: (context, state) {
+                      if (state is WaterLoadingState) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is WaterFailed) {
+                        // log('error in water load',error: state.errorMessage);
+                        if (state.errorMessage == "NULL") {
+                          return const Text('0 Liter');
+                        } else {
+                          return Text(state.errorMessage);
                         }
+                      } else if (state is WaterSuccessState) {
+                        num waterInLiter = 0;
+                        for (final water in state.waterModel) {
+                          if (water.value != null) {
+                            waterInLiter += water.value!.numericValue ?? 0;
+                          }
+                        }
+                        return Text(
+                            "${(waterInLiter).toStringAsFixed(2)} Liter");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
                       }
-                      return Text(
-                          "${(waterInLiter).toStringAsFixed(2)} Liter");
-                    } else {
-                      return Text("unknown state ${state.toString()}");
-                    }
-                  },
-                ),
+                    },
+                  ),
                   onAdd: () {
                     context.read<WaterCubit>().addWater(waterInLiter: 0.25);
                   },
@@ -358,37 +379,38 @@ class HomeScreen extends StatelessWidget {
                   healthType: HealthDataType.WEIGHT,
                   context: context,
                   title: 'Weight',
-                    lottieString: 'assets/lottieanimations/weightscale.json',
-                    cubit: BlocBuilder<WeightCubit, WeightState>(
-                      builder: (context, state) {
-                        if (state is WeightLoading) {
-                          return const CupertinoActivityIndicator(); // Default case
-                        } else if (state is WeightFailed) {
-                          // log('error in water load',error: state.errorMessage);
+                  lottieString: 'assets/lottieanimations/weightscale.json',
+                  cubit: BlocBuilder<WeightCubit, WeightState>(
+                    builder: (context, state) {
+                      if (state is WeightLoading) {
+                        return const CupertinoActivityIndicator(); // Default case
+                      } else if (state is WeightFailed) {
+                        // log('error in water load',error: state.errorMessage);
 
-                          return Text(state.errorMessage);
-                        } else if (state is WeightSuccess) {
-                          // num weight=0;
-                          // for(final water in state.weightModel){
-                          //   if(water.value!=null){
-                          //     waterInLiter+=water.value!.numericValue??0;
-                          //   }
-                          // }
-                          log(state.weightModel[0].value!.numericValue.toString());
-                          if (state.weightModel.isNotEmpty) {
-                            return Text(
-                              state.weightModel[0].value != null
-                                  ? ("${state.weightModel[0].value!.numericValue} Kg")
-                                  : '0 Kg',
-                            );
-                          }
-                          return const Text("No Weight Data");
-                        } else {
-                          return Text("unknown state ${state.toString()}");
+                        return Text(state.errorMessage);
+                      } else if (state is WeightSuccess) {
+                        // num weight=0;
+                        // for(final water in state.weightModel){
+                        //   if(water.value!=null){
+                        //     waterInLiter+=water.value!.numericValue??0;
+                        //   }
+                        // }
+                        log(state.weightModel[0].value!.numericValue
+                            .toString());
+                        if (state.weightModel.isNotEmpty) {
+                          return Text(
+                            state.weightModel[0].value != null
+                                ? ("${state.weightModel[0].value!.numericValue} Kg")
+                                : '0 Kg',
+                          );
                         }
-                      },
-                    ),
-                    onAdd: () => showWeightDialog(context),
+                        return const Text("No Weight Data");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
+                  ),
+                  onAdd: () => showWeightDialog(context),
                 ),
 
                 // height
@@ -414,9 +436,10 @@ class HomeScreen extends StatelessWidget {
                         return const Text("No Height Data");
                       } else {
                         return Text("unknown state ${state.toString()}");
-                      }},
-                    ),
-                    onAdd: () => showHeightDialog(context),
+                      }
+                    },
+                  ),
+                  onAdd: () => showHeightDialog(context),
                 ),
                 //sleep
                 healthCard(
@@ -431,14 +454,16 @@ class HomeScreen extends StatelessWidget {
                       } else if (state is SleepFailedState) {
                         return const Text('failed to load steps');
                       } else if (state is SleepSuccessState) {
-                        num sleepTimeInMinutes = state.sleepModel[0].value?.numericValue??0;
+                        num sleepTimeInMinutes =
+                            state.sleepModel[0].value?.numericValue ?? 0;
                         // for (final step in state.sleepModel) {
                         //   log(step.value!.numericValue.toString());
                         //   if (step.value != null) {
                         //     sleepTimeInMinutes += step.value!.numericValue ?? 0;
                         //   }
                         // }
-                        return Text("${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
+                        return Text(
+                            "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
                       } else {
                         return Text("unknown state ${state.toString()}");
                       }
@@ -451,22 +476,16 @@ class HomeScreen extends StatelessWidget {
                 ),
                 //WORKOUT
                 healthCard(
-                  healthType: HealthDataType.WORKOUT,
-                    title: 'Workout', lottieString: 'assets/lottieanimations/workout.json', cubit: const Text("Comming Soon"), context: context)
-
+                    healthType: HealthDataType.WORKOUT,
+                    title: 'Workout',
+                    lottieString: 'assets/lottieanimations/workout.json',
+                    cubit: const Text("Comming Soon"),
+                    context: context)
               ],
             ),
           ),
         ),
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: [
-      //     BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){}, icon: const Icon(CupertinoIcons.home)),label: "home"),
-      //     BottomNavigationBarItem(icon: IconButton.filledTonal(onPressed: (){
-      //       Navigator.push(context, MaterialPageRoute(builder: (_)=>const ChatScreen()));
-      //     }, icon: const Icon(CupertinoIcons.chat_bubble_fill)),label: "chat"),
-      //   ],
-      // ),
       floatingActionButton: SizedBox(
         width: 70,
         height: 70,
@@ -475,28 +494,10 @@ class HomeScreen extends StatelessWidget {
               context, MaterialPageRoute(builder: (_) => const ChatScreen())),
           child: CircleAvatar(
             backgroundColor: Colors.white,
-              child: Image.asset('assets/icons/img_1.png',width: 50),
+            child: Image.asset('assets/icons/img_1.png', width: 50),
           ),
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     // final now = DateTime.now();
-      //     // final midnight = DateTime(now.year, now.month, now.day);
-      //     // List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-      //     //   types: [HealthDataType.NUTRITION],
-      //     //   startTime: midnight,
-      //     //   endTime: now,
-      //     // );
-      //     // if(healthData.isNotEmpty){
-      //     //   log(healthData[0].toJson().toString());
-      //     // }else{
-      //     //   log("its empty");
-      //     // }
-      //     loadData(context);
-      //   },
-      //   child: const Icon(Icons.refresh),
-      // ),
     );
   }
 
@@ -506,14 +507,19 @@ class HomeScreen extends StatelessWidget {
     required Widget cubit,
     required BuildContext context,
     required HealthDataType healthType,
-    VoidCallback?  onAdd,
+    VoidCallback? onAdd,
   }) {
     return GestureDetector(
-      onTap: () => Navigator.push(context,MaterialPageRoute(builder: (_)=> ChartScreen(healthType: healthType,))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => ChartScreen(
+                    healthType: healthType,
+                  ))),
       child: Stack(
         children: [
           Container(
-            constraints: const BoxConstraints(minHeight: 200,minWidth: 400),
+            constraints: const BoxConstraints(minHeight: 200, minWidth: 400),
             padding: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: const Color.fromARGB(255, 255, 242, 204),
@@ -523,7 +529,7 @@ class HomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Transform.scale(
-                  scale:0.8,
+                  scale: 0.8,
                   child: Lottie.asset(
                     lottieString,
                   ),
@@ -535,12 +541,14 @@ class HomeScreen extends StatelessWidget {
           ),
           onAdd != null
               ? Positioned(
-              bottom: 10,
-              right: 0,
-              child:IconButton(onPressed:() {
-                log("onADD");
-                onAdd();
-              }, icon: const Icon(Icons.add)))
+                  bottom: 10,
+                  right: 0,
+                  child: IconButton(
+                      onPressed: () {
+                        log("onADD");
+                        onAdd();
+                      },
+                      icon: const Icon(Icons.add)))
               : const SizedBox(),
         ],
       ),
