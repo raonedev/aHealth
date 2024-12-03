@@ -70,7 +70,6 @@ class NutritionCubit extends Cubit<NutritionState> {
 
     bool success = true;
     success &= await Health().writeMeal(
-
           mealType: _getMealType(now.hour),
           startTime: earlier,
           endTime: now,
