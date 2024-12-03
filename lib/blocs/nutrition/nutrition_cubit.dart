@@ -88,7 +88,6 @@ class NutritionCubit extends Cubit<NutritionState> {
           vitaminC: valueFood.vitaminC,
           vitaminA: valueFood.vitaminA,
           fatMonounsaturated: valueFood.monounsaturatedFat,
-
           recordingMethod: RecordingMethod.manual
           // caffeine: 0.002,
           // vitaminA: 0.001,

@@ -4,7 +4,9 @@ import 'dart:io'; // For working with files (image files in this case)
 // import 'dart:typed_data'; // For handling byte data (image in bytes)
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../blocs/nutrition/nutrition_cubit.dart';
 import '../models/NutritionModel.dart';
 import 'package:flutter/material.dart'; // UI components for the app
 import 'package:google_generative_ai/google_generative_ai.dart'; // Google's generative AI package
@@ -96,86 +98,95 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
         children: [
           // Display the picked image, if any
           res != null ? Image.file(File(res!.path)) : const SizedBox(),
-
-          // Show the response text from AI (nutritional info)
-          Text(responseText),
-          
-
-          if(isLoading) const CupertinoActivityIndicator(),
-          if(foodItemList.isNotEmpty) Expanded(child: ListView.builder(
-            itemCount: foodItemList.length,
-            itemBuilder: (context, index) {
-              final foodItem = foodItemList[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Material(
-                  color: Colors.green,
-                  child: ListTile(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    title: Text("name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
-                  ),
-                ),
-              );
-            },
-          )),
-
           // Button to trigger AI response generation
           ElevatedButton(
             onPressed: () async {
               if (res != null) {
                 setState(() {
-                  isLoading= true;
+                  isLoading = true;
                 });
-                await getResponseFromAI(image: res!); // Call AI if image is picked
+                await getResponseFromAI(
+                    image: res!); // Call AI if image is picked
               } else {
                 // Show error message if no image is selected
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Please select an image")));
               }
               setState(() {
-                isLoading =false;
+                isLoading = false;
               });
             },
             child: const Text("Generate"), // Button label
           ),
+          if (isLoading) const CupertinoActivityIndicator(),
+          if (foodItemList.isNotEmpty)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 80),
+                child: ListView.builder(
+                  itemCount: foodItemList.length,
+                  itemBuilder: (context, index) {
+                    final foodItem = foodItemList[index];
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                        color: Colors.green,
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text(
+                              "name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
         ],
       ),
 
       // Floating Action Buttons for picking image from gallery or camera
       floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          Expanded(
+            child: (foodItemList.isNotEmpty)
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                        left: 28, top: 8, bottom: 8, right: 4),
+                    child: CupertinoButton.filled(
+                        onPressed: () {
+                          for(final foodItem in foodItemList){
+                            context.read<NutritionCubit>().addNutritionData(valueFood: foodItem);
+                          }
+                          Navigator.popUntil(context, (route) => route.isFirst);
+                        }, child: const Text("Log Meal")),
+                  )
+                : const SizedBox(),
+          ),
           // Floating action button for selecting image from gallery
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(
-              heroTag: 'gallery',
-              onPressed: () async {
-                final image =
-                await _picker.pickImage(source: ImageSource.gallery);
-                setState(() {
-                  res = image; // Update the image file state
-                });
-              },
-              child: const Icon(Icons.image_outlined), // Icon for gallery
-            ),
+          FloatingActionButton(
+            heroTag: 'gallery',
+            onPressed: () async {
+              final image =
+                  await _picker.pickImage(source: ImageSource.gallery);
+              setState(() {
+                res = image; // Update the image file state
+              });
+            },
+            child: const Icon(Icons.image_outlined), // Icon for gallery
           ),
           // Floating action button for taking picture with camera
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(
-              heroTag: "camera",
-              onPressed: () async {
-                final image =
-                await _picker.pickImage(source: ImageSource.camera);
-                setState(() {
-                  res = image; // Update the image file state
-                });
-              },
-              child: const Icon(Icons.camera), // Icon for camera
-            ),
+          FloatingActionButton(
+            heroTag: "camera",
+            onPressed: () async {
+              final image = await _picker.pickImage(source: ImageSource.camera);
+              setState(() {
+                res = image; // Update the image file state
+              });
+            },
+            child: const Icon(Icons.camera), // Icon for camera
           ),
         ],
       ),
@@ -215,10 +226,10 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
           // Parse the response text as JSON and update the list of food items
           List<dynamic> jsonList = jsonDecode(jsonString);
           setState(() {
-            foodItemList = jsonList.map((json) => ValueFood.fromJson(json)).toList();
+            foodItemList =
+                jsonList.map((json) => ValueFood.fromJson(json)).toList();
           });
         }
-
       }
     } catch (e) {
       // Log any errors encountered
