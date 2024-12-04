@@ -212,7 +212,6 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget chartWeekWidget({required List<double> data}) {
-
     final today = DateTime.now();
     final startDate = today.subtract(const Duration(days: 7));
     return Padding(
@@ -222,13 +221,62 @@ class _ChartScreenState extends State<ChartScreen> {
         width: double.infinity,
         child: LineChart(
           LineChartData(
+            borderData: FlBorderData(
+              border: const Border(
+                top: BorderSide(
+                  color: Colors.transparent,
+                ),
+                right: BorderSide(
+                  color: Colors.transparent,
+                ),
+                bottom: BorderSide(color: Colors.black, width: 0.3),
+                left: BorderSide(color: Colors.black, width: 0.3),
+              ),
+            ),
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                fitInsideHorizontally: false,
+                fitInsideVertically: false,
+                tooltipPadding: const EdgeInsets.all(5),
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                  return touchedSpots.map((touchedSpot) {
+                    return LineTooltipItem(
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(touchedSpot.y/60).toStringAsFixed(1):touchedSpot.y.toStringAsFixed(1),
+                      const TextStyle(color: Colors.white, fontSize: 12),
+                    );
+                  }).toList();
+                },
+              ),
+              getTouchedSpotIndicator:(LineChartBarData barData, List<int> indicators) {
+                return indicators.map((index) {
+                  return TouchedSpotIndicatorData(
+                    FlLine(
+                      color: Colors.grey.withOpacity(0.5), // Line color
+                      strokeWidth: 2, // Line width
+                      dashArray: [5,2]
+                    ),
+                    FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4, // Small dot size
+                          color: Colors.green, // Dot color
+                          strokeWidth: 1,
+                        );
+                      },
+                    ),
+                  );
+                }).toList();
+              },
+            ),
             gridData: FlGridData(
               show: true,
               drawVerticalLine: true,
               getDrawingHorizontalLine: (value) {
                 return const FlLine(
                   color: Colors.grey,
-                  strokeWidth: 0.1,
+                  strokeWidth: 0.2,
                 );
               },
               getDrawingVerticalLine: (value) {
@@ -274,12 +322,13 @@ class _ChartScreenState extends State<ChartScreen> {
                                     : const Text("UNKNOWN"),
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: (widget.healthType == HealthDataType.STEPS )
-                      ? 50
-                      : 30,
+                  reservedSize:
+                      (widget.healthType == HealthDataType.STEPS) ? 50 : 30,
                   getTitlesWidget: (value, meta) {
                     return Text(
-                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(value/60).toStringAsFixed(1):value.toStringAsFixed(1),
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)
+                          ? (value / 60).toStringAsFixed(1)
+                          : value.toStringAsFixed(1),
                       style: const TextStyle(fontSize: 10),
                     );
                   },
@@ -295,27 +344,34 @@ class _ChartScreenState extends State<ChartScreen> {
             minY: 0,
             lineBarsData: [
               LineChartBarData(
-                  preventCurveOverShooting: true,
-                  color: Colors.green,
-                  barWidth: 3,
-                  isCurved: true,
-                  dotData: const FlDotData(
-                    show: false,
+                preventCurveOverShooting: true,
+                color: Colors.green,
+                barWidth: 2,
+                isCurved: true,
+                dotData: const FlDotData(
+                  show: false,
+                ),
+                isStrokeCapRound: true,
+                spots: List.generate(
+                  data.length,
+                  (index) => FlSpot(index.toDouble(), data[index]),
+                ),
+                belowBarData: BarAreaData(
+                  show: true,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.green.withOpacity(0.7),
+                      Colors.white.withOpacity(0.2),
+                    ],
                   ),
-                  isStrokeCapRound: true,
-                  // spots: List.generate(thirtyDays.length, (index) => FlSpot(index.toDouble(), thirtyDays[index]),),
-
-                  spots: List.generate(
-                    data.length, (index) => FlSpot(index.toDouble(), data[index]),
-                  ),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: Colors.green.withOpacity(0.2),
-                  ),
-                  shadow: const Shadow(
-                    color: Colors.grey,
-                    offset: Offset(0, 1),
-                  )),
+                ),
+                shadow: const Shadow(
+                  color: Colors.grey,
+                  offset: Offset(0, 1),
+                ),
+              ),
             ],
           ),
         ),
@@ -334,18 +390,68 @@ class _ChartScreenState extends State<ChartScreen> {
         width: double.infinity,
         child: LineChart(
           LineChartData(
+            borderData: FlBorderData(
+              border: const Border(
+                top: BorderSide(
+                  color: Colors.transparent,
+                ),
+                right: BorderSide(
+                  color: Colors.transparent,
+                ),
+                bottom: BorderSide(color: Colors.black, width: 0.3),
+                left: BorderSide(color: Colors.black, width: 0.3),
+              ),
+            ),
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                fitInsideHorizontally: false,
+                fitInsideVertically: false,
+                tooltipPadding: const EdgeInsets.all(5),
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                  return touchedSpots.map((touchedSpot) {
+                    return LineTooltipItem(
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(touchedSpot.y/60).toStringAsFixed(1):touchedSpot.y.toStringAsFixed(1),
+                      const TextStyle(color: Colors.white, fontSize: 12),
+                    );
+                  }).toList();
+                },
+              ),
+              getTouchedSpotIndicator:
+                  (LineChartBarData barData, List<int> indicators) {
+                return indicators.map((index) {
+                  return TouchedSpotIndicatorData(
+                    FlLine(
+                      color: Colors.grey.withOpacity(0.5), // Line color
+                      strokeWidth: 2, // Line width
+                      dashArray: [5,2]
+                    ),
+                    FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4, // Small dot size
+                          color: Colors.green, // Dot color
+                          strokeWidth: 1,
+                        );
+                      },
+                    ),
+                  );
+                }).toList();
+              },
+            ),
             gridData: FlGridData(
               show: true,
               drawVerticalLine: true,
               getDrawingHorizontalLine: (value) {
                 return const FlLine(
                   color: Colors.grey,
-                  strokeWidth: 0.1,
+                  strokeWidth: 0.2,
                 );
               },
               getDrawingVerticalLine: (value) {
                 return const FlLine(
-                  color: Colors.grey,
+                  color: Colors.transparent,
                   strokeWidth: 0.1,
                 );
               },
@@ -392,12 +498,13 @@ class _ChartScreenState extends State<ChartScreen> {
                                     : const Text("UNKNOWN"),
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: (widget.healthType == HealthDataType.STEPS )
-                      ? 50
-                      : 30,
+                  reservedSize:
+                      (widget.healthType == HealthDataType.STEPS) ? 50 : 30,
                   getTitlesWidget: (value, meta) {
                     return Text(
-                        (widget.healthType == HealthDataType.SLEEP_SESSION)?(value/60).toStringAsFixed(1):value.toStringAsFixed(1),
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)
+                          ? (value / 60).toStringAsFixed(1)
+                          : value.toStringAsFixed(1),
                       style: const TextStyle(fontSize: 10),
                     );
                   },
@@ -408,7 +515,7 @@ class _ChartScreenState extends State<ChartScreen> {
               LineChartBarData(
                 preventCurveOverShooting: true,
                 color: Colors.green,
-                barWidth: 3,
+                barWidth: 2,
                 isCurved: true,
                 dotData: const FlDotData(
                   show: false,
@@ -420,7 +527,14 @@ class _ChartScreenState extends State<ChartScreen> {
                 ),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: Colors.green.withOpacity(0.2),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.green.withOpacity(0.7),
+                      Colors.green.withOpacity(0.0),
+                    ],
+                  ),
                 ),
                 shadow: const Shadow(
                   color: Colors.grey,
