@@ -726,7 +726,8 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         const SizedBox(height: 20),
         SpringButton(
           SpringButtonType.onlyScale,
-          onTap: () {
+          onTap: () async{
+            Navigator.popUntil(context, (route) => route.isFirst);
             Navigator.push(context, MaterialPageRoute(builder: (_)=>const HomeScreen()));
           },
           uiChild: Container(

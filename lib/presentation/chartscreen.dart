@@ -247,6 +247,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     );
                   }).toList();
                 },
+
               ),
               getTouchedSpotIndicator:(LineChartBarData barData, List<int> indicators) {
                 return indicators.map((index) {
@@ -348,13 +349,16 @@ class _ChartScreenState extends State<ChartScreen> {
                 color: Colors.green,
                 barWidth: 2,
                 isCurved: true,
+                curveSmoothness: 0.08,
                 dotData: const FlDotData(
                   show: false,
                 ),
                 isStrokeCapRound: true,
                 spots: List.generate(
                   data.length,
-                  (index) => FlSpot(index.toDouble(), data[index]),
+                  (index) {
+                    return FlSpot(index.toDouble(), data[index]);
+                  },
                 ),
                 belowBarData: BarAreaData(
                   show: true,
@@ -374,6 +378,7 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
             ],
           ),
+
         ),
       ),
     );

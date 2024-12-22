@@ -21,14 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/step/step_cubit.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadData(BuildContext context) async {
     context.read<StepsCubit>().getStepData();
@@ -37,12 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<WeightCubit>().getWeightData();
     context.read<HeightCubit>().getHeight();
     context.read<NutritionCubit>().getNutritionData();
-  }
-
-  @override
-  void initState() {
-    loadData(context);
-    super.initState();
   }
 
   Future showWeightDialog(BuildContext context) {
@@ -259,6 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 message: "Initialization failed. Please try again.");
           } else if (state is InitAppSuccess) {
             loadData(context);
+          }else{
+            log(state.toString());
           }
         },
         child: SafeArea(
