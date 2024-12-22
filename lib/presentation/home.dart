@@ -1,5 +1,6 @@
 import 'dart:developer';
 // import 'package:ahealth/config/appenums.dart';
+import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/presentation/chartscreen.dart';
 import 'package:ahealth/presentation/searchscreen.dart';
 import 'package:health/health.dart';
@@ -20,8 +21,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/step/step_cubit.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadData(BuildContext context) async {
     context.read<StepsCubit>().getStepData();
@@ -30,6 +37,12 @@ class HomeScreen extends StatelessWidget {
     context.read<WeightCubit>().getWeightData();
     context.read<HeightCubit>().getHeight();
     context.read<NutritionCubit>().getNutritionData();
+  }
+
+  @override
+  void initState() {
+    loadData(context);
+    super.initState();
   }
 
   Future showWeightDialog(BuildContext context) {
@@ -522,7 +535,7 @@ class HomeScreen extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 200, minWidth: 400),
             padding: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 255, 242, 204),
+              color: white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
