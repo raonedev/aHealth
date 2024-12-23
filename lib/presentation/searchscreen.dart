@@ -1,3 +1,5 @@
+import 'package:ahealth/appcolors.dart';
+
 import '../blocs/food_search/food_search_cubit.dart';
 import '../config/appconstants.dart';
 import 'fooddetailscreen.dart';
@@ -110,7 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xffe1d4c1),
+        color: white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: CupertinoListTile(
@@ -126,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
             dev.log("unable to get foodId");
           }
         },
-        title: Text(food.foodName ?? 'null'),
+        title: Text(food.foodName ?? 'null',style: Theme.of(context).textTheme.titleSmall,),
         subtitle: Text(
           food.foodDescription ?? 'null',
           style: const TextStyle(
