@@ -1,10 +1,13 @@
+import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/common/spring_button_widget.dart';
-import 'package:ahealth/presentation/home.dart';
+import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/profileinfo/rularslider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum HeightUnit { cm, ft }
 
@@ -81,7 +84,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                   step--;
                 });
               } else {
-                Navigator.pop(context);
+                if(context.canPop()){
+                  context.pop();
+                }
               }
             },
             child: Padding(
@@ -688,7 +693,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   }
 
   /// age => step 5
-  Widget ageWidget(BuildContext context){
+  Widget ageWidget(BuildContext context) {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -703,12 +708,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             itemExtent: 100,
             onSelectedItemChanged: (index) {
               setState(() {
-                age = index+5;
+                age = index + 5;
               });
             },
             children: List.generate(
               50,
-                  (index) => Center(
+              (index) => Center(
                 child: Text(
                   '${index + 5}',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -720,15 +725,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         Text(
           'I am $age years old.',
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+                fontWeight: FontWeight.w500,
+              ),
         ),
         const SizedBox(height: 20),
         SpringButton(
           SpringButtonType.onlyScale,
-          onTap: () async{
-            Navigator.popUntil(context, (route) => route.isFirst);
-            Navigator.push(context, MaterialPageRoute(builder: (_)=>const HomeScreen()));
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+            context.go(AppRoutes.home);
           },
           uiChild: Container(
             width: double.infinity,

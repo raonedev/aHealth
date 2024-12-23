@@ -1,11 +1,12 @@
+import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/appcolors.dart';
-import 'package:ahealth/presentation/profileinfo/weightinfo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-
+  static const String pathName = "/onBoarding";
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
@@ -139,7 +140,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onPressed: () {
                       if (currentIndex == onBoardingData.length - 1) {
                         // Navigate to the next screen or perform any action
-                        Navigator.push(context, MaterialPageRoute(builder: (_)=>const HeathDetailScreen()));
+                        // Navigator.push(context, MaterialPageRoute(builder: (_)=>const HeathDetailScreen()));
+                        context.push(AppRoutes.heathDetail);
                       } else {
                         _pageController.animateToPage(
                           onBoardingData.length - 1,
