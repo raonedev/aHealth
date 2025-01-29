@@ -1,14 +1,13 @@
 import 'dart:developer';
-// import 'package:ahealth/config/appenums.dart';
+import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/presentation/chartscreen.dart';
-import 'package:ahealth/presentation/searchscreen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:health/health.dart';
 
 import '../helper/helper_func.dart';
 import 'chatscreen.dart';
 import 'nitritiondetailscreen.dart';
-import 'nutritionpage.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lottie/lottie.dart';
 import '../blocs/height/height_cubit.dart';
@@ -33,8 +32,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const SearchScreen())),
+            onPressed: () => context.push(AppRoutes.searchScreen),
               icon: const Icon(CupertinoIcons.search))
         ],
       ),
@@ -123,8 +121,7 @@ class HomeScreen extends StatelessWidget {
                     }
                   },
                 ),
-                onAdd: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const NutritionPage())),
+                onAdd: () => context.push(AppRoutes.nutritionPage),
               ),
       
               //water
@@ -279,8 +276,9 @@ class HomeScreen extends StatelessWidget {
         width: 70,
         height: 70,
         child: GestureDetector(
-          onTap: () => Navigator.push(
-              context, MaterialPageRoute(builder: (_) => const ChatScreen())),
+          // onTap: () => Navigator.push(
+          //     context, MaterialPageRoute(builder: (_) => const ChatScreen())),
+          onTap: () => context.push(AppRoutes.chatScreen),
           child: CircleAvatar(
             backgroundColor: Colors.white,
             child: Image.asset('assets/icons/img_1.png', width: 50),

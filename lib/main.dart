@@ -1,7 +1,5 @@
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
-import 'package:ahealth/presentation/onboarding/permissionerror.dart';
-import 'package:go_router/go_router.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
@@ -21,10 +19,8 @@ import 'blocs/step/step_cubit.dart';
 import 'blocs/water/water_cubit.dart';
 import 'blocs/weight/weight_cubit.dart';
 import 'models/FoodWithServingsModel.dart';
-// import 'presentation/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import './helper/helper_func.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,8 +32,7 @@ void main() async {
   Hive.registerAdapter(ServingAdapter());
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors
-        .transparent, // Make the status bar transparent (or use your preferred color)
+    statusBarColor: Colors.transparent, // Make the status bar transparent (or use your preferred color)
     statusBarIconBrightness: Brightness.dark, // Makes the icons black
     statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
   ));

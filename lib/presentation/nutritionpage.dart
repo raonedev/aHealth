@@ -1,8 +1,10 @@
 import 'dart:convert'; // Used for JSON encoding and decoding
 import 'dart:developer'; // For logging errors and debugging
 import 'dart:io'; // For working with files (image files in this case)
+import 'dart:ui';
 // import 'dart:typed_data'; // For handling byte data (image in bytes)
 
+import 'package:ahealth/appcolors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -94,102 +96,200 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          // Display the picked image, if any
-          res != null ? Image.file(File(res!.path)) : const SizedBox(),
-          // Button to trigger AI response generation
-          ElevatedButton(
-            onPressed: () async {
-              if (res != null) {
-                setState(() {
-                  isLoading = true;
-                });
-                await getResponseFromAI(
-                    image: res!); // Call AI if image is picked
-              } else {
-                // Show error message if no image is selected
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please select an image")));
-              }
-              setState(() {
-                isLoading = false;
-              });
-            },
-            child: const Text("Generate"), // Button label
-          ),
-          if (isLoading) const CupertinoActivityIndicator(),
-          if (foodItemList.isNotEmpty)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 80),
-                child: ListView.builder(
-                  itemCount: foodItemList.length,
-                  itemBuilder: (context, index) {
-                    final foodItem = foodItemList[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Material(
-                        color: Colors.green,
-                        child: ListTile(
-                          shape: RoundedRectangleBorder(
+          SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Display the picked image, if any
+                res != null ? Image.file(File(res!.path)) : const SizedBox(),
+                // Button to trigger AI response generation
+                res != null
+                    ? ElevatedButton(
+                        onPressed: () async {
+                          if (res != null) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            await getResponseFromAI(image: res!); // Call AI if image is picked
+                          } else {
+                            // Show error message if no image is selected
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please select an image")));
+                          }
+                          setState(() {
+                            isLoading = false;
+                          });
+                        },
+                        child: Text(
+                          "Generate",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall!
+                              .copyWith(color: white),
+                        ), // Button label
+                      )
+                    : const Text("Take Picture of your meal"),
+                if (isLoading) const CupertinoActivityIndicator(),
+                if (foodItemList.isNotEmpty)
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: foodItemList.length,
+                      itemBuilder: (context, index) {
+                        final foodItem = foodItemList[index];
+                        return Container(
+                          //(index==foodItemList.length-1)?200:0
+                          margin:  EdgeInsets.only(left: 16,right: 16,top: 8,bottom: (index==foodItemList.length-1)?100:8,),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: white,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          title: Text(
-                              "name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
+                          child: ListTile(
+                            title: Text("name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // bottom bar
+          // Bottom bar with iOS-style blur
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              // Rounded corners like iOS
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                // Blur intensity
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    // Match clip radius
+                    border: Border.all(
+                      // Add this border property
+                      color: white,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      if (foodItemList.isNotEmpty) ...[
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: CupertinoButton.filled(
+                              padding: const EdgeInsets.all(12),
+                              onPressed: () {
+                                for (final foodItem in foodItemList) {
+                                  context
+                                      .read<NutritionCubit>()
+                                      .addNutritionData(valueFood: foodItem);
+                                }
+                                Navigator.popUntil(
+                                    context, (route) => route.isFirst);
+                              },
+                              child: const Text("Log Meal"),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      FloatingActionButton(
+                        backgroundColor: primary,
+                        heroTag: 'gallery',
+                        onPressed: () async {
+                          final image = await _picker.pickImage(
+                              source: ImageSource.gallery);
+                          setState(() => res = image);
+                        },
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: white,
                         ),
                       ),
-                    );
-                  },
+                      const SizedBox(width: 8),
+                      FloatingActionButton(
+                        backgroundColor: primary,
+                        heroTag: "camera",
+                        onPressed: () async {
+                          final image = await _picker.pickImage(
+                              source: ImageSource.camera);
+                          setState(() => res = image);
+                        },
+                        child: const Icon(
+                          Icons.camera,
+                          color: white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+          )
         ],
       ),
 
-      // Floating Action Buttons for picking image from gallery or camera
-      floatingActionButton: Row(
-        children: [
-          Expanded(
-            child: (foodItemList.isNotEmpty)
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                        left: 28, top: 8, bottom: 8, right: 4),
-                    child: CupertinoButton.filled(
-                        onPressed: () {
-                          for(final foodItem in foodItemList){
-                            context.read<NutritionCubit>().addNutritionData(valueFood: foodItem);
-                          }
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        }, child: const Text("Log Meal")),
-                  )
-                : const SizedBox(),
-          ),
-          // Floating action button for selecting image from gallery
-          FloatingActionButton(
-            heroTag: 'gallery',
-            onPressed: () async {
-              final image =
-                  await _picker.pickImage(source: ImageSource.gallery);
-              setState(() {
-                res = image; // Update the image file state
-              });
-            },
-            child: const Icon(Icons.image_outlined), // Icon for gallery
-          ),
-          // Floating action button for taking picture with camera
-          FloatingActionButton(
-            heroTag: "camera",
-            onPressed: () async {
-              final image = await _picker.pickImage(source: ImageSource.camera);
-              setState(() {
-                res = image; // Update the image file state
-              });
-            },
-            child: const Icon(Icons.camera), // Icon for camera
-          ),
-        ],
-      ),
+      // // Floating Action Buttons for picking image from gallery or camera
+      // floatingActionButton: Row(
+      //   children: [
+      //     Expanded(
+      //       child: (foodItemList.isNotEmpty)
+      //           ? Padding(
+      //               padding: const EdgeInsets.only(
+      //                   left: 28, top: 8, bottom: 8, right: 4),
+      //               child: CupertinoButton.filled(
+      //                   onPressed: () {
+      //                     for(final foodItem in foodItemList){
+      //                       context.read<NutritionCubit>().addNutritionData(valueFood: foodItem);
+      //                     }
+      //                     Navigator.popUntil(context, (route) => route.isFirst);
+      //                   }, child: const Text("Log Meal")),
+      //             )
+      //           : const SizedBox(),
+      //     ),
+      //     // Floating action button for selecting image from gallery
+      //     FloatingActionButton(
+      //       heroTag: 'gallery',
+      //       onPressed: () async {
+      //         final image =
+      //             await _picker.pickImage(source: ImageSource.gallery);
+      //         setState(() {
+      //           res = image; // Update the image file state
+      //         });
+      //       },
+      //       child: const Icon(Icons.image_outlined), // Icon for gallery
+      //     ),
+      //     // Floating action button for taking picture with camera
+      //     FloatingActionButton(
+      //       heroTag: "camera",
+      //       onPressed: () async {
+      //         final image = await _picker.pickImage(source: ImageSource.camera);
+      //         setState(() {
+      //           res = image; // Update the image file state
+      //         });
+      //       },
+      //       child: const Icon(Icons.camera), // Icon for camera
+      //     ),
+      //   ],
+      // ),
     );
   }
 

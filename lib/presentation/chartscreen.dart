@@ -412,14 +412,37 @@ class _ChartScreenState extends State<ChartScreen> {
               touchTooltipData: LineTouchTooltipData(
                 fitInsideHorizontally: false,
                 fitInsideVertically: false,
-                tooltipPadding: const EdgeInsets.all(5),
+                // tooltipPadding: const EdgeInsets.all(5),
+
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                  return touchedSpots.map((touchedSpot) {
-                    return LineTooltipItem(
-                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(touchedSpot.y/60).toStringAsFixed(1):touchedSpot.y.toStringAsFixed(1),
-                      const TextStyle(color: Colors.white, fontSize: 12),
+                  List<LineTooltipItem> tooltipItems = [];
+                  for (var touchedSpot in touchedSpots) {
+                    final value = (widget.healthType == HealthDataType.SLEEP_SESSION)
+                        ? (touchedSpot.y / 60).toStringAsFixed(1)
+                        : touchedSpot.y.toStringAsFixed(1);
+
+                    // Calculate the date from x-axis value
+                    final date = startDate.add(Duration(days: touchedSpot.x.toInt()));
+                    final formattedDate = "${date.day}/${date.month}";
+
+                    tooltipItems.add(
+                      LineTooltipItem(
+                        "$value \n $formattedDate",
+                         const TextStyle(color: Colors.white, fontSize: 12,fontWeight: FontWeight.bold),
+                      ),
                     );
-                  }).toList();
+                  }
+                  return tooltipItems;
+                  // return touchedSpots.map((touchedSpot) {
+                  //   return LineTooltipItem(
+                  //     "${
+                  //       (widget.healthType == HealthDataType.SLEEP_SESSION)
+                  //           ? (touchedSpot.y / 60).toStringAsFixed(1)
+                  //           : touchedSpot.y.toStringAsFixed(1)
+                  //     } \n ${touchedSpots[0].spotIndex}",
+                  //     const TextStyle(color: Colors.white, fontSize: 12),
+                  //   );
+                  // }).toList();
                 },
               ),
               getTouchedSpotIndicator:

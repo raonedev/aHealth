@@ -1,11 +1,13 @@
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
+import 'package:ahealth/presentation/chatscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/onboarding/getstartingscreen.dart';
 import 'package:ahealth/presentation/onboarding/onboardingscreen.dart';
 import 'package:ahealth/presentation/onboarding/permissionerror.dart';
 import 'package:ahealth/presentation/onboarding/sdk_error.dart';
 import 'package:ahealth/presentation/profileinfo/health_detail.dart';
+import 'package:ahealth/presentation/searchscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,14 +15,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
 import 'helper/helper_func.dart';
+import 'presentation/nutritionpage.dart';
 
 class AppRoutes {
-  static const String getStart = "/getStart";
+  static const String getStart = "/";
   static const String permissionError = "/permissionError";
   static const String sdkError = "/sdkError";
   static const String onBoarding = "/onBoarding";
   static const String heathDetail = "/heathDetail";
   static const String home = "/home";
+  static const String searchScreen = "/searchFood";
+  static const String nutritionPage = "/nutritionPage";
+  static const String chatScreen = "/ChatScreen";
 
   static final GoRouter router = GoRouter(
     initialLocation: getStart,
@@ -114,6 +120,18 @@ class AppRoutes {
       GoRoute(
         path: home,
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: searchScreen,
+        builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: nutritionPage,
+        builder: (context, state) => const NutritionPage(),
+      ),
+      GoRoute(
+        path: chatScreen,
+        builder: (context, state) => const ChatScreen(),
       ),
     ],
     // redirect: (context, state) {
