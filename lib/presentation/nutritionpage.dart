@@ -86,8 +86,8 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
   @override
   void initState() {
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash', // Specify the AI model
-      apiKey: GEMINI_API_KEY, // API Key for authentication
+      model: 'gemini-2.5-flash-lite',
+      apiKey: GEMINI_API_KEY,
     );
     super.initState();
   }
@@ -297,43 +297,70 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
   /// This function reads the image file, sends it to the AI model,
   /// and processes the response as JSON to update the UI with food data.
   Future<void> getResponseFromAI({required XFile image}) async {
-    // Read the image file into a byte array
-    final imageByte = await File(image.path).readAsBytes();
+  // Read the image file into a byte array
+  final imageByte = await File(image.path).readAsBytes();
 
-    // Prepare content for AI model: image and prompt
-    final content = [
-      Content.multi([DataPart('image/jpeg', imageByte), TextPart(prompt)]),
-    ];
+  // Prepare content for AI model: image and prompt
+  final content = [
+    // Assuming 'prompt' is a defined String variable
+    Content.multi([DataPart('image/jpeg', imageByte), TextPart(prompt)]),
+  ];
 
-    try {
-      // Send request to AI and get response
-      final response = await _model.generateContent(content);
+  try {
+    // Send request to AI and get response
+    final response = await _model.generateContent(content);
 
-      // Log the AI's response for debugging
-      log("response: ${response.text ?? "No response"}");
+    // Log the AI's full response for debugging
+    log("Full AI response: ${response.text ?? "No response"}");
 
-      if (response.text != null) {
-        // Extract the JSON part using regex to remove non-JSON characters
-        RegExp regex = RegExp(r'```json\n([\s\S]+?)\n```');
-        Match? match = regex.firstMatch(response.text!);
+    if (response.text != null) {
+      // *** RESILIENT JSON EXTRACTION LOGIC ***
 
-        if (match != null) {
-          String jsonString = match.group(1)!;
+      // Regex to find a JSON array (starts with [ and ends with ])
+      // It uses a non-greedy match (.*?) to capture the content between the brackets.
+      // This is a common pattern for safely extracting top-level JSON arrays.
+      // Note: This pattern is usually sufficient for simple API-like outputs.
+      RegExp jsonArrayRegex = RegExp(
+          r'\[\s*{[\s\S]*?}\s*\]', // Matches any text starting with [ and ending with ], which is a reasonable heuristic for an array of objects
+          caseSensitive: false,
+          multiLine: true);
 
-          //log extracted json
-          log("jsonString: $jsonString");
+      // Attempt to find the first match
+      Match? match = jsonArrayRegex.firstMatch(response.text!);
 
-          // Parse the response text as JSON and update the list of food items
-          List<dynamic> jsonList = jsonDecode(jsonString);
-          setState(() {
-            foodItemList =
-                jsonList.map((json) => ValueFood.fromJson(json)).toList();
-          });
-        }
+      String? jsonString;
+
+      if (match != null) {
+        // Option 1: Found a string that looks like an array of objects.
+        jsonString = match.group(0)!; // Group 0 is the entire matched string
+      } else {
+        // Fallback: If the AI returns ONLY the JSON and no wrapper (like your initial example)
+        // or if the JSON is an object, we use the entire text and rely on jsonDecode to fail
+        // if it's not valid JSON.
+        jsonString = response.text!.trim();
       }
-    } catch (e) {
-      // Log any errors encountered
-      log("An Error Occurred:", error: e);
+
+      // Log extracted json
+      log("Extracted/Final jsonString: $jsonString");
+    
+      // Parse the response text as JSON
+      if (jsonString.isNotEmpty) {
+        // Using jsonDecode will automatically handle the case where the JSON starts
+        // with the array bracket '[' directly.
+        List<dynamic> jsonList = jsonDecode(jsonString);
+
+        // Update the list of food items
+        setState(() {
+          foodItemList =
+              jsonList.map((json) => ValueFood.fromJson(json)).toList();
+        });
+      }
     }
+  } catch (e) {
+    // Log any errors encountered, including JsonFormatException if parsing failed
+    log("An Error Occurred during AI interaction or JSON parsing:", error: e);
   }
+}
+
+
 }

@@ -242,21 +242,22 @@ class _ChartScreenState extends State<ChartScreen> {
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((touchedSpot) {
                     return LineTooltipItem(
-                      (widget.healthType == HealthDataType.SLEEP_SESSION)?(touchedSpot.y/60).toStringAsFixed(1):touchedSpot.y.toStringAsFixed(1),
+                      (widget.healthType == HealthDataType.SLEEP_SESSION)
+                          ? (touchedSpot.y / 60).toStringAsFixed(1)
+                          : touchedSpot.y.toStringAsFixed(1),
                       const TextStyle(color: Colors.white, fontSize: 12),
                     );
                   }).toList();
                 },
-
               ),
-              getTouchedSpotIndicator:(LineChartBarData barData, List<int> indicators) {
+              getTouchedSpotIndicator:
+                  (LineChartBarData barData, List<int> indicators) {
                 return indicators.map((index) {
                   return TouchedSpotIndicatorData(
                     FlLine(
-                      color: Colors.grey.withOpacity(0.5), // Line color
-                      strokeWidth: 2, // Line width
-                      dashArray: [5,2]
-                    ),
+                        color: Colors.grey.withValues(alpha: 0.5), // Line color
+                        strokeWidth: 2, // Line width
+                        dashArray: [5, 2]),
                     FlDotData(
                       show: true,
                       getDotPainter: (spot, percent, barData, index) {
@@ -300,7 +301,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     DateTime date = startDate.add(Duration(days: dayIndex));
                     String formattedDate = DateFormat('EEE').format(date);
                     return SideTitleWidget(
-                      axisSide: meta.axisSide,
+                      meta: meta,
                       child: Text(
                         formattedDate,
                         style: const TextStyle(fontSize: 10),
@@ -366,8 +367,8 @@ class _ChartScreenState extends State<ChartScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.green.withOpacity(0.7),
-                      Colors.white.withOpacity(0.2),
+                      Colors.green.withValues(alpha: 0.7),
+                      Colors.white.withValues(alpha: 0.2),
                     ],
                   ),
                 ),
@@ -378,7 +379,6 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
             ],
           ),
-
         ),
       ),
     );
@@ -417,18 +417,23 @@ class _ChartScreenState extends State<ChartScreen> {
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   List<LineTooltipItem> tooltipItems = [];
                   for (var touchedSpot in touchedSpots) {
-                    final value = (widget.healthType == HealthDataType.SLEEP_SESSION)
-                        ? (touchedSpot.y / 60).toStringAsFixed(1)
-                        : touchedSpot.y.toStringAsFixed(1);
+                    final value =
+                        (widget.healthType == HealthDataType.SLEEP_SESSION)
+                            ? (touchedSpot.y / 60).toStringAsFixed(1)
+                            : touchedSpot.y.toStringAsFixed(1);
 
                     // Calculate the date from x-axis value
-                    final date = startDate.add(Duration(days: touchedSpot.x.toInt()));
+                    final date =
+                        startDate.add(Duration(days: touchedSpot.x.toInt()));
                     final formattedDate = "${date.day}/${date.month}";
 
                     tooltipItems.add(
                       LineTooltipItem(
                         "$value \n $formattedDate",
-                         const TextStyle(color: Colors.white, fontSize: 12,fontWeight: FontWeight.bold),
+                        const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
                       ),
                     );
                   }
@@ -450,10 +455,9 @@ class _ChartScreenState extends State<ChartScreen> {
                 return indicators.map((index) {
                   return TouchedSpotIndicatorData(
                     FlLine(
-                      color: Colors.grey.withOpacity(0.5), // Line color
-                      strokeWidth: 2, // Line width
-                      dashArray: [5,2]
-                    ),
+                        color: Colors.grey.withValues(alpha: 0.5), // Line color
+                        strokeWidth: 2, // Line width
+                        dashArray: [5, 2]),
                     FlDotData(
                       show: true,
                       getDotPainter: (spot, percent, barData, index) {
@@ -497,7 +501,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     DateTime date = startDate.add(Duration(days: dayIndex));
                     String formattedDate = "${date.day}/${date.month}";
                     return SideTitleWidget(
-                      axisSide: meta.axisSide,
+                      meta: meta,
                       child: Text(
                         formattedDate,
                         style: const TextStyle(fontSize: 10),
@@ -559,8 +563,8 @@ class _ChartScreenState extends State<ChartScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.green.withOpacity(0.7),
-                      Colors.green.withOpacity(0.0),
+                      Colors.green.withValues(alpha: 0.7),
+                      Colors.green.withValues(alpha: 0.0),
                     ],
                   ),
                 ),

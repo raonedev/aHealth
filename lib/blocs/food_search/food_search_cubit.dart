@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:developer' as dev;
@@ -64,4 +65,5 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
       dev.log('Error:', error: '${response.statusCode} ${response.body}');
     }
   }
+
 }
