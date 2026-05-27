@@ -32,7 +32,8 @@ void main() async {
   Hive.registerAdapter(ServingAdapter());
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent, // Make the status bar transparent (or use your preferred color)
+    statusBarColor: Colors
+        .transparent, // Make the status bar transparent (or use your preferred color)
     statusBarIconBrightness: Brightness.dark, // Makes the icons black
     statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
   ));
