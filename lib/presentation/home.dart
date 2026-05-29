@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   final List<Widget> _screens = [
     const HomeWidget(),
     const WaterWidget(),
@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const ChatWidget()
   ];
 
-  final PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 1);
   @override
   void dispose() {
     _pageController.dispose();
