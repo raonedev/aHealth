@@ -14,6 +14,7 @@ class _WaterWidgetState extends State<WaterWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: background,
       body: SizedBox(
         width: double.infinity,
         child: Column(
@@ -64,11 +65,12 @@ class _WaterWidgetState extends State<WaterWidget> {
                 duration: Duration(milliseconds: 900),
                 width: 280,
                 decoration: BoxDecoration(
+                  border: Border.all(color: grey, width: 0.3),
                   gradient: LinearGradient(
                     begin: AlignmentGeometry.topCenter,
                     end: AlignmentGeometry.bottomCenter,
                     colors: [
-                      Colors.white,
+                      const Color.fromARGB(255, 252, 254, 255),
                       Colors.blue.withValues(alpha: 0.2),
                       Colors.blueAccent,
                     ],
@@ -84,16 +86,22 @@ class _WaterWidgetState extends State<WaterWidget> {
                 child: Column(
                   children: [
                     SizedBox(height: 30),
-                    Text(
-                      "2,436 ml",
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                    SpringButton(
+                      SpringButtonType.withOpacity,
+                      onTap: () {},
+                      uiChild: Text(
+                        "${(value * 1000).toStringAsFixed(0)} ml",
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
                     ),
                     SizedBox(height: 20),
                     Text(
-                      "Remaining 546 ml",
+                      "Remaining ${(1 - value).toStringAsFixed(2)} Liter",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: textDarkGrey,
                           ),
@@ -110,11 +118,24 @@ class _WaterWidgetState extends State<WaterWidget> {
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          border: Border.all(
+                            color: Colors.blueAccent.withValues(alpha: 0.2),
+                          ),
+                          color: (value < 0.3) ? Colors.blue : Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.add),
+                        child: Icon(
+                          Icons.add,
+                          color: (value > 0.3) ? Colors.blue : Colors.white,
+                        ),
                       ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Log Water here",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: (value < 0.2) ? textDarkGrey : Colors.white,
+                          ),
                     ),
                     SizedBox(height: 40),
                   ],
