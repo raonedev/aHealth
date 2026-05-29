@@ -1,9 +1,8 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:developer' as dev;
 
-import 'package:ahealth/models/FoodSearchModel.dart';
+import 'package:ahealth/models/food_search_model.dart';
 import 'package:ahealth/secrets/secrets.dart';
 import 'package:bloc/bloc.dart';
 import 'package:crypto/crypto.dart';
@@ -15,7 +14,7 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
   FoodSearchCubit() : super(FoodSearchInitailize());
 
   Future<void> searchFood(String query) async {
-    if(query.isEmpty){
+    if (query.isEmpty) {
       emit(const FoodSearchFailed(errorMessage: "Please enter food"));
       return;
     }
@@ -23,7 +22,8 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     // OAuth parameters
     const String method = 'GET';
     const String url = 'https://platform.fatsecret.com/rest/server.api';
-    final String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
+    final String timestamp =
+        (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
     final String nonce = Random().nextInt(1 << 32).toString();
 
     final Map<String, String> oauthParams = {
@@ -39,9 +39,14 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     };
 
     // Create Signature Base String
-    final sortedParams = oauthParams.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
-    final paramString = sortedParams.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&');
-    final signatureBaseString = '$method&${Uri.encodeComponent(url)}&${Uri.encodeComponent(paramString)}';
+    final sortedParams = oauthParams.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final paramString = sortedParams
+        .map((e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+    final signatureBaseString =
+        '$method&${Uri.encodeComponent(url)}&${Uri.encodeComponent(paramString)}';
 
     // Sign the Base String
     final signingKey = '${Uri.encodeComponent(FAT_SECRET_CONSUMER_SECRET)}&';
@@ -53,17 +58,20 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     oauthParams['oauth_signature'] = signature;
 
     // Send GET request
-    final uri = Uri.parse('$url?${oauthParams.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&')}');
+    final uri = Uri.parse(
+        '$url?${oauthParams.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&')}');
 
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       dev.log('Response: ${response.body}');
-      emit(FoodSearchSuccess(foodSearchModel: FoodSearchModel.fromJson(jsonDecode(response.body))));
+      emit(FoodSearchSuccess(
+          foodSearchModel:
+              FoodSearchModel.fromJson(jsonDecode(response.body))));
     } else {
-      emit(FoodSearchFailed(errorMessage: 'Error: ${response.statusCode} ${response.body}'));
+      emit(FoodSearchFailed(
+          errorMessage: 'Error: ${response.statusCode} ${response.body}'));
       dev.log('Error:', error: '${response.statusCode} ${response.body}');
     }
   }
-
 }

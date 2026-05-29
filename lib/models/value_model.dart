@@ -1,5 +1,6 @@
 /// __type : "NumericHealthValue"
 /// numericValue : 273
+library;
 
 class Value {
   Value({

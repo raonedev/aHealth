@@ -84,7 +84,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                   step--;
                 });
               } else {
-                if(context.canPop()){
+                if (context.canPop()) {
                   context.pop();
                 }
               }
@@ -734,7 +734,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           onTap: () async {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
-            context.go(AppRoutes.home);
+            if (context.mounted) {
+              context.go(AppRoutes.home);
+            }
           },
           uiChild: Container(
             width: double.infinity,

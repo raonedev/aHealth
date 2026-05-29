@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
 class RulerSlider extends StatefulWidget {
@@ -33,7 +35,7 @@ class _RulerSliderState extends State<RulerSlider> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Get screen width in didChangeDependencies
-    _screenWidth = MediaQuery.of(context).size.width-20;
+    _screenWidth = MediaQuery.of(context).size.width - 20;
     // Set the initial scroll offset
     _scrollController = ScrollController(
       initialScrollOffset: _valueToScrollOffset(widget.initialValue),
@@ -65,13 +67,16 @@ class _RulerSliderState extends State<RulerSlider> {
 
   double _valueToScrollOffset(double value) {
     // Offset based on value, adjusted for centering
-    return (value - widget.minValue) * _tickSpacing - (_screenWidth / 2 - _tickSpacing / 2);
+    return (value - widget.minValue) * _tickSpacing -
+        (_screenWidth / 2 - _tickSpacing / 2);
   }
 
   double _scrollOffsetToValue(double offset) {
     // Convert offset to value, adjusted for centering
-    double centeredOffset = offset + (_screenWidth / 2 - _tickSpacing / 2 );
-    return (centeredOffset / _tickSpacing).clamp(widget.minValue, widget.maxValue) + widget.minValue;
+    double centeredOffset = offset + (_screenWidth / 2 - _tickSpacing / 2);
+    return (centeredOffset / _tickSpacing)
+            .clamp(widget.minValue, widget.maxValue) +
+        widget.minValue;
   }
 
   @override
@@ -88,7 +93,8 @@ class _RulerSliderState extends State<RulerSlider> {
               scrollDirection: Axis.horizontal,
               controller: _scrollController,
               child: CustomPaint(
-                size: Size((widget.maxValue - widget.minValue) * _tickSpacing, 200),
+                size: Size(
+                    (widget.maxValue - widget.minValue) * _tickSpacing, 200),
                 painter: RulerPainter(
                   minValue: widget.minValue,
                   maxValue: widget.maxValue,
@@ -126,8 +132,6 @@ class _RulerSliderState extends State<RulerSlider> {
     );
   }
 }
-
-
 
 class RulerPainter extends CustomPainter {
   final double minValue;

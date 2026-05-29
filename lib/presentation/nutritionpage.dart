@@ -9,7 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../blocs/nutrition/nutrition_cubit.dart';
-import '../models/NutritionModel.dart';
+import '../models/nutrition_model.dart';
 import 'package:flutter/material.dart'; // UI components for the app
 import 'package:google_generative_ai/google_generative_ai.dart'; // Google's generative AI package
 import 'package:image_picker/image_picker.dart';
@@ -114,7 +114,8 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
                             setState(() {
                               isLoading = true;
                             });
-                            await getResponseFromAI(image: res!); // Call AI if image is picked
+                            await getResponseFromAI(
+                                image: res!); // Call AI if image is picked
                           } else {
                             // Show error message if no image is selected
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -143,14 +144,22 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
                         final foodItem = foodItemList[index];
                         return Container(
                           //(index==foodItemList.length-1)?200:0
-                          margin:  EdgeInsets.only(left: 16,right: 16,top: 8,bottom: (index==foodItemList.length-1)?100:8,),
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                          margin: EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 8,
+                            bottom:
+                                (index == foodItemList.length - 1) ? 100 : 8,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
                           decoration: BoxDecoration(
                             color: white,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: ListTile(
-                            title: Text("name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
+                            title: Text(
+                                "name:${foodItem.name}\nQuantity:${foodItem.quantity} ${foodItem.unit}\ncalories:${foodItem.calories}\nsugar:${foodItem.sugar}\nfiber:${foodItem.fiber}\npotassium:${foodItem.potassium}\ncarbs:${foodItem.carbs}"),
                           ),
                         );
                       },
@@ -297,70 +306,68 @@ Respond with only the JSON String with no Markdown formatting like ( ```json), n
   /// This function reads the image file, sends it to the AI model,
   /// and processes the response as JSON to update the UI with food data.
   Future<void> getResponseFromAI({required XFile image}) async {
-  // Read the image file into a byte array
-  final imageByte = await File(image.path).readAsBytes();
+    // Read the image file into a byte array
+    final imageByte = await File(image.path).readAsBytes();
 
-  // Prepare content for AI model: image and prompt
-  final content = [
-    // Assuming 'prompt' is a defined String variable
-    Content.multi([DataPart('image/jpeg', imageByte), TextPart(prompt)]),
-  ];
+    // Prepare content for AI model: image and prompt
+    final content = [
+      // Assuming 'prompt' is a defined String variable
+      Content.multi([DataPart('image/jpeg', imageByte), TextPart(prompt)]),
+    ];
 
-  try {
-    // Send request to AI and get response
-    final response = await _model.generateContent(content);
+    try {
+      // Send request to AI and get response
+      final response = await _model.generateContent(content);
 
-    // Log the AI's full response for debugging
-    log("Full AI response: ${response.text ?? "No response"}");
+      // Log the AI's full response for debugging
+      log("Full AI response: ${response.text ?? "No response"}");
 
-    if (response.text != null) {
-      // *** RESILIENT JSON EXTRACTION LOGIC ***
+      if (response.text != null) {
+        // *** RESILIENT JSON EXTRACTION LOGIC ***
 
-      // Regex to find a JSON array (starts with [ and ends with ])
-      // It uses a non-greedy match (.*?) to capture the content between the brackets.
-      // This is a common pattern for safely extracting top-level JSON arrays.
-      // Note: This pattern is usually sufficient for simple API-like outputs.
-      RegExp jsonArrayRegex = RegExp(
-          r'\[\s*{[\s\S]*?}\s*\]', // Matches any text starting with [ and ending with ], which is a reasonable heuristic for an array of objects
-          caseSensitive: false,
-          multiLine: true);
+        // Regex to find a JSON array (starts with [ and ends with ])
+        // It uses a non-greedy match (.*?) to capture the content between the brackets.
+        // This is a common pattern for safely extracting top-level JSON arrays.
+        // Note: This pattern is usually sufficient for simple API-like outputs.
+        RegExp jsonArrayRegex = RegExp(
+            r'\[\s*{[\s\S]*?}\s*\]', // Matches any text starting with [ and ending with ], which is a reasonable heuristic for an array of objects
+            caseSensitive: false,
+            multiLine: true);
 
-      // Attempt to find the first match
-      Match? match = jsonArrayRegex.firstMatch(response.text!);
+        // Attempt to find the first match
+        Match? match = jsonArrayRegex.firstMatch(response.text!);
 
-      String? jsonString;
+        String? jsonString;
 
-      if (match != null) {
-        // Option 1: Found a string that looks like an array of objects.
-        jsonString = match.group(0)!; // Group 0 is the entire matched string
-      } else {
-        // Fallback: If the AI returns ONLY the JSON and no wrapper (like your initial example)
-        // or if the JSON is an object, we use the entire text and rely on jsonDecode to fail
-        // if it's not valid JSON.
-        jsonString = response.text!.trim();
+        if (match != null) {
+          // Option 1: Found a string that looks like an array of objects.
+          jsonString = match.group(0)!; // Group 0 is the entire matched string
+        } else {
+          // Fallback: If the AI returns ONLY the JSON and no wrapper (like your initial example)
+          // or if the JSON is an object, we use the entire text and rely on jsonDecode to fail
+          // if it's not valid JSON.
+          jsonString = response.text!.trim();
+        }
+
+        // Log extracted json
+        log("Extracted/Final jsonString: $jsonString");
+
+        // Parse the response text as JSON
+        if (jsonString.isNotEmpty) {
+          // Using jsonDecode will automatically handle the case where the JSON starts
+          // with the array bracket '[' directly.
+          List<dynamic> jsonList = jsonDecode(jsonString);
+
+          // Update the list of food items
+          setState(() {
+            foodItemList =
+                jsonList.map((json) => ValueFood.fromJson(json)).toList();
+          });
+        }
       }
-
-      // Log extracted json
-      log("Extracted/Final jsonString: $jsonString");
-    
-      // Parse the response text as JSON
-      if (jsonString.isNotEmpty) {
-        // Using jsonDecode will automatically handle the case where the JSON starts
-        // with the array bracket '[' directly.
-        List<dynamic> jsonList = jsonDecode(jsonString);
-
-        // Update the list of food items
-        setState(() {
-          foodItemList =
-              jsonList.map((json) => ValueFood.fromJson(json)).toList();
-        });
-      }
+    } catch (e) {
+      // Log any errors encountered, including JsonFormatException if parsing failed
+      log("An Error Occurred during AI interaction or JSON parsing:", error: e);
     }
-  } catch (e) {
-    // Log any errors encountered, including JsonFormatException if parsing failed
-    log("An Error Occurred during AI interaction or JSON parsing:", error: e);
   }
-}
-
-
 }

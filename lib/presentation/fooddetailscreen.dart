@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/blocs/fooddetail/food_detail_cubit.dart';
 import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
@@ -7,7 +5,7 @@ import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/NutritionModel.dart';
+import '../models/nutrition_model.dart';
 // import 'dart:developer' as dev;
 
 class FoodDetailScreen extends StatefulWidget {

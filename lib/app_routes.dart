@@ -61,14 +61,14 @@ class AppRoutes {
                 );
               } else if (state is InitAppSuccess) {
                 loadData(context);
-                Future<bool> _checkOnboardingStatus() async {
+                Future<bool> checkOnboardingStatus() async {
                   final prefs = await SharedPreferences.getInstance();
                   return prefs.getBool(isOnBoardingSharedPreferenceKey) ??
                       false;
                 }
 
                 return FutureBuilder<bool>(
-                  future: _checkOnboardingStatus(),
+                  future: checkOnboardingStatus(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Scaffold(

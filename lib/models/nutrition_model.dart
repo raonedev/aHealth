@@ -9,6 +9,7 @@
 /// sourceId : ""
 /// sourceName : "com.sec.android.app.shealth"
 /// recordingMethod : "unknown"
+library;
 
 class NutritionModel {
   NutritionModel({

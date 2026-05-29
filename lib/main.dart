@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
-import 'models/FoodSearchModel.dart';
+import 'models/food_search_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'blocs/height/height_cubit.dart';
@@ -18,7 +18,7 @@ import 'blocs/sleep/sleep_cubit.dart';
 import 'blocs/step/step_cubit.dart';
 import 'blocs/water/water_cubit.dart';
 import 'blocs/weight/weight_cubit.dart';
-import 'models/FoodWithServingsModel.dart';
+import 'models/food_with_servings_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

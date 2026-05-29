@@ -1,13 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
-import '../models/NutritionModel.dart';
+import '../models/nutrition_model.dart';
 
 class NutritionDetailScreen extends StatelessWidget {
   final NutritionModel nutritionModel;
 
-  NutritionDetailScreen({required this.nutritionModel});
+  const NutritionDetailScreen({super.key, required this.nutritionModel});
 
   @override
   Widget build(BuildContext context) {
@@ -29,25 +27,24 @@ class NutritionDetailScreen extends StatelessWidget {
               Text(
                 valueFood?.name ?? "Unknown",
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontSize: 18
-                ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 18),
               ),
               const SizedBox(height: 16.0),
-          
+
               // Macronutrients section
               buildMacronutrients(valueFood),
               const SizedBox(height: 16.0),
-          
+
               // Micronutrients section
               buildMicronutrients(valueFood),
               const SizedBox(height: 16.0),
-          
+
               // Vitamins section
               buildVitamins(valueFood),
               const SizedBox(height: 16.0),
-          
+
               // Serving size
               // buildServingSize(valueFood),
             ],
@@ -98,7 +95,8 @@ class NutritionDetailScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         Text(value != null ? value.toString() : "N/A"),
       ],
     );
