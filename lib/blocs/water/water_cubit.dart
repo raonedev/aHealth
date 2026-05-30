@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:ahealth/models/WaterModel.dart';
+import 'package:ahealth/models/water_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
@@ -16,7 +16,8 @@ class WaterCubit extends Cubit<WaterState> {
     final endTime = DateTime.now();
     final fromTime = DateTime(endTime.year, endTime.month, endTime.day);
     // log("from ${fromTime.toIso8601String()} to ${endTime.toIso8601String()} ");
-    bool waterPermission = await Health().hasPermissions([HealthDataType.WATER]) ?? false;
+    bool waterPermission =
+        await Health().hasPermissions([HealthDataType.WATER]) ?? false;
     if (!waterPermission) {
       waterPermission = await Health().requestAuthorization(
         [HealthDataType.WATER],
@@ -30,16 +31,15 @@ class WaterCubit extends Cubit<WaterState> {
         startTime: fromTime,
         endTime: endTime,
       );
-      if(healthData.isEmpty){
+      if (healthData.isEmpty) {
         emit(const WaterFailed(errorMessage: "NULL"));
-      }else{
+      } else {
         // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
         log("no. of water :${healthData.length}");
-        List<WaterModel> sleepModel0=[];
+        List<WaterModel> sleepModel0 = [];
 
-
-        for(HealthDataPoint healthDataPoint in healthData){
+        for (HealthDataPoint healthDataPoint in healthData) {
           WaterModel stepModel = WaterModel.fromJson(healthDataPoint.toJson());
           sleepModel0.add(stepModel);
         }
@@ -50,28 +50,28 @@ class WaterCubit extends Cubit<WaterState> {
     }
   }
 
-  Future<void> addWater({required double waterInLiter})async{
+  Future<void> addWater({required double waterInLiter}) async {
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(seconds: 30));
     bool success = true;
     success &= await Health().writeHealthData(
-        value: waterInLiter,
-        type: HealthDataType.WATER,
-        startTime: earlier,
-        endTime: now,
+      value: waterInLiter,
+      type: HealthDataType.WATER,
+      startTime: earlier,
+      endTime: now,
     );
-    if(success){
+    if (success) {
       getWaterData();
-    }else{
+    } else {
       emit(const WaterFailed(errorMessage: "Failed to add water"));
     }
   }
 
-  Future<void> decreaseLastWaterData() async{
-
+  Future<void> decreaseLastWaterData() async {
     emit(WaterLoadingState());
 
-    bool waterPermission = await Health().hasPermissions([HealthDataType.WATER]) ?? false;
+    bool waterPermission =
+        await Health().hasPermissions([HealthDataType.WATER]) ?? false;
     if (!waterPermission) {
       waterPermission = await Health().requestAuthorization(
         [HealthDataType.WATER],
@@ -81,15 +81,15 @@ class WaterCubit extends Cubit<WaterState> {
 
     final endTime = DateTime.now();
     final fromTime = DateTime(endTime.year, endTime.month, endTime.day);
-    try{
+    try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.WATER],
         startTime: fromTime,
         endTime: endTime,
       );
-      if(healthData.isEmpty){
+      if (healthData.isEmpty) {
         emit(const WaterFailed(errorMessage: "Empty"));
-      }else {
+      } else {
         // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
         log("no. of water :${healthData.length}");
@@ -101,16 +101,14 @@ class WaterCubit extends Cubit<WaterState> {
           endTime: healthData[0].dateTo,
         );
         log("Success value $success");
-        if(success){
+        if (success) {
           getWaterData();
-        }else{
+        } else {
           emit(const WaterFailed(errorMessage: "can't remove water data"));
         }
       }
-    }catch (e){
+    } catch (e) {
       emit(WaterFailed(errorMessage: e.toString()));
     }
-
-
   }
 }

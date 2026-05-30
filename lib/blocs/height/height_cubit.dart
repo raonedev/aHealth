@@ -1,4 +1,4 @@
-import '../../models/HeightModel.dart';
+import '../../models/height_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
@@ -8,11 +8,12 @@ part 'height_state.dart';
 class HeightCubit extends Cubit<HeightState> {
   HeightCubit() : super(HeightLoading());
 
-  Future<void> getHeight()async{
+  Future<void> getHeight() async {
     emit(HeightLoading());
     final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month-1, now.day);
-    bool stepsPermission = await Health().hasPermissions([HealthDataType.HEIGHT]) ?? false;
+    final midnight = DateTime(now.year, now.month - 1, now.day);
+    bool stepsPermission =
+        await Health().hasPermissions([HealthDataType.HEIGHT]) ?? false;
     if (!stepsPermission) {
       stepsPermission = await Health().requestAuthorization(
         [HealthDataType.HEIGHT],
@@ -26,14 +27,15 @@ class HeightCubit extends Cubit<HeightState> {
         startTime: midnight,
         endTime: now,
       );
-      if(healthData.isEmpty){
+      if (healthData.isEmpty) {
         emit(const HeightFailed(errorMessage: "NULL"));
-      }else{
+      } else {
         // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-        List<HeightModel> heightModel0=[];
-        for(HealthDataPoint healthDataPoint in healthData){
-          HeightModel stepModel = HeightModel.fromJson(healthDataPoint.toJson());
+        List<HeightModel> heightModel0 = [];
+        for (HealthDataPoint healthDataPoint in healthData) {
+          HeightModel stepModel =
+              HeightModel.fromJson(healthDataPoint.toJson());
           heightModel0.add(stepModel);
         }
         emit(HeightSuccess(heightModel: heightModel0));
@@ -43,7 +45,7 @@ class HeightCubit extends Cubit<HeightState> {
     }
   }
 
-  Future<bool> addHeight({required double heightInMeter})async{
+  Future<bool> addHeight({required double heightInMeter}) async {
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(minutes: 1));
     bool success = true;
@@ -52,9 +54,9 @@ class HeightCubit extends Cubit<HeightState> {
         type: HealthDataType.HEIGHT,
         startTime: earlier,
         endTime: now);
-    if(success){
+    if (success) {
       getHeight();
-    }else{
+    } else {
       emit(const HeightFailed(errorMessage: "Failed to add Height"));
     }
     return success;

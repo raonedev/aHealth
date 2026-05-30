@@ -3,7 +3,7 @@ import 'package:ahealth/appcolors.dart';
 import '../blocs/food_search/food_search_cubit.dart';
 import '../config/appconstants.dart';
 import 'fooddetailscreen.dart';
-import 'package:ahealth/models/FoodSearchModel.dart';
+import 'package:ahealth/models/food_search_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -59,12 +59,14 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
       body: (isTextEmpty)
-          ? (searchFoodBox != null) ?ListView.builder(
-              itemCount: searchFoodBox!.length,
-              itemBuilder: (context, index) {
-                return searchFoodCard(searchFoodBox!.getAt(index), context);
-              },
-            ):const Center(child: Text("Seach Food Here"))
+          ? (searchFoodBox != null)
+              ? ListView.builder(
+                  itemCount: searchFoodBox!.length,
+                  itemBuilder: (context, index) {
+                    return searchFoodCard(searchFoodBox!.getAt(index), context);
+                  },
+                )
+              : const Center(child: Text("Seach Food Here"))
           : BlocBuilder<FoodSearchCubit, FoodSearchState>(
               builder: (context, state) {
                 if (state is FoodSearchInitailize) {
@@ -118,17 +120,22 @@ class _SearchScreenState extends State<SearchScreen> {
       child: CupertinoListTile(
         onTap: () {
           if (food.foodId != null && searchFoodBox != null) {
-
-            if(searchFoodBox?.get(food.foodId)==null){
+            if (searchFoodBox?.get(food.foodId) == null) {
               searchFoodBox!.put(food.foodId!, food);
               dev.log("food is put in local");
             }
-            Navigator.push(context,MaterialPageRoute(builder: (_) => FoodDetailScreen(foodId: food.foodId!)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => FoodDetailScreen(foodId: food.foodId!)));
           } else {
             dev.log("unable to get foodId");
           }
         },
-        title: Text(food.foodName ?? 'null',style: Theme.of(context).textTheme.titleSmall,),
+        title: Text(
+          food.foodName ?? 'null',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         subtitle: Text(
           food.foodDescription ?? 'null',
           style: const TextStyle(
