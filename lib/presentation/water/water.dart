@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:health/health.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../blocs/water/water_cubit.dart';
@@ -75,7 +77,16 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
         return Scaffold(
           backgroundColor: background,
           appBar: AppBar(
-            title: Text('Today\' water'),
+            title: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Text('Today\' water'),
+            ),
+            actions: [
+              IconButton(onPressed: () {
+                context.push('/chart/${HealthDataType.WATER.name}');
+              }, icon: Icon(Icons.history))
+            ],
+
           ),
           body: SizedBox(
             width: double.infinity,
@@ -123,7 +134,7 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                       return Container(
                         width: 280,
                         decoration: BoxDecoration(
-                          border: Border.all(color: grey, width: 0.3),
+                          border: Border.all(color: grey, width: 0.6),
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(100),
                             topRight: Radius.circular(100),

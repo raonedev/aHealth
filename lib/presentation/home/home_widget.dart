@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,8 @@ import '../../blocs/weight/weight_cubit.dart';
 import '../../helper/helper_func.dart';
 import '../chartscreen.dart';
 import '../nitritiondetailscreen.dart';
+import '../nutririon/widgets/nutrition_card_summary.dart';
+import '../water/widgets/water_summary_card.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -41,6 +44,11 @@ class _HomeWidgetState extends State<HomeWidget> {
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
             children: [
+              SpringButton(
+                SpringButtonType.withOpacity,
+                onTap: () => context.go('/shell/nutrition'),
+                uiChild: const NutritionSummaryCard(),
+              ),
               healthCard(
                 healthType: HealthDataType.STEPS,
                 context: context,
@@ -70,85 +78,10 @@ class _HomeWidgetState extends State<HomeWidget> {
                   },
                 ),
               ),
-              healthCard(
-                healthType: HealthDataType.NUTRITION,
-                context: context,
-                title: 'Nutrition',
-                lottieString: 'assets/lottieanimations/food.json',
-                cubit: BlocBuilder<NutritionCubit, NutritionState>(
-                  builder: (context, state) {
-                    if (state is NutritionLoading) {
-                      return const CupertinoActivityIndicator();
-                    } else if (state is NutritionFailed) {
-                      return Text(state.errorMessage);
-                    } else if (state is NutritionSuccess) {
-                      if (state.nutritionModel.isNotEmpty) {
-                        return Column(
-                          children: List.generate(
-                            state.nutritionModel.length,
-                            (index) {
-                              return ListTile(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          NutritionDetailScreen(
-                                              nutritionModel:
-                                                  state.nutritionModel[index]),
-                                    ),
-                                  );
-                                },
-                                title: Text(
-                                    state.nutritionModel[index].value?.name ??
-                                        ""),
-                                subtitle: Text(
-                                    "calories ${state.nutritionModel[index].value!.calories?.toStringAsFixed(2)}"),
-                              );
-                            },
-                          ),
-                        );
-                      }
-                      return const Text("No Nutrition Data");
-                    } else {
-                      return Text("unknown state ${state.toString()}");
-                    }
-                  },
-                ),
-                onAdd: () => context.push(AppRoutes.nutritionPage),
-              ),
-              healthCard(
-                healthType: HealthDataType.WATER,
-                context: context,
-                title: "Water",
-                lottieString:
-                    'assets/lottieanimations/girl_drinking_water.json',
-                cubit: BlocBuilder<WaterCubit, WaterState>(
-                  builder: (context, state) {
-                    if (state is WaterLoadingState) {
-                      return const CupertinoActivityIndicator();
-                    } else if (state is WaterFailed) {
-                      if (state.errorMessage == "NULL") {
-                        return const Text('0 Liter');
-                      } else {
-                        return Text(state.errorMessage);
-                      }
-                    } else if (state is WaterSuccessState) {
-                      num waterInLiter = 0;
-                      for (final water in state.waterModel) {
-                        if (water.value != null) {
-                          waterInLiter += water.value!.numericValue ?? 0;
-                        }
-                      }
-                      return Text("${(waterInLiter).toStringAsFixed(2)} Liter");
-                    } else {
-                      return Text("unknown state ${state.toString()}");
-                    }
-                  },
-                ),
-                onAdd: () {
-                  context.read<WaterCubit>().addWater(waterInLiter: 0.25);
-                },
+              SpringButton(
+                SpringButtonType.withOpacity,
+                onTap: () => context.go('/shell/water'),
+                uiChild: const WaterSummaryCard(),
               ),
               healthCard(
                 healthType: HealthDataType.WEIGHT,
@@ -229,12 +162,6 @@ class _HomeWidgetState extends State<HomeWidget> {
                   showSleepDialog(context);
                 },
               ),
-              healthCard(
-                  healthType: HealthDataType.WORKOUT,
-                  title: 'Workout',
-                  lottieString: 'assets/lottieanimations/workout.json',
-                  cubit: const Text("Comming Soon"),
-                  context: context)
             ],
           ),
         ),
@@ -251,12 +178,10 @@ class _HomeWidgetState extends State<HomeWidget> {
     VoidCallback? onAdd,
   }) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => ChartScreen(
-                    healthType: healthType,
-                  ))),
+      onTap: () {
+        dev.log("/chart/${healthType.name}");
+        context.push('/chart/${healthType.name}');
+      },
       child: Stack(
         children: [
           Container(

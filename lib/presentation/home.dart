@@ -1,19 +1,19 @@
 import 'dart:ui';
-import 'package:ahealth/app_routes.dart';
-import 'package:ahealth/presentation/chat/chat.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'chatscreen.dart';
 import 'home/home_widget.dart';
-import 'nutririon/nutrition.dart';
+import 'nutririon/nutrition.dart' show Nutrition;
 import 'water/water.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.child});
+
+  final Widget child;
 
   static const String pathName = "/home";
 
@@ -22,20 +22,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-  final List<Widget> _screens = [
-    const HomeWidget(),
-    const WaterWidget(),
-    const Nutrition(),
-    const ChatWidget()
+  final List<String> _tabs = [
+    '/shell/home',
+    '/shell/water',
+    '/shell/nutrition',
+    '/shell/chat'
   ];
 
-  final PageController _pageController = PageController(initialPage: 0);
+  int _locationToIndex(String loc) {
+    if (loc.startsWith('/shell/water')) return 1;
+    if (loc.startsWith('/shell/nutrition')) return 2;
+    if (loc.startsWith('/shell/chat')) return 3;
+    return 0;
+  }
+
+  PageController _pageController = PageController();
+
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -43,32 +51,38 @@ class _HomeScreenState extends State<HomeScreen> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // Makes it seamless with your SafeArea background
+      statusBarIconBrightness: Brightness.dark, // Android icon contrast
+      statusBarBrightness: Brightness.light,    // iOS icon contrast
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = _locationToIndex(GoRouterState.of(context).uri.toString());
+
+    // Sync PageController with router location
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients && _pageController.page?.round() != currentIndex) {
+        _pageController.animateToPage(currentIndex,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.ease);
+      }
+    });
     return Scaffold(
       extendBody: true,
-      appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () => context.push(AppRoutes.searchScreen),
-              icon: const Icon(CupertinoIcons.search))
-        ],
-      ),
       body: Stack(
         children: [
-          PageView.builder(
+          PageView(
             controller: _pageController,
-            itemCount: _screens.length,
-            onPageChanged: (value) {
-              setState(() {
-                _currentIndex = value;
-              });
-            },
-            itemBuilder: (context, index) {
-              return _screens[index];
-            },
+            onPageChanged: (index) => context.go(_tabs[index]),
+            children: const [
+              HomeWidget(),
+              WaterWidget(),
+              Nutrition(),
+              ChatScreen(),
+            ],
           ),
 
           /// bottom navigationbar
@@ -108,14 +122,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         showSelectedLabels: true,
                         selectedFontSize: 14,
                         unselectedFontSize: 14,
-                        currentIndex: _currentIndex,
-                        onTap: (value) {
-                          setState(() {
-                            _currentIndex = value;
-                            _pageController.animateToPage(_currentIndex,
-                                duration: const Duration(milliseconds: 500),
-                                curve: Curves.ease);
-                          });
+                        currentIndex: _locationToIndex(
+                            GoRouterState.of(context).uri.toString()),
+                        onTap: (index) {
+                          _pageController.animateToPage(index,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.ease);
+                          context.go(_tabs[index]);
                         },
                         showUnselectedLabels: true,
                         items: const [

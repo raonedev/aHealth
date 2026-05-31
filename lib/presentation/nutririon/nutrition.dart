@@ -1,15 +1,29 @@
+import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ahealth/models/nutrition_model.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
 
+import '../../app_routes.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
+import '../nitritiondetailscreen.dart';
+import 'widgets/circular_progress.dart';
+import 'widgets/macro_card.dart';
+import 'widgets/macro_chip.dart';
 
-const Color _bg = Color(0xFF1A1A1A);
-const Color _card = Color(0xFF2A2A2A);
+// Light Theme Color Palette
+const Color _bg = Color(0xFFF6F6F9); // Light grayish-white background
+const Color _card = Color(0xFFFFFFFF); // White cards
+const Color _textPrimary = Color(0xFF1A1A1A); // Dark charcoal for primary text
+const Color _textSecondary =
+    Color(0xFF757575); // Muted gray for subtitles/labels
+
 const Color _proteinColor = Color(0xFFE05252);
 const Color _carbsColor = Color(0xFFE0A952);
 const Color _fatColor = Color(0xFF5299E0);
-const Color _calColor = Color(0xFFFFFFFF);
 
 class Nutrition extends StatefulWidget {
   const Nutrition({super.key});
@@ -29,6 +43,33 @@ class _NutritionState extends State<Nutrition> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: kToolbarHeight+28),
+        child: SpringButton(
+          SpringButtonType.withOpacity,
+          onTap: () {
+
+          },
+          uiChild: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                    )
+                  ]),
+              child: Transform.scale(
+                scale: 0.6,
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedScanImage,
+                  color: Colors.white,
+                ),
+              )),
+        ),
+      ),
       body: BlocBuilder<NutritionCubit, NutritionState>(
         builder: (context, state) {
           if (state is NutritionLoading) {
@@ -39,10 +80,12 @@ class _NutritionState extends State<Nutrition> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(state.errorMessage, style: const TextStyle(color: Colors.white54)),
+                  Text(state.errorMessage,
+                      style: const TextStyle(color: _textSecondary)),
                   const SizedBox(height: 12),
                   TextButton(
-                    onPressed: () => context.read<NutritionCubit>().getNutritionData(),
+                    onPressed: () =>
+                        context.read<NutritionCubit>().getNutritionData(),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -50,11 +93,16 @@ class _NutritionState extends State<Nutrition> {
             );
           }
 
-          final items = state is NutritionSuccess ? state.nutritionModel : <NutritionModel>[];
+          final items = state is NutritionSuccess
+              ? state.nutritionModel
+              : <NutritionModel>[];
 
-          final totalCalories = items.fold(0.0, (s, e) => s + (e.value?.calories ?? 0));
-          final totalProtein = items.fold(0.0, (s, e) => s + (e.value?.protein ?? 0));
-          final totalCarbs = items.fold(0.0, (s, e) => s + (e.value?.carbs ?? 0));
+          final totalCalories =
+              items.fold(0.0, (s, e) => s + (e.value?.calories ?? 0));
+          final totalProtein =
+              items.fold(0.0, (s, e) => s + (e.value?.protein ?? 0));
+          final totalCarbs =
+              items.fold(0.0, (s, e) => s + (e.value?.carbs ?? 0));
           final totalFat = items.fold(0.0, (s, e) => s + (e.value?.fat ?? 0));
 
           const double targetCalories = 2500;
@@ -64,6 +112,7 @@ class _NutritionState extends State<Nutrition> {
 
           return SafeArea(
             child: CustomScrollView(
+              physics: BouncingScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
@@ -74,30 +123,17 @@ class _NutritionState extends State<Nutrition> {
                         // Header
                         Row(
                           children: [
-                            const Icon(Icons.apple, color: Colors.redAccent, size: 26),
                             const SizedBox(width: 8),
-                            const Text('Cal AI',
+                            const Text('Nutrition',
                                 style: TextStyle(
-                                    color: Colors.white,
+                                    color: _textPrimary,
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold)),
                             const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _card,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.local_fire_department,
-                                      color: Colors.orange, size: 18),
-                                  const SizedBox(width: 4),
-                                  Text('${totalCalories.toInt()}',
-                                      style: const TextStyle(color: Colors.white, fontSize: 14)),
-                                ],
-                              ),
-                            ),
+                            IconButton(
+                                onPressed: () =>
+                                    context.push(AppRoutes.searchScreen),
+                                icon: const Icon(CupertinoIcons.search)),
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -109,6 +145,13 @@ class _NutritionState extends State<Nutrition> {
                           decoration: BoxDecoration(
                             color: _card,
                             borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
                           ),
                           child: Row(
                             children: [
@@ -118,21 +161,24 @@ class _NutritionState extends State<Nutrition> {
                                   Text(
                                     '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
                                     style: const TextStyle(
-                                        color: Colors.white,
+                                        color: _textPrimary,
                                         fontSize: 40,
                                         fontWeight: FontWeight.bold),
                                   ),
                                   const Text('Calories left',
-                                      style: TextStyle(color: Colors.white54, fontSize: 14)),
+                                      style: TextStyle(
+                                          color: _textSecondary, fontSize: 14)),
                                 ],
                               ),
                               const Spacer(),
-                              _CircularProgress(
-                                value: (totalCalories / targetCalories).clamp(0.0, 1.0),
-                                color: Colors.white,
+                              CircularProgress(
+                                value: (totalCalories / targetCalories)
+                                    .clamp(0.0, 1.0),
+                                color: Colors.orange,
+                                // Pop color for the main calorie ring
                                 size: 80,
                                 icon: Icons.local_fire_department,
-                                iconColor: Colors.white,
+                                iconColor: Colors.orange,
                               ),
                             ],
                           ),
@@ -143,37 +189,43 @@ class _NutritionState extends State<Nutrition> {
                         Row(
                           children: [
                             Expanded(
-                              child: _MacroCard(
-                                label: 'Protein${totalProtein > targetProtein ? ' over' : ''}',
+                              child: MacroCard(
+                                label:
+                                    'Protein${totalProtein > targetProtein ? ' over' : ''}',
                                 value: totalProtein > targetProtein
                                     ? totalProtein - targetProtein
                                     : targetProtein - totalProtein,
                                 unit: 'g',
                                 color: _proteinColor,
                                 icon: Icons.bolt,
-                                progress: (totalProtein / targetProtein).clamp(0.0, 1.0),
+                                progress: (totalProtein / targetProtein)
+                                    .clamp(0.0, 1.0),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: _MacroCard(
+                              child: MacroCard(
                                 label: 'Carbs left',
-                                value: (targetCarbs - totalCarbs).clamp(0, targetCarbs),
+                                value: (targetCarbs - totalCarbs)
+                                    .clamp(0, targetCarbs),
                                 unit: 'g',
                                 color: _carbsColor,
                                 icon: Icons.grain,
-                                progress: (totalCarbs / targetCarbs).clamp(0.0, 1.0),
+                                progress:
+                                    (totalCarbs / targetCarbs).clamp(0.0, 1.0),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: _MacroCard(
+                              child: MacroCard(
                                 label: 'Fats left',
-                                value: (targetFat - totalFat).clamp(0, targetFat),
+                                value:
+                                    (targetFat - totalFat).clamp(0, targetFat),
                                 unit: 'g',
                                 color: _fatColor,
                                 icon: Icons.water_drop,
-                                progress: (totalFat / targetFat).clamp(0.0, 1.0),
+                                progress:
+                                    (totalFat / targetFat).clamp(0.0, 1.0),
                               ),
                             ),
                           ],
@@ -182,7 +234,7 @@ class _NutritionState extends State<Nutrition> {
 
                         const Text('Recently uploaded',
                             style: TextStyle(
-                                color: Colors.white,
+                                color: _textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
@@ -194,7 +246,7 @@ class _NutritionState extends State<Nutrition> {
                 // Food List
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+                    (context, index) {
                       final item = items[index];
                       final time = item.dateTo != null
                           ? TimeOfDay.fromDateTime(DateTime.parse(item.dateTo!))
@@ -203,84 +255,114 @@ class _NutritionState extends State<Nutrition> {
                           ? '${time.hourOfPeriod}:${time.minute.toString().padLeft(2, '0')}${time.period == DayPeriod.am ? 'am' : 'pm'}'
                           : '';
 
-                      return Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: _card,
-                            borderRadius: BorderRadius.circular(14),
+                      return SpringButton(
+                        SpringButtonType.withOpacity,
+                        onTap: () async{
+
+                          HapticFeedback.mediumImpact();
+                          await Future.delayed(Durations.short4);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                NutritionDetailScreen(nutritionModel: item),
                           ),
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  width: 60,
-                                  height: 60,
-                                  color: Colors.white12,
-                                  child: const Icon(Icons.restaurant, color: Colors.white38),
+                        );
+                        },
+                        uiChild: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _card,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    width: 60,
+                                    height: 60,
+                                    color: Colors.grey.shade100,
+                                    // Light placeholder background
+                                    child: Icon(Icons.restaurant,
+                                        color: Colors.grey.shade400),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            item.value?.name ?? 'Unknown',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.value?.name ?? 'Unknown',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  color: _textPrimary,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15),
+                                            ),
                                           ),
-                                        ),
-                                        Text(timeStr,
+                                          Text(timeStr,
+                                              style: const TextStyle(
+                                                  color: _textSecondary,
+                                                  fontSize: 12)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                              Icons.local_fire_department,
+                                              color: Colors.orange,
+                                              size: 14),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${item.value?.calories?.toInt() ?? 0} kcal',
                                             style: const TextStyle(
-                                                color: Colors.white38, fontSize: 12)),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.local_fire_department,
-                                            color: Colors.orange, size: 14),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${item.value?.calories?.toInt() ?? 0} kcal',
-                                          style: const TextStyle(
-                                              color: Colors.white70, fontSize: 13),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      children: [
-                                        _MacroChip(
-                                            icon: Icons.bolt,
-                                            color: _proteinColor,
-                                            value: item.value?.protein ?? 0),
-                                        const SizedBox(width: 8),
-                                        _MacroChip(
-                                            icon: Icons.grain,
-                                            color: _carbsColor,
-                                            value: item.value?.carbs ?? 0),
-                                        const SizedBox(width: 8),
-                                        _MacroChip(
-                                            icon: Icons.water_drop,
-                                            color: _fatColor,
-                                            value: item.value?.fat ?? 0),
-                                      ],
-                                    ),
-                                  ],
+                                                color: _textPrimary,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          MacroChip(
+                                              icon: Icons.bolt,
+                                              color: _proteinColor,
+                                              value: item.value?.protein ?? 0),
+                                          const SizedBox(width: 8),
+                                          MacroChip(
+                                              icon: Icons.grain,
+                                              color: _carbsColor,
+                                              value: item.value?.carbs ?? 0),
+                                          const SizedBox(width: 8),
+                                          MacroChip(
+                                              icon: Icons.water_drop,
+                                              color: _fatColor,
+                                              value: item.value?.fat ?? 0),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -294,112 +376,6 @@ class _NutritionState extends State<Nutrition> {
           );
         },
       ),
-    );
-  }
-}
-
-class _MacroCard extends StatelessWidget {
-  final String label;
-  final double value;
-  final String unit;
-  final Color color;
-  final IconData icon;
-  final double progress;
-
-  const _MacroCard({
-    required this.label,
-    required this.value,
-    required this.unit,
-    required this.color,
-    required this.icon,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${value.toInt()}$unit',
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(color: Colors.white54, fontSize: 11)),
-          const SizedBox(height: 10),
-          Center(
-            child: _CircularProgress(
-              value: progress,
-              color: color,
-              size: 52,
-              icon: icon,
-              iconColor: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CircularProgress extends StatelessWidget {
-  final double value;
-  final Color color;
-  final double size;
-  final IconData icon;
-  final Color iconColor;
-
-  const _CircularProgress({
-    required this.value,
-    required this.color,
-    required this.size,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            value: value,
-            strokeWidth: 6,
-            backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-          Icon(icon, color: iconColor, size: size * 0.35),
-        ],
-      ),
-    );
-  }
-}
-
-class _MacroChip extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final double value;
-
-  const _MacroChip({required this.icon, required this.color, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 13),
-        const SizedBox(width: 2),
-        Text('${value.toInt()}g',
-            style: const TextStyle(color: Colors.white54, fontSize: 12)),
-      ],
     );
   }
 }
