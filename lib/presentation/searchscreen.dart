@@ -1,6 +1,8 @@
 import 'package:ahealth/appcolors.dart';
+import 'package:go_router/go_router.dart';
 
 import '../blocs/food_search/food_search_cubit.dart';
+import '../blocs/fooddetail/food_detail_cubit.dart';
 import '../config/appconstants.dart';
 import 'fooddetailscreen.dart';
 import 'package:ahealth/models/food_search_model.dart';
@@ -124,10 +126,16 @@ class _SearchScreenState extends State<SearchScreen> {
               searchFoodBox!.put(food.foodId!, food);
               dev.log("food is put in local");
             }
+            dev.log(food.foodId.toString());
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => FoodDetailScreen(foodId: food.foodId!)));
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: context.read<FoodDetailCubit>(),
+                  child: FoodDetailScreen(foodId: food.foodId!),
+                ),
+              ),
+            );
           } else {
             dev.log("unable to get foodId");
           }

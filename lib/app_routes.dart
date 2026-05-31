@@ -1,6 +1,7 @@
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chatscreen.dart';
+import 'package:ahealth/presentation/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/onboarding/getstartingscreen.dart';
 import 'package:ahealth/presentation/onboarding/onboardingscreen.dart';
@@ -128,6 +129,12 @@ class AppRoutes {
       GoRoute(
         path: nutritionPage,
         builder: (context, state) => const NutritionPage(),
+      ),
+      GoRoute(
+        path: '/foodDetail/:foodId',
+        builder: (context, state) => FoodDetailScreen(
+          foodId: state.pathParameters['foodId']!,
+        ),
       ),
       GoRoute(
         path: chatScreen,

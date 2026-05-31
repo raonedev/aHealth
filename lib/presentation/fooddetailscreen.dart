@@ -47,10 +47,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     if (state.foodWithServingsModel.food != null)
                       Text(state.foodWithServingsModel.food!.foodName ??
                           "NULL Name"),
-                    if (state.foodWithServingsModel.food != null ||
-                        state.foodWithServingsModel.food!.servings != null ||
+                    if (state.foodWithServingsModel.food != null &&
+                        state.foodWithServingsModel.food!.servings != null &&
                         state.foodWithServingsModel.food!.servings!.serving !=
-                            null ||
+                            null &&
                         state.foodWithServingsModel.food!.servings!.serving!
                             .isNotEmpty)
                       Expanded(

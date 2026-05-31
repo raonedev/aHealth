@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
@@ -21,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 1;
+  int _currentIndex = 0;
   final List<Widget> _screens = [
     const HomeWidget(),
     const WaterWidget(),
@@ -29,11 +30,19 @@ class _HomeScreenState extends State<HomeScreen> {
     const ChatWidget()
   ];
 
-  final PageController _pageController = PageController(initialPage: 1);
+  final PageController _pageController = PageController(initialPage: 0);
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   @override
