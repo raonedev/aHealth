@@ -1,14 +1,18 @@
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
+import 'package:ahealth/services/chat_hive_service.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
 import 'blocs/charts/weight_chart/weight_chart_cubit.dart';
+import 'blocs/chat/chat_cubit.dart';
 import 'blocs/food_search/food_search_cubit.dart';
 import 'package:flutter/services.dart';
 import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
+import 'models/chat/chat_message_model.dart';
+import 'models/chat/chat_session_model.dart';
 import 'models/food_search_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -30,11 +34,15 @@ void main() async {
   Hive.registerAdapter(FoodAdapter());
   Hive.registerAdapter(ServingsAdapter());
   Hive.registerAdapter(ServingAdapter());
+  Hive.registerAdapter(ChatMessageAdapter());
+  Hive.registerAdapter(ChatSessionAdapter());
+  await ChatHiveService.instance.openBoxes();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors
-        .transparent, // Make the status bar transparent (or use your preferred color)
-    statusBarIconBrightness: Brightness.dark, // Makes the icons black
+    statusBarColor: Colors.transparent,
+    // Make the status bar transparent (or use your preferred color)
+    statusBarIconBrightness: Brightness.dark,
+    // Makes the icons black
     statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
   ));
 
@@ -91,6 +99,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => WeightChartCubit(),
         ),
+        BlocProvider(create: (_) => ChatCubit()),
       ],
       child: MaterialApp.router(
         title: 'A-HealthApp',

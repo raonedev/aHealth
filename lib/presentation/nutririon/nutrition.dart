@@ -93,6 +93,27 @@ class _NutritionState extends State<Nutrition> {
             );
           }
 
+          if(state is NutritionEmpty){
+            return Center(
+              child: GestureDetector(
+                onTap: () =>
+                    context.push(AppRoutes.searchScreen),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.square_list, size: 64, color: Colors.grey.shade300),
+                    const SizedBox(height: 16),
+                    const Text('No meals logged yet',
+                        style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    const Text('Tap the scan button to add food',
+                        style: TextStyle(color: _textSecondary, fontSize: 13)),
+                    const SizedBox(height: 6),
+                  ],
+                ),
+              ),
+            );
+          }
           final items = state is NutritionSuccess
               ? state.nutritionModel
               : <NutritionModel>[];

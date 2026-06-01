@@ -57,6 +57,8 @@ dependencies:
   go_router: ^16.3.0
   hugeicons: ^1.1.7
   sensors_plus: ^7.0.0
+  flutter_markdown_plus: ^1.0.7
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_test:

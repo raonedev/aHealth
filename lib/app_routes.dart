@@ -1,6 +1,7 @@
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chartscreen.dart';
+import 'package:ahealth/presentation/chat/chat.dart';
 import 'package:ahealth/presentation/chatscreen.dart';
 import 'package:ahealth/presentation/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
@@ -147,7 +148,7 @@ class AppRoutes {
               GoRoute(path: 'foodDetail/:foodId', builder: (c, s) => FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
             ],
           ),
-          GoRoute(path: '/shell/chat', pageBuilder: (c, s) => const NoTransitionPage(child: ChatScreen())),
+          GoRoute(path: '/shell/chat', pageBuilder: (c, s) => const NoTransitionPage(child: ChatWidget())),
         ],
       ),
       GoRoute(
@@ -177,60 +178,5 @@ class AppRoutes {
         ),
       ),
     ],
-    // redirect: (context, state) {
-    //   final state = context.watch<InitAppCubit>().state;
-    //   if (state is InitAppLoading) {
-    //     return '/loading';
-    //   } else
-    //   if (state is InitAppPermissionNotAvailable) {
-    //     return permissionError;
-    //   } else if (state is InitAppSdkUnavailable) {
-    //     return sdkError;
-    //   } else if (state is InitAppFailed) {
-    //     return null;
-    //   } else if (state is InitAppSuccess) {
-    //     loadData(context);
-    //     return getStart;
-    //   } else {
-    //     return null;
-    //   }
-    // },
   );
 }
-/*
-
-BlocListener<InitAppCubit, InitAppState>(
-        listener: (context, state) {
-          // if (state is InitAppLoading) {
-          //   // Show loading dialog
-          //   showCustomDialog(
-          //     context: context,
-          //     title: "Loading...",
-          //     message: "Please wait while we load data.",
-          //   );
-          // } else
-          if (state is InitAppPermissionNotAvailable) {
-            context.go(AppRoutes.permissionError);
-          } else if (state is InitAppSdkUnavailable) {
-            // Show SDK unavailable dialog
-            // showCustomDialog(
-            //     context: context,
-            //     title: "SDK Unavailable",
-            //     message:
-            //         "SDK is unavailable. Please install heath connect app.",
-            //     onPressed: () async {
-            //       await context.read<InitAppCubit>().installHealthConnect();
-            //     });
-            context.go(AppRoutes.sdkError);
-          } else if (state is InitAppFailed) {
-            // Show failure dialog
-            showCustomDialog(
-                context: context,
-                title: "Failed",
-                message: "Initialization failed. Please try again.");
-          } else if (state is InitAppSuccess) {
-            loadData(context);
-          }
-        },
-
-*/

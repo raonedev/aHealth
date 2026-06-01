@@ -4,6 +4,10 @@ sealed class NutritionState extends Equatable {
   const NutritionState();
 }
 
+final class NutritionEmpty extends NutritionState {
+  @override
+  List<Object> get props => [];
+}
 final class NutritionLoading extends NutritionState {
   @override
   List<Object> get props => [];
