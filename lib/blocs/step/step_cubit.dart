@@ -45,4 +45,24 @@ class StepsCubit extends Cubit<StepsState> {
       emit(StepFailed(errorMessage: e.toString()));
     }
   }
+  Future<int> getTodayStep()async{
+
+    try{
+      final now = DateTime.now();
+      final midnight = DateTime(now.year, now.month, now.day);
+      bool stepsPermission =
+          await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+      if (!stepsPermission) {
+        stepsPermission = await Health().requestAuthorization(
+          [HealthDataType.STEPS],
+          permissions: [HealthDataAccess.READ_WRITE],
+        );
+      }
+      final res= Health().getTotalStepsInInterval(midnight, now);
+      return await res??0;
+    }catch(e){
+      return 0;
+    }
+
+  }
 }

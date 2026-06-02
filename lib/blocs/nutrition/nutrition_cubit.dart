@@ -31,7 +31,7 @@ class NutritionCubit extends Cubit<NutritionState> {
       );
 
       if (healthData.isEmpty) {
-        emit(const NutritionFailed(errorMessage: "NULL"));
+        emit(NutritionEmpty());
       } else {
         // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));

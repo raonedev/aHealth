@@ -1,77 +1,72 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:developer' as dev;
-
-import 'package:ahealth/models/food_search_model.dart';
-import 'package:ahealth/secrets/secrets.dart';
-import 'package:bloc/bloc.dart';
+import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:ahealth/models/food_search_model.dart';
+
+import '../../secrets/secrets.dart';
+
 part 'food_search_state.dart';
+
+const String _baseUrl = 'https://8ggapbx887.execute-api.ap-south-1.amazonaws.com';
 
 class FoodSearchCubit extends Cubit<FoodSearchState> {
   FoodSearchCubit() : super(FoodSearchInitailize());
 
-  Future<void> searchFood(String query) async {
+  Future<void> searchFood(String query, {int page = 0, int limit = 20}) async {
     if (query.isEmpty) {
       emit(const FoodSearchFailed(errorMessage: "Please enter food"));
       return;
     }
     emit(FoodSearchLoading());
-    // OAuth parameters
-    const String method = 'GET';
-    const String url = 'https://platform.fatsecret.com/rest/server.api';
-    final String timestamp =
-        (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
-    final String nonce = Random().nextInt(1 << 32).toString();
 
-    final Map<String, String> oauthParams = {
-      'oauth_consumer_key': FAT_SECRET_CONSUMER_KEY,
-      'oauth_signature_method': 'HMAC-SHA1',
-      'oauth_timestamp': timestamp,
-      'oauth_nonce': nonce,
-      'oauth_version': '1.0',
-      'method': 'foods.search',
-      'search_expression': query,
-      'format': 'json',
-      'max_results': '10',
-    };
+    try {
+      final uri = Uri.parse('$_baseUrl/foods/search').replace(queryParameters: {
+        'q': query,
+        'page': page.toString(),
+        'limit': limit.toString(),
+      });
 
-    // Create Signature Base String
-    final sortedParams = oauthParams.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    final paramString = sortedParams
-        .map((e) =>
-            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&');
-    final signatureBaseString =
-        '$method&${Uri.encodeComponent(url)}&${Uri.encodeComponent(paramString)}';
+      final response = await http.get(uri);
+      dev.log('Search status: ${response.statusCode}');
+      dev.log('Search response: ${response.body}');
 
-    // Sign the Base String
-    final signingKey = '${Uri.encodeComponent(FAT_SECRET_CONSUMER_SECRET)}&';
-    final hmac = Hmac(sha1, utf8.encode(signingKey));
-    final digest = hmac.convert(utf8.encode(signatureBaseString));
-    final signature = base64Encode(digest.bytes);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        emit(FoodSearchSuccess(
+            foodSearchModel: FoodSearchModel.fromJson(decoded)));
+      } else {
+        emit(FoodSearchFailed(
+            errorMessage: 'Error: ${response.statusCode} ${response.body}'));
+      }
+    } catch (e) {
+      emit(FoodSearchFailed(errorMessage: e.toString()));
+    }
+  }
 
-    // Add signature to parameters
-    oauthParams['oauth_signature'] = signature;
+  Future<void> getFoodDetails(String foodId) async {
+    emit(FoodDetailsLoading());
 
-    // Send GET request
-    final uri = Uri.parse(
-        '$url?${oauthParams.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&')}');
+    try {
+      final uri = Uri.parse('$_baseUrl/foods/details')
+          .replace(queryParameters: {'foodId': foodId});
 
-    final response = await http.get(uri);
+      final response = await http.get(uri);
+      dev.log('Details status: ${response.statusCode}');
+      dev.log('Details response: ${response.body}');
 
-    if (response.statusCode == 200) {
-      dev.log('Response: ${response.body}');
-      emit(FoodSearchSuccess(
-          foodSearchModel:
-              FoodSearchModel.fromJson(jsonDecode(response.body))));
-    } else {
-      emit(FoodSearchFailed(
-          errorMessage: 'Error: ${response.statusCode} ${response.body}'));
-      dev.log('Error:', error: '${response.statusCode} ${response.body}');
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        emit(FoodDetailsSuccess(foodDetails: decoded['food']));
+      } else {
+        emit(FoodSearchFailed(
+            errorMessage: 'Error: ${response.statusCode} ${response.body}'));
+      }
+    } catch (e) {
+      emit(FoodSearchFailed(errorMessage: e.toString()));
     }
   }
 }
