@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
@@ -46,12 +47,18 @@ class _HomeWidgetState extends State<HomeWidget> {
             children: [
               SpringButton(
                 SpringButtonType.withOpacity,
-                onTap: () => context.go('/shell/nutrition'),
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await Future.delayed(Durations.medium1);
+                  context.go('/shell/nutrition');
+                },
                 uiChild: const NutritionSummaryCard(),
               ),
               SpringButton(
                 SpringButtonType.withOpacity,
-                onTap: () {
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await Future.delayed(Durations.medium1);
                   context.push(AppRoutes.stepChartScreen);
                 },
                 uiChild: healthCard(

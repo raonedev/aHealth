@@ -8,8 +8,8 @@ import 'step_point.dart';
 class StepLineChart extends StatelessWidget {
   final List<StepPoint> points;
   final String label;
-  const StepLineChart({super.key, required this.points, required this.label});
-  
+  StepLineChart({super.key, required this.points, required this.label});
+
   String _fmt(double v) => NumberFormat('#,###').format(v.round());
 
   @override
@@ -48,43 +48,73 @@ class StepLineChart extends StatelessWidget {
                     const TextStyle(fontSize: 10, color: Colors.grey),
                   );
                 },
-                majorGridLines: const MajorGridLines(
-                    width: 0.5, color: Color(0xFFEEEEEE)),
+                majorGridLines:
+                    const MajorGridLines(width: 0.5, color: Color(0xFFEEEEEE)),
                 axisLine: const AxisLine(width: 0),
               ),
-              tooltipBehavior: TooltipBehavior(
+              trackballBehavior: TrackballBehavior(
                 enable: true,
-                builder: (data, point, series, pointIndex, seriesIndex) {
-                  final p = data as StepPoint;
-                  return Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(DateFormat('EEE, dd MMM').format(p.date),
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-                        const SizedBox(height: 4),
-                        Row(children: [
-                          const CircleAvatar(radius: 4, backgroundColor: Color(0xFF639922)),
-                          const SizedBox(width: 6),
-                          Text('${_fmt(p.steps)} steps',
-                              style: const TextStyle(fontSize: 11)),
-                        ]),
-                        const SizedBox(height: 2),
-                        Row(children: [
-                          const CircleAvatar(radius: 4, backgroundColor: Color(0xFFEF9F27)),
-                          const SizedBox(width: 6),
-                          Text('Target: ${_fmt(p.target)}',
-                              style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                        ]),
-                      ],
-                    ),
+                activationMode: ActivationMode.singleTap,
+                // FIX: Force the trackball to group data from all series together
+                tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+                tooltipSettings: const InteractiveTooltip(enable: false),
+                lineType: TrackballLineType.vertical,
+                lineColor: Colors.orange,
+                lineDashArray: const [4, 2],
+                markerSettings: const TrackballMarkerSettings(
+                  markerVisibility: TrackballVisibilityMode.visible,
+                  height: 8,
+                  width: 8,
+                  borderWidth: 2,
+                  borderColor: Colors.white,
+                ),
+                 builder: (context, trackballDetails) {
+                  if (trackballDetails.groupingModeInfo == null) return const SizedBox();
+                  final points = trackballDetails.groupingModeInfo!.points;
+                  // points[0] = target series, points[1] = steps series
+                  final stepVal = points.length > 1 ? points[1].y as double : 0.0;
+                  final targetVal = points.isNotEmpty ? points[0].y as double : 0.0;
+                  final date = points.isNotEmpty ? points[0].x as DateTime : DateTime.now();
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Steps tooltip (linked to green line)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEAF3DE),
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: const Color(0xFF3B6D11).withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          '${DateFormat('EEE, dd MMM').format(date)}\n${_fmt(stepVal)} steps',
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF3B6D11),
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Target tooltip (linked to amber line)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAEEDA),
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: const Color(0xFF854F0B).withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          'Target: ${_fmt(targetVal)}',
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF854F0B),
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -128,7 +158,8 @@ class StepLineChart extends StatelessWidget {
             child: Row(children: [
               LegendDot(color: Color(0xFF639922), label: 'Steps taken'),
               SizedBox(width: 16),
-              LegendDot(color: Color(0xFFEF9F27), label: 'Target', dashed: true),
+              LegendDot(
+                  color: Color(0xFFEF9F27), label: 'Target', dashed: true),
             ]),
           ),
         ],
