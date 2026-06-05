@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/initialized/init_app_cubit.dart';
 import 'helper/helper_func.dart';
 import 'presentation/nutritionpage.dart';
+import 'presentation/steps/step_chart_screen.dart';
 
 class AppRoutes {
   static const String getStart = "/";
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String searchScreen = "/searchFood";
   static const String nutritionPage = "/nutritionPage";
   static const String chatScreen = "/ChatScreen";
+  static const String stepChartScreen = "/chart/step";
 
   static final GoRouter router = GoRouter(
     initialLocation: getStart,
@@ -169,6 +171,11 @@ class AppRoutes {
         path: chatScreen,
         builder: (context, state) => const ChatScreen(),
       ),
+      GoRoute(
+        path: stepChartScreen,
+        builder: (context, state) => const StepChartScreen(),
+      ),
+
       GoRoute(
         path: '/chart/:type',
         builder: (c, s) => ChartScreen(

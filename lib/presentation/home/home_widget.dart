@@ -49,33 +49,39 @@ class _HomeWidgetState extends State<HomeWidget> {
                 onTap: () => context.go('/shell/nutrition'),
                 uiChild: const NutritionSummaryCard(),
               ),
-              healthCard(
-                healthType: HealthDataType.STEPS,
-                context: context,
-                title: 'Steps',
-                lottieString: 'assets/lottieanimations/walkingmen.json',
-                cubit: BlocBuilder<StepsCubit, StepsState>(
-                  builder: (context, state) {
-                    if (state is StepLoadingState) {
-                      return const CupertinoActivityIndicator();
-                    } else if (state is StepFailed) {
-                      if (state.errorMessage == "NULL") {
-                        return const Text('0');
-                      }
-                      return Text(state.errorMessage);
-                    } else if (state is StepSuccessState) {
-                      num noOfSteps = 0;
-                      for (final step in state.stepModel) {
-                        if (step.value != null) {
-                          noOfSteps += step.value!.numericValue ?? 0;
+              SpringButton(
+                SpringButtonType.withOpacity,
+                onTap: () {
+                  context.push(AppRoutes.stepChartScreen);
+                },
+                uiChild: healthCard(
+                  healthType: HealthDataType.STEPS,
+                  context: context,
+                  title: 'Steps',
+                  lottieString: 'assets/lottieanimations/walkingmen.json',
+                  cubit: BlocBuilder<StepsCubit, StepsState>(
+                    builder: (context, state) {
+                      if (state is StepLoadingState) {
+                        return const CupertinoActivityIndicator();
+                      } else if (state is StepFailed) {
+                        if (state.errorMessage == "NULL") {
+                          return const Text('0');
                         }
-                      }
+                        return Text(state.errorMessage);
+                      } else if (state is StepSuccessState) {
+                        num noOfSteps = 0;
+                        for (final step in state.stepModel) {
+                          if (step.value != null) {
+                            noOfSteps += step.value!.numericValue ?? 0;
+                          }
+                        }
 
-                      return Text('$noOfSteps');
-                    } else {
-                      return Text("unknown state ${state.toString()}");
-                    }
-                  },
+                        return Text('$noOfSteps');
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
+                  ),
                 ),
               ),
               SpringButton(
@@ -162,7 +168,6 @@ class _HomeWidgetState extends State<HomeWidget> {
                   showSleepDialog(context);
                 },
               ),
-
             ],
           ),
         ),
@@ -178,47 +183,41 @@ class _HomeWidgetState extends State<HomeWidget> {
     required HealthDataType healthType,
     VoidCallback? onAdd,
   }) {
-    return GestureDetector(
-      onTap: () {
-        dev.log("/chart/${healthType.name}");
-        context.push('/chart/${healthType.name}');
-      },
-      child: Stack(
-        children: [
-          Container(
-            constraints: const BoxConstraints(minHeight: 200, minWidth: 400),
-            padding: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Transform.scale(
-                  scale: 0.8,
-                  child: Lottie.asset(
-                    lottieString,
-                  ),
-                ),
-                Text(title),
-                cubit,
-              ],
-            ),
+    return Stack(
+      children: [
+        Container(
+          constraints: const BoxConstraints(minHeight: 200, minWidth: 400),
+          padding: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: white,
+            borderRadius: BorderRadius.circular(16),
           ),
-          onAdd != null
-              ? Positioned(
-                  bottom: 10,
-                  right: 0,
-                  child: IconButton(
-                      onPressed: () {
-                        dev.log("onADD");
-                        onAdd();
-                      },
-                      icon: const Icon(Icons.add)))
-              : const SizedBox(),
-        ],
-      ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 0.8,
+                child: Lottie.asset(
+                  lottieString,
+                ),
+              ),
+              Text(title),
+              cubit,
+            ],
+          ),
+        ),
+        onAdd != null
+            ? Positioned(
+                bottom: 10,
+                right: 0,
+                child: IconButton(
+                    onPressed: () {
+                      dev.log("onADD");
+                      onAdd();
+                    },
+                    icon: const Icon(Icons.add)))
+            : const SizedBox(),
+      ],
     );
   }
 }
