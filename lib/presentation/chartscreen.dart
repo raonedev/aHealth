@@ -32,15 +32,13 @@ class _ChartScreenState extends State<ChartScreen> {
   Future<void> getChartData() async {
     (widget.healthType == HealthDataType.STEPS)
         ? context.read<StepChartCubit>().getDataFromNow()
-        : (widget.healthType == HealthDataType.WATER)
-            ? context.read<WaterChartCubit>().getDataFromNow()
-            : (widget.healthType == HealthDataType.SLEEP_SESSION)
-                ? context.read<SleepChartCubit>().getDataFromNow()
-                : (widget.healthType == HealthDataType.WEIGHT)
-                    ? context.read<WeightChartCubit>().getDataFromNow()
-                    : (widget.healthType == HealthDataType.HEIGHT)
-                        ? context.read<HeightChartCubit>().getDataFromNow()
-                        : emptyFun();
+        : (widget.healthType == HealthDataType.SLEEP_SESSION)
+            ? context.read<SleepChartCubit>().getDataFromNow()
+            : (widget.healthType == HealthDataType.WEIGHT)
+                ? context.read<WeightChartCubit>().getDataFromNow()
+                : (widget.healthType == HealthDataType.HEIGHT)
+                    ? context.read<HeightChartCubit>().getDataFromNow()
+                    : emptyFun();
   }
 
   @override
@@ -77,15 +75,13 @@ class _ChartScreenState extends State<ChartScreen> {
           Text("${widget.healthType}"),
           (widget.healthType == HealthDataType.STEPS)
               ? _step()
-              : (widget.healthType == HealthDataType.WATER)
-                  ? _water()
-                  : (widget.healthType == HealthDataType.SLEEP_SESSION)
-                      ? _sleep()
-                      : (widget.healthType == HealthDataType.WEIGHT)
-                          ? _weight()
-                          : (widget.healthType == HealthDataType.HEIGHT)
-                              ? _height()
-                              : const Text('Something went wrong'),
+              : (widget.healthType == HealthDataType.SLEEP_SESSION)
+                  ? _sleep()
+                  : (widget.healthType == HealthDataType.WEIGHT)
+                      ? _weight()
+                      : (widget.healthType == HealthDataType.HEIGHT)
+                          ? _height()
+                          : const Text('Something went wrong'),
         ],
       ),
     );
@@ -107,30 +103,6 @@ class _ChartScreenState extends State<ChartScreen> {
             return chartWeekWidget(data: state.weekData);
           } else {
             return chartMonthWidget(data: state.monthData);
-          }
-        } else {
-          return Text("UNKNOWN STATE $state");
-        }
-      },
-    );
-  }
-
-  Widget _water() {
-    return BlocBuilder<WaterChartCubit, WaterChartState>(
-      builder: (context, state) {
-        if (state is WaterChartLoading) {
-          return const Center(
-            child: CupertinoActivityIndicator(),
-          );
-        } else if (state is WaterChartFailed) {
-          return Center(
-            child: Text(state.errorMessage),
-          );
-        } else if (state is WaterChartSuccess) {
-          if (selectedValue == 0) {
-            return chartWeekWidget(data: state.dataWeek);
-          } else {
-            return chartMonthWidget(data: state.dataMonth);
           }
         } else {
           return Text("UNKNOWN STATE $state");

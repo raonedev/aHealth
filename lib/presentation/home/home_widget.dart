@@ -13,14 +13,10 @@ import 'package:lottie/lottie.dart';
 import '../../app_routes.dart';
 import '../../appcolors.dart';
 import '../../blocs/height/height_cubit.dart';
-import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../blocs/sleep/sleep_cubit.dart';
 import '../../blocs/step/step_cubit.dart';
-import '../../blocs/water/water_cubit.dart';
 import '../../blocs/weight/weight_cubit.dart';
 import '../../helper/helper_func.dart';
-import '../chartscreen.dart';
-import '../nitritiondetailscreen.dart';
 import '../nutririon/widgets/nutrition_card_summary.dart';
 import '../water/widgets/water_summary_card.dart';
 
@@ -93,7 +89,13 @@ class _HomeWidgetState extends State<HomeWidget> {
               ),
               SpringButton(
                 SpringButtonType.withOpacity,
-                onTap: () => context.go('/shell/water'),
+                // onTap: () => context.go('/shell/water'),
+                //  SpringButtonType.withOpacity,
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await Future.delayed(Durations.medium1);
+                  context.push(AppRoutes.waterChartScreen);
+                },
                 uiChild: const WaterSummaryCard(),
               ),
               healthCard(

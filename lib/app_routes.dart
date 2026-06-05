@@ -24,6 +24,7 @@ import 'blocs/initialized/init_app_cubit.dart';
 import 'helper/helper_func.dart';
 import 'presentation/nutritionpage.dart';
 import 'presentation/steps/step_chart_screen.dart';
+import 'presentation/water/charts/water_chart_screen.dart';
 
 class AppRoutes {
   static const String getStart = "/";
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String nutritionPage = "/nutritionPage";
   static const String chatScreen = "/ChatScreen";
   static const String stepChartScreen = "/chart/step";
+  static const String waterChartScreen = "/chart/water";
 
   static final GoRouter router = GoRouter(
     initialLocation: getStart,
@@ -174,6 +176,10 @@ class AppRoutes {
       GoRoute(
         path: stepChartScreen,
         builder: (context, state) => const StepChartScreen(),
+      ),
+      GoRoute(
+        path: waterChartScreen,
+        builder: (context, state) => const WaterChartScreen(),
       ),
 
       GoRoute(
