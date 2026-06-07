@@ -37,12 +37,13 @@ class WaterMonthlyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pts = _points;
+    final pts = _points.reversed.toList();
     final total = monthData.isEmpty ? 0.0 : monthData.reduce((a, b) => a + b);
     final best = monthData.isEmpty ? 0.0 : monthData.reduce((a, b) => a > b ? a : b);
     final hit = monthData.where((l) => l >= kWaterTarget).length;
 
     return ListView(
+      physics: BouncingScrollPhysics(),
       children: [
         WaterSummaryCards(items: [
           ('Total', '${total.toStringAsFixed(1)}L', true),

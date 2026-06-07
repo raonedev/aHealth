@@ -15,13 +15,13 @@ class MonthlyTab extends StatelessWidget {
   List<StepPoint> get _points {
     final now = DateTime.now();
     return List.generate(monthData.length, (i) {
-      final date = now.subtract(Duration(days: 30 - i));
+      final date = now.subtract(Duration(days: 29 - i));
       return StepPoint(date, monthData[i], kDailyTarget);
     });
   }
 
   List<WeekSummary> get _weekSummaries {
-    final pts = _points;
+    final pts = _points.reversed.toList();
     final weeks = <WeekSummary>[];
     for (int i = 0; i < pts.length; i += 7) {
       final slice = pts.sublist(i, (i + 7).clamp(0, pts.length));
@@ -50,6 +50,7 @@ class MonthlyTab extends StatelessWidget {
     final hit = monthData.where((s) => s >= kDailyTarget).length;
 
     return ListView(
+      physics: BouncingScrollPhysics(),
       children: [
         SummaryCards(
           items: [

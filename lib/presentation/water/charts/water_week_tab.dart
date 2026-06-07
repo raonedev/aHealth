@@ -18,12 +18,13 @@ class WaterWeeklyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pts = _points;
+    final pts = _points.reversed.toList();
     final today = pts.isNotEmpty ? pts.last.liters : 0.0;
     final avg = weekData.isEmpty ? 0.0 : weekData.reduce((a, b) => a + b) / weekData.length;
     final hit = weekData.where((l) => l >= kWaterTarget).length;
 
     return ListView(
+      physics: BouncingScrollPhysics(),
       children: [
         WaterSummaryCards(items: [
           ('Today', '${today.toStringAsFixed(1)}L', true),

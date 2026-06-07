@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/charts/water_chart/water_chart_cubit.dart';
+import '../../common/widgets/custom_segment.dart';
 import 'water_month_tab.dart';
 import 'water_week_tab.dart';
 
@@ -13,19 +14,17 @@ class WaterChartScreen extends StatefulWidget {
   State<WaterChartScreen> createState() => _WaterChartScreenState();
 }
 
-class _WaterChartScreenState extends State<WaterChartScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tab;
+class _WaterChartScreenState extends State<WaterChartScreen> {
+  int _selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
     context.read<WaterChartCubit>().getChartData();
   }
 
   @override
-  void dispose() { _tab.dispose(); super.dispose(); }
+  void dispose() {  super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +35,6 @@ class _WaterChartScreenState extends State<WaterChartScreen>
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tab,
-          labelColor: const Color(0xFF185FA5),
-          indicatorColor: const Color(0xFF185FA5),
-          unselectedLabelColor: Colors.grey,
-          tabs: const [Tab(text: 'Weekly'), Tab(text: 'Monthly')],
-        ),
       ),
       body: BlocBuilder<WaterChartCubit, WaterChartState>(
         builder: (context, state) {
@@ -53,11 +45,31 @@ class _WaterChartScreenState extends State<WaterChartScreen>
             return Center(child: Text(state.errorMessage));
           }
           if (state is WaterChartSuccess) {
-            return TabBarView(
-              controller: _tab,
+            return Stack(
               children: [
-                WaterWeeklyTab(weekData: state.weekData),
-                WaterMonthlyTab(monthData: state.monthData, loaded: state.monthLoaded),
+                IndexedStack(
+                  index: _selectedTab,
+                  children: [
+                    WaterWeeklyTab(weekData: state.weekData),
+                    WaterMonthlyTab(monthData: state.monthData, loaded: state.monthLoaded),
+                  ],
+                ),
+                Positioned(
+                  left: 10,
+                  right: 10,
+                  bottom: 20,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: CustomSlidingSegmentedControl(
+                        currentSelection: _selectedTab,
+                        children: const ['Weekly', 'Monthly'],
+                        onValueChanged: (i) => setState(() => _selectedTab = i),
+                        thumbColor: const Color(0xFF185FA5),
+                      ),
+                    ),
+                  ),
+                )
               ],
             );
           }

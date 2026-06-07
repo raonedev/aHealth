@@ -14,7 +14,7 @@ class WeeklyTab extends StatelessWidget {
   List<StepPoint> get _points {
     final now = DateTime.now();
     return List.generate(weekData.length, (i) {
-      final date = now.subtract(Duration(days: 7 - i));
+      final date = now.subtract(Duration(days: 6 - i));
       return StepPoint(date, weekData[i], kDailyTarget);
     });
   }
@@ -23,12 +23,13 @@ class WeeklyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pts = _points;
+    final pts = _points.reversed.toList();
     final today = pts.isNotEmpty ? pts.last : null;
     final double avg = weekData.isEmpty ? 0 : weekData.reduce((a, b) => a + b) / weekData.length;
     final hit = weekData.where((s) => s >= kDailyTarget).length;
 
     return ListView(
+      physics: BouncingScrollPhysics(),
       children: [
         SummaryCards(
           items: [
