@@ -16,10 +16,14 @@ class ChatMessage extends HiveObject {
   @HiveField(3)
   final String sessionId;
 
+  @HiveField(4)
+  final String? thinkingText;
+
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.time,
     required this.sessionId,
+    this.thinkingText,
   });
 }

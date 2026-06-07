@@ -735,7 +735,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
             if (context.mounted) {
-              context.go(AppRoutes.home);
+              context.go('/shell/home');
             }
           },
           uiChild: Container(

@@ -13,13 +13,15 @@ final class ChatInitial extends ChatState {
 final class ChatUpdated extends ChatState {
   final List<ChatMessage> messages;
   final bool isLoading;
-  const ChatUpdated({required this.messages, this.isLoading = false});
+  final bool isThinking;
+  const ChatUpdated({required this.messages, this.isLoading = false,this.isThinking = false,});
 
   @override
   // TODO: implement props
   List<Object?> get props => [
     isLoading,
     messages,
+    isThinking,
   ];
 }
 

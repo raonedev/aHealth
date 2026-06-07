@@ -21,13 +21,14 @@ class ChatMessageAdapter extends TypeAdapter<ChatMessage> {
       isUser: fields[1] as bool,
       time: fields[2] as DateTime,
       sessionId: fields[3] as String,
+      thinkingText: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ChatMessage obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.text)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class ChatMessageAdapter extends TypeAdapter<ChatMessage> {
       ..writeByte(2)
       ..write(obj.time)
       ..writeByte(3)
-      ..write(obj.sessionId);
+      ..write(obj.sessionId)
+      ..writeByte(4)
+      ..write(obj.thinkingText);
   }
 
   @override
