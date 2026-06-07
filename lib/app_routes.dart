@@ -22,6 +22,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
 import 'helper/helper_func.dart';
+import 'models/nutrition_model.dart';
+import 'presentation/nitritiondetailscreen.dart';
 import 'presentation/nutritionpage.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
@@ -150,10 +152,17 @@ class AppRoutes {
             routes: [
               GoRoute(path: 'search', builder: (c, s) => const SearchScreen()),
               GoRoute(path: 'foodDetail/:foodId', builder: (c, s) => FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
+
             ],
           ),
           GoRoute(path: '/shell/chat', pageBuilder: (c, s) => const NoTransitionPage(child: ChatWidget())),
         ],
+      ),
+      GoRoute(
+        path: '/nutrition/detail',
+        builder: (c, s) => NutritionDetailScreen(
+          nutritionModel: s.extra as NutritionModel,
+        ),
       ),
       GoRoute(
         path: searchScreen,

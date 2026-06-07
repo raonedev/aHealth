@@ -1,3 +1,4 @@
+import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/nutrition_model.dart';
@@ -71,44 +72,48 @@ class NutritionDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Premium Cal.ai Hero Calorie Indicator
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              decoration: BoxDecoration(
-                color: _surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.12),
-                          shape: BoxShape.circle,
+            // Premium Calorie Indicator
+            SpringButton(
+              SpringButtonType.onlyScale,
+              onTap: (){},
+              uiChild: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.local_fire_department_rounded, color: Colors.orange, size: 28),
                         ),
-                        child: const Icon(Icons.local_fire_department_rounded, color: Colors.orange, size: 28),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Energy",
-                            style: TextStyle(fontSize: 14, color: _textSecondary, fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            "$totalCalories kcal",
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Energy",
+                              style: TextStyle(fontSize: 14, color: _textSecondary, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              "$totalCalories kcal",
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -176,12 +181,17 @@ class NutritionDetailScreen extends StatelessWidget {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(12),
+    return SpringButton(
+
+      SpringButtonType.onlyScale,
+      onTap: (){},
+      uiChild: Container(
+        decoration: BoxDecoration(
+          color: _surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(children: dividedChildren),
       ),
-      child: Column(children: dividedChildren),
     );
   }
 

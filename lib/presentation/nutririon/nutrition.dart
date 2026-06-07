@@ -282,13 +282,7 @@ class _NutritionState extends State<Nutrition> {
 
                           HapticFeedback.mediumImpact();
                           await Future.delayed(Durations.short4);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                NutritionDetailScreen(nutritionModel: item),
-                          ),
-                        );
+                          context.push('/nutrition/detail', extra: item);
                         },
                         uiChild: Padding(
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
