@@ -1,6 +1,7 @@
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
+import 'package:ahealth/services/notification_services.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
@@ -38,6 +39,22 @@ void main() async {
   Hive.registerAdapter(ChatMessageAdapter());
   Hive.registerAdapter(ChatSessionAdapter());
   await ChatHiveService.instance.openBoxes();
+  // init once in main.dart
+await HealthNotificationService().init();
+
+// Water reminders: 8 AM → 10 PM, every 2 hours
+await HealthNotificationService().scheduleWaterReminders(
+  startTime: TimeOfDay(hour: 8, minute: 0),
+  endTime: TimeOfDay(hour: 22, minute: 0),
+  frequencyHours: 2, // customizable
+);
+
+// Meal reminders (pass null to disable any meal)
+await HealthNotificationService().scheduleMealReminders(
+  breakfastTime: TimeOfDay(hour: 8, minute: 0),
+  lunchTime: TimeOfDay(hour: 13, minute: 0),
+  dinnerTime: TimeOfDay(hour: 19, minute: 30),
+);
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
