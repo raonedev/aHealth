@@ -30,42 +30,40 @@ class StepChartCubit extends Cubit<StepChartState> {
 
     if (!hasPermission) {
       log('Permissions denied by user.');
-      emit(StepChartsFailed(
-          errorMessage: "Permission Denied")); 
+      emit(StepChartsFailed(errorMessage: "Permission Denied"));
       return;
     }
 
     final now = DateTime.now();
+    final weekStart = now.subtract(const Duration(days: 6));
+    final monthStart = now.subtract(const Duration(days: 29));
 
-    // FIX #1: Correcting Week Data Range (Subtracting 6 days means: 6 days ago -> Today)
-    List<double> dataWeek = [];
-    for (var i = 0; i < 7; i++) {
-      double total = await getDataForDay(
-        date: now.subtract(
-            Duration(days: 6 - i)), 
-        healthType: HealthDataType.STEPS,
-      );
-      dataWeek.add(total);
-    }
+    // Fetch entire 30-day range in one call
+    final batch = await getDataForDaysBatch(
+      startDate: monthStart,
+      endDate: now,
+      healthType: HealthDataType.STEPS,
+    );
+
+    final dataWeek = List.generate(7, (i) {
+      final d = weekStart.add(Duration(days: i));
+      return batch[DateTime(d.year, d.month, d.day)] ?? 0;
+    });
 
     emit(StepChartsSuccess(
+      weekStartDate: weekStart,
       weekData: dataWeek,
       monthData: [],
       monthLoaded: false,
     ));
 
-    // FIX #1: Correcting Month Data Range (Subtracting 29 days means: 29 days ago -> Today)
-    List<double> dataMonth = [];
-    for (var i = 0; i < 30; i++) {
-      double total = await getDataForDay(
-        date: now.subtract(
-            Duration(days: 29 - i)), // When i=29, days subtracted = 0 (Today)
-        healthType: HealthDataType.STEPS,
-      );
-      dataMonth.add(total);
-    }
+    final dataMonth = List.generate(30, (i) {
+      final d = monthStart.add(Duration(days: i));
+      return batch[DateTime(d.year, d.month, d.day)] ?? 0;
+    });
 
     emit(StepChartsSuccess(
+      weekStartDate: weekStart,
       weekData: dataWeek,
       monthData: dataMonth,
       monthLoaded: true,

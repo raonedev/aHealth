@@ -35,6 +35,8 @@ class StepLineChart extends StatelessWidget {
                     : DateFormat('EEE'),
                 intervalType: DateTimeIntervalType.days,
                 interval: points.length > 10 ? 7 : 1,
+                // rangePadding: ChartRangePadding.additional,
+
                 majorGridLines: const MajorGridLines(width: 0),
                 axisLine: const AxisLine(width: 0),
                 labelStyle: const TextStyle(fontSize: 10, color: Colors.grey),
@@ -68,25 +70,31 @@ class StepLineChart extends StatelessWidget {
                   borderWidth: 2,
                   borderColor: Colors.white,
                 ),
-                 builder: (context, trackballDetails) {
-                  if (trackballDetails.groupingModeInfo == null) return const SizedBox();
+                builder: (context, trackballDetails) {
+                  if (trackballDetails.groupingModeInfo == null)
+                    return const SizedBox();
                   final points = trackballDetails.groupingModeInfo!.points;
                   // points[0] = target series, points[1] = steps series
-                  final stepVal = points.length > 1 ? points[1].y as double : 0.0;
-                  final targetVal = points.isNotEmpty ? points[0].y as double : 0.0;
-                  final date = points.isNotEmpty ? points[0].x as DateTime : DateTime.now();
+                  final stepVal =
+                      points.length > 1 ? points[1].y as double : 0.0;
+                  final targetVal =
+                      points.isNotEmpty ? points[0].y as double : 0.0;
+                  final date = points.isNotEmpty
+                      ? points[0].x as DateTime
+                      : DateTime.now();
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Steps tooltip (linked to green line)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFFEAF3DE),
                           borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: const Color(0xFF3B6D11).withOpacity(0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF3B6D11).withOpacity(0.3)),
                         ),
                         child: Text(
                           '${DateFormat('EEE, dd MMM').format(date)}\n${_fmt(stepVal)} steps',
@@ -99,12 +107,13 @@ class StepLineChart extends StatelessWidget {
                       const SizedBox(height: 4),
                       // Target tooltip (linked to amber line)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFAEEDA),
                           borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: const Color(0xFF854F0B).withOpacity(0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF854F0B).withOpacity(0.3)),
                         ),
                         child: Text(
                           'Target: ${_fmt(targetVal)}',
@@ -122,7 +131,9 @@ class StepLineChart extends StatelessWidget {
                 // Target line
                 LineSeries<StepPoint, DateTime>(
                   dataSource: points,
-                  xValueMapper: (p, _) => p.date,
+                  // Inside your series definition
+                  xValueMapper: (p, _) =>
+                      DateTime(p.date.year, p.date.month, p.date.day),
                   yValueMapper: (p, _) => p.target,
                   color: const Color(0xFFEF9F27),
                   width: 1.5,
@@ -133,7 +144,9 @@ class StepLineChart extends StatelessWidget {
                 // Steps area+line
                 SplineAreaSeries<StepPoint, DateTime>(
                   dataSource: points,
-                  xValueMapper: (p, _) => p.date,
+                  // Inside your series definition
+                  xValueMapper: (p, _) =>
+                      DateTime(p.date.year, p.date.month, p.date.day),
                   yValueMapper: (p, _) => p.steps,
                   color: const Color(0xFF639922),
                   opacity: 0.1,

@@ -23,7 +23,7 @@ class WeeklyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pts = _points.reversed.toList();
+    final pts = _points;
     final today = pts.isNotEmpty ? pts.last : null;
     final double avg = weekData.isEmpty ? 0 : weekData.reduce((a, b) => a + b) / weekData.length;
     final hit = weekData.where((s) => s >= kDailyTarget).length;
@@ -47,7 +47,7 @@ class WeeklyTab extends StatelessWidget {
                   color: Colors.grey[600], letterSpacing: .5)),
         ),
         const SizedBox(height: 8),
-        ...pts.map((p) => DayListTile(point: p)),
+         ...pts.reversed.map((p) => DayListTile(point: p)),
         const SizedBox(height: 16),
       ],
     );

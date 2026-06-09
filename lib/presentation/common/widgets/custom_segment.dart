@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:ahealth/appcolors.dart';
 import 'package:flutter/material.dart';
 
+import '../../../common/spring_button_widget.dart';
+
 class CustomSlidingSegmentedControl extends StatelessWidget {
   final int currentSelection;
   final List<String> children;
@@ -81,10 +83,10 @@ class CustomSlidingSegmentedControl extends StatelessWidget {
                     children: List.generate(children.length, (index) {
                       bool isSelected = currentSelection == index;
                       return Expanded(
-                        child: GestureDetector(
+                        child: SpringButton(
+                          SpringButtonType.withOpacity,
                           onTap: () => onValueChanged(index),
-                          behavior: HitTestBehavior.opaque,
-                          child: Center(
+                          uiChild: Center(
                             child: Text(
                               children[index],
                               style: theme.textTheme.bodyMedium?.copyWith(
