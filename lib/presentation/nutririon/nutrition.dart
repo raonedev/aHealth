@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +10,14 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../app_routes.dart';
+import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../nitritiondetailscreen.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/macro_card.dart';
 import 'widgets/macro_chip.dart';
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 
 // Light Theme Color Palette
 const Color _bg = Color(0xFFF6F6F9); // Light grayish-white background
@@ -44,11 +49,21 @@ class _NutritionState extends State<Nutrition> {
     return Scaffold(
       backgroundColor: _bg,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: kToolbarHeight+28),
+        padding: const EdgeInsets.only(bottom: kToolbarHeight + 28),
         child: SpringButton(
           SpringButtonType.withOpacity,
-          onTap: () {
-
+          onTap: () async {
+            try {
+              final picker = ImagePicker();
+              final picked =
+                  await picker.pickImage(source: ImageSource.gallery);
+              if (picked == null) return;
+              final bytes = await picked.readAsBytes();
+              final base64Image = base64Encode(bytes);
+              context.read<FoodScanCubit>().scanFoodImage(base64Image);
+            } catch (e, s) {
+              dev.log("Exception", error: e, stackTrace: s);
+            }
           },
           uiChild: Container(
               width: 60,
@@ -93,18 +108,21 @@ class _NutritionState extends State<Nutrition> {
             );
           }
 
-          if(state is NutritionEmpty){
+          if (state is NutritionEmpty) {
             return Center(
               child: GestureDetector(
-                onTap: () =>
-                    context.push(AppRoutes.searchScreen),
+                onTap: () => context.push(AppRoutes.searchScreen),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(CupertinoIcons.square_list, size: 64, color: Colors.grey.shade300),
+                    Icon(CupertinoIcons.square_list,
+                        size: 64, color: Colors.grey.shade300),
                     const SizedBox(height: 16),
                     const Text('No meals logged yet',
-                        style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: _textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600)),
                     const SizedBox(height: 6),
                     const Text('Tap the scan button to add food',
                         style: TextStyle(color: _textSecondary, fontSize: 13)),
@@ -278,8 +296,7 @@ class _NutritionState extends State<Nutrition> {
 
                       return SpringButton(
                         SpringButtonType.withOpacity,
-                        onTap: () async{
-
+                        onTap: () async {
                           HapticFeedback.mediumImpact();
                           await Future.delayed(Durations.short4);
                           context.push('/nutrition/detail', extra: item);

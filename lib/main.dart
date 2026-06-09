@@ -7,6 +7,7 @@ import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
 import 'blocs/charts/weight_chart/weight_chart_cubit.dart';
 import 'blocs/chat/chat_cubit.dart';
+import 'blocs/food_scan/food_scan_cubit.dart';
 import 'blocs/food_search/food_search_cubit.dart';
 import 'package:flutter/services.dart';
 import 'blocs/charts/height_chart/height_chart_cubit.dart';
@@ -40,21 +41,21 @@ void main() async {
   Hive.registerAdapter(ChatSessionAdapter());
   await ChatHiveService.instance.openBoxes();
   // init once in main.dart
-await HealthNotificationService().init();
+  await HealthNotificationService().init();
 
 // Water reminders: 8 AM → 10 PM, every 2 hours
-await HealthNotificationService().scheduleWaterReminders(
-  startTime: TimeOfDay(hour: 8, minute: 0),
-  endTime: TimeOfDay(hour: 22, minute: 0),
-  frequencyHours: 2, // customizable
-);
+  await HealthNotificationService().scheduleWaterReminders(
+    startTime: TimeOfDay(hour: 8, minute: 0),
+    endTime: TimeOfDay(hour: 22, minute: 0),
+    frequencyHours: 2, // customizable
+  );
 
 // Meal reminders (pass null to disable any meal)
-await HealthNotificationService().scheduleMealReminders(
-  breakfastTime: TimeOfDay(hour: 8, minute: 0),
-  lunchTime: TimeOfDay(hour: 13, minute: 0),
-  dinnerTime: TimeOfDay(hour: 19, minute: 30),
-);
+  await HealthNotificationService().scheduleMealReminders(
+    breakfastTime: TimeOfDay(hour: 8, minute: 0),
+    lunchTime: TimeOfDay(hour: 13, minute: 0),
+    dinnerTime: TimeOfDay(hour: 19, minute: 30),
+  );
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -118,6 +119,7 @@ class MyApp extends StatelessWidget {
           create: (context) => WeightChartCubit(),
         ),
         BlocProvider(create: (_) => ChatCubit()),
+        BlocProvider(create: (_) => FoodScanCubit()),
       ],
       child: MaterialApp.router(
         title: 'A-HealthApp',

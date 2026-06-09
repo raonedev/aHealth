@@ -1,13 +1,10 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:ahealth/models/food_search_model.dart';
 
-import '../../secrets/secrets.dart';
 
 part 'food_search_state.dart';
 

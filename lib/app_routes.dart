@@ -1,8 +1,6 @@
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
-import 'package:ahealth/presentation/chartscreen.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
-import 'package:ahealth/presentation/chatscreen.dart';
 import 'package:ahealth/presentation/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/home/home_widget.dart';
@@ -17,7 +15,6 @@ import 'package:ahealth/presentation/water/water.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:health/health.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
@@ -37,7 +34,6 @@ class AppRoutes {
   static const String home = "/home";
   static const String searchScreen = "/searchFood";
   static const String nutritionPage = "/nutritionPage";
-  static const String chatScreen = "/ChatScreen";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
 
@@ -134,16 +130,6 @@ class AppRoutes {
           GoRoute(
             path: '/shell/home',
             pageBuilder: (c, s) => const NoTransitionPage(child: HomeWidget()),
-            // routes: [
-            //   GoRoute(
-            //     path: 'chart/:type',
-            //     builder: (c, s) => ChartScreen(
-            //       healthType: HealthDataType.values.firstWhere(
-            //             (e) => e.name == s.pathParameters['type'],
-            //       ),
-            //     ),
-            //   ),
-            // ],
           ),
           GoRoute(path: '/shell/water', pageBuilder: (c, s) => const NoTransitionPage(child: WaterWidget())),
           GoRoute(
@@ -179,25 +165,12 @@ class AppRoutes {
         ),
       ),
       GoRoute(
-        path: chatScreen,
-        builder: (context, state) => const ChatScreen(),
-      ),
-      GoRoute(
         path: stepChartScreen,
         builder: (context, state) => const StepChartScreen(),
       ),
       GoRoute(
         path: waterChartScreen,
         builder: (context, state) => const WaterChartScreen(),
-      ),
-
-      GoRoute(
-        path: '/chart/:type',
-        builder: (c, s) => ChartScreen(
-          healthType: HealthDataType.values.firstWhere(
-                (e) => e.name == s.pathParameters['type'],
-          ),
-        ),
       ),
     ],
   );

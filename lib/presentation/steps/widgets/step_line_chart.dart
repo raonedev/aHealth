@@ -71,8 +71,9 @@ class StepLineChart extends StatelessWidget {
                   borderColor: Colors.white,
                 ),
                 builder: (context, trackballDetails) {
-                  if (trackballDetails.groupingModeInfo == null)
+                  if (trackballDetails.groupingModeInfo == null) {
                     return const SizedBox();
+                  }
                   final points = trackballDetails.groupingModeInfo!.points;
                   // points[0] = target series, points[1] = steps series
                   final stepVal =
