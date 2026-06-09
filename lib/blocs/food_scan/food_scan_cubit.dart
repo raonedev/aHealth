@@ -24,6 +24,7 @@ class FoodScanCubit extends Cubit<FoodScanState> {
 Analyze this food image and identify ALL food items visible.
 Return ONLY a CSV with this exact header row followed by one data row per item:
 $_csvHeaders
+eg: Apple,95,0.5,0.3,25.1,11.0,0.0,4.4,0.2,195.0,2.0,18.9,1.0,item,"1 medium (3"" dia)",182.0,g,1.0,medium,0.1,0.1,0.0,5.0,8.4
 
 Rules:
 - All numeric fields: numbers only, no units, empty string if unknown
