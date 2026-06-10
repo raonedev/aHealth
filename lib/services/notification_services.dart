@@ -3,9 +3,6 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
 
-/// Notification IDs
-/// Water reminders: 100–199
-/// Meal reminders:  200 (breakfast), 201 (lunch), 202 (dinner)
 class HealthNotificationService {
   static final HealthNotificationService _instance =
       HealthNotificationService._internal();
@@ -15,8 +12,6 @@ class HealthNotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
-
-  // ─── Init ───────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
     tz.initializeTimeZones();
@@ -53,13 +48,6 @@ class HealthNotificationService {
         '[HealthNotif] Tapped id=${response.id} payload=${response.payload}');
   }
 
-  // ─── Water Reminders ────────────────────────────────────────────────────────
-
-  /// Schedule water reminders every [frequencyHours] hours
-  /// between [startTime] and [endTime] (TimeOfDay), daily.
-  ///
-  /// Example: startTime=08:00, endTime=22:00, frequencyHours=2
-  /// → notifications at 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00
   Future<void> scheduleWaterReminders({
     required TimeOfDay startTime,
     required TimeOfDay endTime,
@@ -69,11 +57,20 @@ class HealthNotificationService {
 
     final now = tz.TZDateTime.now(tz.local);
     int idOffset = 100;
-
     TimeOfDay cursor = startTime;
 
-    while (!_isAfter(cursor, endTime)) {
-      final scheduled = _nextOccurrence(now, cursor);
+    while (_toMinutes(cursor) <= _toMinutes(endTime)) {
+      var scheduled = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        cursor.hour,
+        cursor.minute,
+      );
+      if (scheduled.isBefore(now.add(const Duration(seconds: 5)))) {
+        scheduled = scheduled.add(const Duration(days: 1));
+      }
 
       await _plugin.zonedSchedule(
         id: idOffset,
@@ -86,12 +83,12 @@ class HealthNotificationService {
         payload: 'water',
       );
 
-      debugPrint('[HealthNotif] Water scheduled at $cursor (id=$idOffset)');
+      debugPrint(
+          '[HealthNotif] Water scheduled at ${cursor.hour}:${cursor.minute.toString().padLeft(2, '0')} (id=$idOffset)');
 
       cursor = _addHours(cursor, frequencyHours);
       idOffset++;
-
-      if (idOffset >= 200) break; // safety — max 100 water slots
+      if (idOffset >= 200) break;
     }
   }
 
@@ -101,10 +98,6 @@ class HealthNotificationService {
     }
   }
 
-  // ─── Meal Reminders ─────────────────────────────────────────────────────────
-
-  /// Schedule daily meal log reminders.
-  /// Pass null to skip that meal.
   Future<void> scheduleMealReminders({
     TimeOfDay? breakfastTime = const TimeOfDay(hour: 8, minute: 0),
     TimeOfDay? lunchTime = const TimeOfDay(hour: 13, minute: 0),
@@ -133,7 +126,17 @@ class HealthNotificationService {
       final (time, title, body) = entry.value;
       if (time == null) continue;
 
-      final scheduled = _nextOccurrence(now, time);
+      var scheduled = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        time.hour,
+        time.minute,
+      );
+      if (scheduled.isBefore(now.add(const Duration(seconds: 5)))) {
+        scheduled = scheduled.add(const Duration(days: 1));
+      }
 
       await _plugin.zonedSchedule(
         id: id,
@@ -156,16 +159,10 @@ class HealthNotificationService {
     await _plugin.cancel(id: 202);
   }
 
-  // ─── Cancel All ─────────────────────────────────────────────────────────────
-
   Future<void> cancelAll() => _plugin.cancelAll();
-
-  // ─── Debug ──────────────────────────────────────────────────────────────────
 
   Future<List<PendingNotificationRequest>> getPending() =>
       _plugin.pendingNotificationRequests();
-
-  // ─── Notification Details ───────────────────────────────────────────────────
 
   NotificationDetails _waterDetails() => const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -203,31 +200,9 @@ class HealthNotificationService {
         ),
       );
 
-  // ─── Helpers ────────────────────────────────────────────────────────────────
+  int _toMinutes(TimeOfDay t) => t.hour * 60 + t.minute;
 
-  /// Returns the next TZDateTime for the given TimeOfDay (today or tomorrow).
-  tz.TZDateTime _nextOccurrence(tz.TZDateTime now, TimeOfDay time) {
-    var scheduled = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      time.hour,
-      time.minute,
-    );
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
-    return scheduled;
-  }
-
-  /// Adds [hours] to a TimeOfDay (wraps past midnight).
   TimeOfDay _addHours(TimeOfDay t, int hours) {
-    final total = t.hour + hours;
-    return TimeOfDay(hour: total % 24, minute: t.minute);
+    return TimeOfDay(hour: t.hour + hours, minute: t.minute);
   }
-
-  /// Returns true if [a] is strictly after [b] in wall-clock time.
-  bool _isAfter(TimeOfDay a, TimeOfDay b) =>
-      a.hour > b.hour || (a.hour == b.hour && a.minute > b.minute);
 }
