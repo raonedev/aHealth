@@ -95,7 +95,7 @@ class StepLineChart extends StatelessWidget {
                           color: const Color(0xFFEAF3DE),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: const Color(0xFF3B6D11).withOpacity(0.3)),
+                              color: const Color(0xFF3B6D11).withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           '${DateFormat('EEE, dd MMM').format(date)}\n${_fmt(stepVal)} steps',
@@ -114,7 +114,7 @@ class StepLineChart extends StatelessWidget {
                           color: const Color(0xFFFAEEDA),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: const Color(0xFF854F0B).withOpacity(0.3)),
+                              color: const Color(0xFF854F0B).withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           'Target: ${_fmt(targetVal)}',

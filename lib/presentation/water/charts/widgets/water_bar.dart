@@ -28,7 +28,7 @@ class _WaterBarChartState extends State<WaterBarChart> {
       tooltipSettings: const InteractiveTooltip(enable: false),
       lineType: TrackballLineType.vertical,
       lineWidth: 1,
-      lineColor: Colors.grey.withOpacity(0.4),
+      lineColor: Colors.grey.withValues(alpha: 0.4),
       lineDashArray: const [4, 2],
       builder: (context, details) {
         final info = details.groupingModeInfo;

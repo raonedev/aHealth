@@ -1,7 +1,7 @@
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/nutrition_model.dart';
+import '../../models/nutrition_model.dart';
 
 // Premium iOS Light Theme Palette
 const Color _bg = Color(0xFFF2F2F7);          // iOS System Background Light

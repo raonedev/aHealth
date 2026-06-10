@@ -12,7 +12,6 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
-import '../nitritiondetailscreen.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/macro_card.dart';
 import 'widgets/macro_chip.dart';
@@ -111,7 +110,7 @@ class _NutritionState extends State<Nutrition> {
           if (state is NutritionEmpty) {
             return Center(
               child: GestureDetector(
-                onTap: () => context.push(AppRoutes.searchScreen),
+                onTap: () => context.push(AppRoutes.searchFoodScreen),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -171,7 +170,7 @@ class _NutritionState extends State<Nutrition> {
                             const Spacer(),
                             IconButton(
                                 onPressed: () =>
-                                    context.push(AppRoutes.searchScreen),
+                                    context.push(AppRoutes.searchFoodScreen),
                                 icon: const Icon(CupertinoIcons.search)),
                           ],
                         ),

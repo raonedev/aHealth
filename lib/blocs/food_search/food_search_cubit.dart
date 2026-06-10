@@ -43,27 +43,4 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
       emit(FoodSearchFailed(errorMessage: e.toString()));
     }
   }
-
-  Future<void> getFoodDetails(String foodId) async {
-    emit(FoodDetailsLoading());
-
-    try {
-      final uri = Uri.parse('$_baseUrl/foods/details')
-          .replace(queryParameters: {'foodId': foodId});
-
-      final response = await http.get(uri);
-      dev.log('Details status: ${response.statusCode}');
-      dev.log('Details response: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        emit(FoodDetailsSuccess(foodDetails: decoded['food']));
-      } else {
-        emit(FoodSearchFailed(
-            errorMessage: 'Error: ${response.statusCode} ${response.body}'));
-      }
-    } catch (e) {
-      emit(FoodSearchFailed(errorMessage: e.toString()));
-    }
-  }
 }

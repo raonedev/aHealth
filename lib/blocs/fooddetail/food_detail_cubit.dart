@@ -4,9 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../config/appconstants.dart';
 import '../../models/food_with_servings_model.dart';
-import '../../secrets/secrets.dart';
 import 'package:bloc/bloc.dart';
-import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as dev;

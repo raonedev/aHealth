@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+
 part 'food_with_servings_model.g.dart';
 
 /// food :

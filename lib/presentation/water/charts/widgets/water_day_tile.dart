@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../water_chart_screen.dart';
 import 'water_point.dart';
-import 'water_week_summary.dart';
 
 class WaterDayTile extends StatelessWidget {
   final WaterPoint point;
@@ -25,7 +23,7 @@ class WaterDayTile extends StatelessWidget {
         Container(
           width: 36, height: 36,
           decoration: BoxDecoration(
-            color: hit ? const Color(0xFFE6F1FB) : const Color(0xFFB5D4F4).withOpacity(0.4),
+            color: hit ? const Color(0xFFE6F1FB) : const Color(0xFFB5D4F4).withValues(alpha: 0.4),
             shape: BoxShape.circle,
           ),
           child: Icon(Icons.water_drop_rounded,

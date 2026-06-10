@@ -1,7 +1,7 @@
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
-import 'package:ahealth/presentation/fooddetailscreen.dart';
+import 'package:ahealth/presentation/nutririon/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/home/home_widget.dart';
 import 'package:ahealth/presentation/nutririon/nutrition.dart';
@@ -20,8 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/initialized/init_app_cubit.dart';
 import 'helper/helper_func.dart';
 import 'models/nutrition_model.dart';
-import 'presentation/nitritiondetailscreen.dart';
-import 'presentation/nutritionpage.dart';
+import 'presentation/nutririon/nitritiondetailscreen.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
 
@@ -32,8 +31,7 @@ class AppRoutes {
   static const String onBoarding = "/onBoarding";
   static const String heathDetail = "/heathDetail";
   static const String home = "/home";
-  static const String searchScreen = "/searchFood";
-  static const String nutritionPage = "/nutritionPage";
+  static const String searchFoodScreen = "/searchFood";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
 
@@ -136,7 +134,7 @@ class AppRoutes {
             path: '/shell/nutrition',
             pageBuilder: (c, s) => const NoTransitionPage(child: Nutrition()),
             routes: [
-              GoRoute(path: 'search', builder: (c, s) => const SearchScreen()),
+              GoRoute(path: 'search', builder: (c, s) => const SearchFoodScreen()),
               GoRoute(path: 'foodDetail/:foodId', builder: (c, s) => FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
 
             ],
@@ -151,12 +149,8 @@ class AppRoutes {
         ),
       ),
       GoRoute(
-        path: searchScreen,
-        builder: (context, state) => const SearchScreen(),
-      ),
-      GoRoute(
-        path: nutritionPage,
-        builder: (context, state) => const NutritionPage(),
+        path: searchFoodScreen,
+        builder: (context, state) => const SearchFoodScreen(),
       ),
       GoRoute(
         path: '/foodDetail/:foodId',

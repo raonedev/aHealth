@@ -1,10 +1,9 @@
 import 'package:ahealth/appcolors.dart';
-import 'package:go_router/go_router.dart';
 
 import '../blocs/food_search/food_search_cubit.dart';
 import '../blocs/fooddetail/food_detail_cubit.dart';
 import '../config/appconstants.dart';
-import 'fooddetailscreen.dart';
+import 'nutririon/fooddetailscreen.dart';
 import 'package:ahealth/models/food_search_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,14 +12,14 @@ import 'dart:developer' as dev;
 
 import 'package:hive/hive.dart';
 
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+class SearchFoodScreen extends StatefulWidget {
+  const SearchFoodScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchFoodScreen> createState() => _SearchFoodScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchFoodScreenState extends State<SearchFoodScreen> {
   Box<dynamic>? searchFoodBox;
 
   @override

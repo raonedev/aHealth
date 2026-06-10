@@ -5,7 +5,7 @@ import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/nutrition_model.dart';
+import '../../models/nutrition_model.dart';
 // import 'dart:developer' as dev;
 
 class FoodDetailScreen extends StatefulWidget {
@@ -125,8 +125,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     child: SpringButton(
                       SpringButtonType.onlyScale,
                       onTap: () {
-                        final serving = state.foodWithServingsModel.food
-                            ?.servings?.serving?[selectIndex!];
+                        final serving = state.foodWithServingsModel.food?.servings?.serving?[selectIndex!];
                         valueFood = ValueFood(
                           name: state.foodWithServingsModel.food!.foodName ??
                               "NULL Name",
@@ -170,9 +169,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                               1000, //convert milligram to gram
                         );
                         if (valueFood != null) {
-                          context
-                              .read<NutritionCubit>()
-                              .addNutritionData(valueFood: valueFood!);
+                          context.read<NutritionCubit>().addNutritionData(valueFood: valueFood!);
                           Navigator.popUntil(context, (route) => route.isFirst);
                         }
                       },

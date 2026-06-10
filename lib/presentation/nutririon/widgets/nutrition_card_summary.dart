@@ -8,12 +8,7 @@ import 'circular_progress.dart';
 import 'macro_chip.dart';
 
 
-// Light Theme Color Palette
-const Color _bg = Color(0xFFF6F6F9); // Light grayish-white background
-const Color _card = Color(0xFFFFFFFF); // White cards
 const Color _textPrimary = Color(0xFF1A1A1A); // Dark charcoal for primary text
-const Color _textSecondary =
-Color(0xFF757575); // Muted gray for subtitles/labels
 
 const Color _proteinColor = Color(0xFFE05252);
 const Color _carbsColor = Color(0xFFE0A952);

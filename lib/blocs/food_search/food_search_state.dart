@@ -31,15 +31,5 @@ final class FoodSearchSuccess extends FoodSearchState {
   List<Object> get props => [foodSearchModel];
 }
 
-final class FoodDetailsLoading extends FoodSearchState {
-  @override
-  List<Object?> get props => [];
-}
 
-final class FoodDetailsSuccess extends FoodSearchState {
-  final Map<String, dynamic> foodDetails;
-  const FoodDetailsSuccess({required this.foodDetails});
-  @override
-  List<Object?> get props => [foodDetails];
-}
 

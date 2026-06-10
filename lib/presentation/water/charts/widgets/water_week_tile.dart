@@ -25,7 +25,7 @@ class WaterWeekTile extends StatelessWidget {
         Container(
           width: 36, height: 36,
           decoration: BoxDecoration(
-            color: hit ? const Color(0xFFE6F1FB) : const Color(0xFFB5D4F4).withOpacity(0.4),
+            color: hit ? const Color(0xFFE6F1FB) : const Color(0xFFB5D4F4).withValues(alpha:  0.4),
             shape: BoxShape.circle,
           ),
           child: Icon(Icons.calendar_view_week_rounded,
