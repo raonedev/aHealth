@@ -15,10 +15,10 @@ import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../services/nutrition_service.dart';
 import 'food_scan_result_screen.dart';
+import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/macro_card.dart';
 import 'widgets/macro_chip.dart';
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 
 // Light Theme Color Palette
@@ -44,6 +44,29 @@ class _NutritionState extends State<Nutrition> {
   void initState() {
     super.initState();
     context.read<NutritionCubit>().getNutritionData();
+  }
+
+  Widget _buildFoodImage(NutritionModel item) {
+    final groups = NutritionService.getAllGroups();
+    // match by name since HC uuid differs from our group uuid
+    final group = groups.cast<FoodScanGroup?>().firstWhere(
+          (g) => g!.foods.any((f) => f.name == item.value?.name),
+          orElse: () => null,
+        );
+
+    if (group != null) {
+      final file = File(group.imagePath);
+      if (file.existsSync()) {
+        return Image.file(file, width: 60, height: 60, fit: BoxFit.cover);
+      }
+    }
+
+    return Container(
+      width: 60,
+      height: 60,
+      color: Colors.grey.shade100,
+      child: Icon(Icons.restaurant, color: Colors.grey.shade400),
+    );
   }
 
   @override
@@ -343,14 +366,7 @@ class _NutritionState extends State<Nutrition> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: Colors.grey.shade100,
-                                    // Light placeholder background
-                                    child: Icon(Icons.restaurant,
-                                        color: Colors.grey.shade400),
-                                  ),
+                                  child: _buildFoodImage(item),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
