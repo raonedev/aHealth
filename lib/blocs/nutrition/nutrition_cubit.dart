@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:developer' as dev;
 
 import '../../models/nutrition_model.dart';
 import 'package:bloc/bloc.dart';
@@ -37,9 +38,9 @@ class NutritionCubit extends Cubit<NutritionState> {
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
         List<NutritionModel> nutritionModel0 = [];
         for (HealthDataPoint healthDataPoint in healthData) {
-          NutritionModel stepModel =
+          NutritionModel nutritionModel =
               NutritionModel.fromJson(healthDataPoint.toJson());
-          nutritionModel0.add(stepModel);
+          nutritionModel0.add(nutritionModel);
         }
         emit(NutritionSuccess(nutritionModel: nutritionModel0));
       }
@@ -69,6 +70,7 @@ class NutritionCubit extends Cubit<NutritionState> {
     emit(NutritionLoading());
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(minutes: 20));
+    dev.log("logging : ${valueFood.name}");
 
     bool success = true;
     success &= await Health().writeMeal(
@@ -124,4 +126,64 @@ class NutritionCubit extends Cubit<NutritionState> {
     }
     return success;
   }
+
+  Future<bool> addMultipleNutritionData({required List<ValueFood> selectedFoods}) async {
+  // 1. Emit loading once for the entire batch operation
+  emit(NutritionLoading());
+  
+  final now = DateTime.now();
+  bool allSuccess = true;
+  
+  dev.log("Starting batch logging for ${selectedFoods.length} items...");
+
+  try {
+    for (int i = 0; i < selectedFoods.length; i++) {
+      final valueFood = selectedFoods[i];
+      
+      // Slightly stagger the timestamps by a few seconds so Health Connect / Health Connect 
+      // treats them as distinct records within the batch if processed quickly.
+      final itemEndTime = now.subtract(Duration(seconds: i * 5));
+      final itemStartTime = itemEndTime.subtract(const Duration(minutes: 20));
+
+      dev.log("Batch logging item [${i + 1}/${selectedFoods.length}]: ${valueFood.name}");
+
+      bool success = await Health().writeMeal(
+        mealType: _getMealType(itemEndTime.hour),
+        startTime: itemStartTime,
+        endTime: itemEndTime,
+        caloriesConsumed: valueFood.calories,
+        protein: valueFood.protein,
+        fatTotal: valueFood.fat,
+        carbohydrates: valueFood.carbs,
+        calcium: valueFood.calcium,
+        cholesterol: valueFood.cholesterol,
+        fiber: valueFood.fiber,
+        iron: valueFood.iron,
+        potassium: valueFood.potassium,
+        sodium: valueFood.sodium,
+        sugar: valueFood.sugar,
+        name: valueFood.name,
+        vitaminC: valueFood.vitaminC,
+        vitaminA: valueFood.vitaminA,
+        fatMonounsaturated: valueFood.monounsaturatedFat,
+        recordingMethod: RecordingMethod.manual,
+      );
+
+      allSuccess &= success;
+    }
+    
+    if (allSuccess) {
+      // 2. Refresh your main landing data once everything is written successfully
+      await getNutritionData();
+    } else {
+      emit(NutritionFailed(errorMessage: "Failed to log some or all food items."));
+    }
+    
+  } catch (e) {
+    allSuccess = false;
+    emit(NutritionFailed(errorMessage: "An error occurred while saving: $e"));
+  }
+
+  return allSuccess;
+}
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 
@@ -12,10 +13,11 @@ part 'food_scan_state.dart';
 
 class FoodScanCubit extends Cubit<FoodScanState> {
   FoodScanCubit() : super(FoodScanInitial());
+
   static const _apiKey = GEMINI_API_KEY;
   static const _model = 'gemma-4-26b-a4b-it';
-  static const _url =
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
+  static const _streamUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/$_model:streamGenerateContent?alt=sse&key=$_apiKey';
 
   static const _csvHeaders =
       'name,calories,protein,fat,carbs,calcium,cholesterol,fiber,iron,potassium,sodium,sugar,quantity,unit,servingDescription,metricServingAmount,metricServingUnit,numberOfUnits,measurementDescription,saturatedFat,polyunsaturatedFat,monounsaturatedFat,vitaminA,vitaminC';
@@ -39,60 +41,83 @@ Rules:
 - NO markdown, NO explanation, NO extra text — only the CSV
 ''';
 
-  Future<void> scanFoodImage(String base64Image) async {
+  Future<void> scanFoodImage({
+    required String base64Image,
+    required String groupUuid,
+    required String imagePath,
+  }) async {
     emit(FoodScanLoading());
 
     try {
-      final response = await http.post(
-        Uri.parse(_url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {
-                  'inline_data': {
-                    'mime_type': 'image/jpeg',
-                    'data': base64Image,
-                  }
-                },
-                {'text': _prompt},
-              ]
-            }
-          ],
-          'generationConfig': {'temperature': 0.2},
-        }),
-      );
+      final request = http.Request('POST', Uri.parse(_streamUrl));
+      request.headers['Content-Type'] = 'application/json';
+      request.body = jsonEncode({
+        'contents': [
+          {
+            'parts': [
+              {
+                'inline_data': {
+                  'mime_type': 'image/jpeg',
+                  'data': base64Image,
+                }
+              },
+              {'text': _prompt},
+            ]
+          }
+        ],
+        'generationConfig': {'temperature': 0.2},
+      });
 
-      if (response.statusCode != 200) {
-        throw Exception('API error ${response.statusCode}: ${response.body}');
+      final streamedResponse = await http.Client().send(request);
+
+      if (streamedResponse.statusCode != 200) {
+        final body = await streamedResponse.stream.bytesToString();
+        throw Exception('API error ${streamedResponse.statusCode}: $body');
       }
 
-      final data = jsonDecode(response.body);
-      final parts = data['candidates']?[0]?['content']?['parts'] as List?;
-      if (parts == null) throw Exception('No parts in response');
+      String thinkingBuffer = '';
+      String csvBuffer = '';
 
-      String csvText = '';
-      String thinkingText = '';
+      await for (final line in streamedResponse.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (!line.startsWith('data: ')) continue;
+        final jsonStr = line.substring(6).trim();
+        if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
 
-      for (final part in parts) {
-        final text = part['text'] as String? ?? '';
-        if (part['thought'] == true) {
-          thinkingText += text;
-        } else {
-          csvText += text;
+        try {
+          final chunk = jsonDecode(jsonStr);
+          final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
+          if (parts == null) continue;
+
+          for (final part in parts) {
+            final text = part['text'] as String? ?? '';
+            if (part['thought'] == true) {
+              thinkingBuffer += text;
+              emit(FoodScanThinking(thinkingText: thinkingBuffer));
+            } else {
+              csvBuffer += text;
+            }
+          }
+        } catch (e) {
+          dev.log('SSE chunk parse error: $e');
         }
       }
 
-      dev.log('Thinking:\n$thinkingText');
-      dev.log('CSV:\n$csvText');
+      dev.log('Thinking:\n$thinkingBuffer');
+      dev.log('CSV:\n$csvBuffer');
 
-      final foods = _parseCsv(csvText.trim());
+      final foods = _parseCsv(csvBuffer.trim());
 
       if (foods.isEmpty) {
         emit(FoodScanNoItems());
       } else {
-        emit(FoodScanSuccess(foods: foods, thinkingText: thinkingText.trim()));
+        emit(FoodScanSuccess(
+          foods: foods,
+          thinkingText: thinkingBuffer.trim(),
+          groupUuid: groupUuid,
+          imagePath: imagePath,
+        ));
       }
     } catch (e, s) {
       dev.log('FoodScanCubit error', error: e, stackTrace: s);
@@ -108,9 +133,7 @@ Rules:
         .toList();
     if (lines.length < 2) return [];
 
-    // Skip header row
     final dataLines = lines.skip(1).toList();
-
     final foods = <ValueFood>[];
     final headers = _csvHeaders.split(',');
 
@@ -123,7 +146,6 @@ Rules:
         for (int i = 0; i < headers.length; i++) {
           final key = headers[i];
           final val = values[i].trim();
-          // Numeric fields
           const numericFields = {
             'calories',
             'protein',
@@ -159,8 +181,5 @@ Rules:
     return foods;
   }
 
-  List<String> _splitCsvLine(String line) {
-    // Simple CSV split (no quoted commas support needed per prompt rules)
-    return line.split(',');
-  }
+  List<String> _splitCsvLine(String line) => line.split(',');
 }

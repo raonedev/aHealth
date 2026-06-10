@@ -2,6 +2,7 @@ import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
 import 'package:ahealth/services/notification_services.dart';
+import 'package:ahealth/services/nutrition_service.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
@@ -27,6 +28,9 @@ import 'blocs/weight/weight_cubit.dart';
 import 'models/food_with_servings_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart'
+    show FoodScanGroupAdapter, ValueFoodHiveAdapter;
 
 ///dart run build_runner build --delete-conflicting-outputs
 void main() async {
@@ -56,6 +60,10 @@ void main() async {
     lunchTime: TimeOfDay(hour: 13, minute: 0),
     dinnerTime: TimeOfDay(hour: 19, minute: 30),
   );
+
+  Hive.registerAdapter(FoodScanGroupAdapter());
+  Hive.registerAdapter(ValueFoodHiveAdapter());
+  await NutritionService.init();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
