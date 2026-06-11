@@ -205,4 +205,38 @@ class HealthNotificationService {
   TimeOfDay _addHours(TimeOfDay t, int hours) {
     return TimeOfDay(hour: t.hour + hours, minute: t.minute);
   }
+
+  Future<void> scheduleOneTimeNotification({
+    required int id,
+    required String title,
+    required String body,
+    required TimeOfDay time,
+    String payload = '',
+  }) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+    if (scheduled.isBefore(now.add(const Duration(seconds: 5)))) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduled,
+      notificationDetails: _waterDetails(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: payload,
+    );
+
+    debugPrint(
+        '[HealthNotif] One-time scheduled at ${time.hour}:${time.minute.toString().padLeft(2, '0')} (id=$id)');
+  }
 }
