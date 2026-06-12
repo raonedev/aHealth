@@ -152,10 +152,16 @@ class _HomeWidgetState extends State<HomeWidget> {
                 onAdd: () => showHeightDialog(context),
               ),
               SpringButton(
-                SpringButtonType.withOpacity,
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_)=>SleepPicker()));
-                },
+                SpringButtonType.withOpacity,onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent, // Ensures our dark curves render elegantly
+                  builder: (context) {
+                    return const SleepPickerBottomSheet();
+                  },
+                );
+              },
                 uiChild: healthCard(
                   healthType: HealthDataType.SLEEP_SESSION,
                   context: context,
