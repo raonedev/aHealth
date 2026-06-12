@@ -10,7 +10,7 @@ import 'widgets/week_summary.dart';
 class WaterMonthlyTab extends StatelessWidget {
   final List<double> monthData;
   final bool loaded;
-  const WaterMonthlyTab({required this.monthData, required this.loaded});
+  const WaterMonthlyTab({super.key, required this.monthData, required this.loaded});
 
   List<WaterPoint> get _points {
     final now = DateTime.now();

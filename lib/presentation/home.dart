@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return 0;
   }
 
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
 
   @override
   void dispose() {

@@ -1,6 +1,7 @@
 import 'dart:developer' as dev;
 
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:ahealth/presentation/sleep/sleep_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -150,32 +151,38 @@ class _HomeWidgetState extends State<HomeWidget> {
                 ),
                 onAdd: () => showHeightDialog(context),
               ),
-              healthCard(
-                healthType: HealthDataType.SLEEP_SESSION,
-                context: context,
-                title: "Sleep Session",
-                lottieString: 'assets/lottieanimations/sleep.json',
-                cubit: BlocBuilder<SleepCubit, SleepState>(
-                  builder: (context, state) {
-                    if (state is SleepLoadingState) {
-                      return const CupertinoActivityIndicator();
-                    } else if (state is SleepFailedState) {
-                      return const Text('failed to load steps');
-                    } else if (state is SleepSuccessState) {
-                      num sleepTimeInMinutes =
-                          state.sleepModel[0].value?.numericValue ?? 0;
+              SpringButton(
+                SpringButtonType.withOpacity,
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_)=>SleepPicker()));
+                },
+                uiChild: healthCard(
+                  healthType: HealthDataType.SLEEP_SESSION,
+                  context: context,
+                  title: "Sleep Session",
+                  lottieString: 'assets/lottieanimations/sleep.json',
+                  cubit: BlocBuilder<SleepCubit, SleepState>(
+                    builder: (context, state) {
+                      if (state is SleepLoadingState) {
+                        return const CupertinoActivityIndicator();
+                      } else if (state is SleepFailedState) {
+                        return const Text('failed to load steps');
+                      } else if (state is SleepSuccessState) {
+                        num sleepTimeInMinutes =
+                            state.sleepModel[0].value?.numericValue ?? 0;
 
-                      return Text(
-                          "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
-                    } else {
-                      return Text("unknown state ${state.toString()}");
-                    }
+                        return Text(
+                            "${(sleepTimeInMinutes / 60).toStringAsFixed(2)} hours");
+                      } else {
+                        return Text("unknown state ${state.toString()}");
+                      }
+                    },
+                  ),
+                  onAdd: () {
+                    dev.log("sleep");
+                    showSleepDialog(context);
                   },
                 ),
-                onAdd: () {
-                  dev.log("sleep");
-                  showSleepDialog(context);
-                },
               ),
             ],
           ),

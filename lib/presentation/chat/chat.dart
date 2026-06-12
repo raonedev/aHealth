@@ -170,8 +170,9 @@ class _ChatWidgetState extends State<ChatWidget> {
                         ? 1
                         : 0),
                     itemBuilder: (context, index) {
-                      if (index == state.messages.length)
+                      if (index == state.messages.length) {
                         return _buildTypingIndicator();
+                      }
                       return _buildBubble(state.messages[index]);
                     },
                   );

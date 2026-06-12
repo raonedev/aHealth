@@ -8,7 +8,7 @@ import 'step_point.dart';
 class StepLineChart extends StatelessWidget {
   final List<StepPoint> points;
   final String label;
-  StepLineChart({super.key, required this.points, required this.label});
+  const StepLineChart({super.key, required this.points, required this.label});
 
   String _fmt(double v) => NumberFormat('#,###').format(v.round());
 
