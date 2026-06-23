@@ -2,6 +2,7 @@ import '../../models/step_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
+import 'dart:developer' as dev;
 
 part 'step_state.dart';
 
@@ -28,7 +29,11 @@ class StepsCubit extends Cubit<StepsState> {
         startTime: midnight,
         endTime: now,
       );
-      healthData.where((e) => e.sourceName == "dev.raone.ahealth").toList();
+      // healthData.where((e) {
+      //   dev.log(e.toString());
+      //   return e.sourceId == "dev.raone.ahealth";
+      // }).toList();
+      
 
       if (healthData.isEmpty) {
         emit(const StepFailed(errorMessage: "NULL"));
@@ -64,9 +69,8 @@ class StepsCubit extends Cubit<StepsState> {
         startTime: midnight,
         endTime: now,
       );
-      final filtered =
-          data.where((e) => e.sourceName == "dev.raone.ahealth").toList();
-      return filtered.fold<int>(
+
+      return data.fold<int>(
           0,
           (sum, e) =>
               sum + (e.value as NumericHealthValue).numericValue.toInt());
