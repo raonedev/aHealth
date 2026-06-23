@@ -28,6 +28,7 @@ class StepsCubit extends Cubit<StepsState> {
         startTime: midnight,
         endTime: now,
       );
+      healthData.where((e) => e.sourceName == "dev.raone.ahealth").toList();
 
       if (healthData.isEmpty) {
         emit(const StepFailed(errorMessage: "NULL"));
@@ -45,9 +46,9 @@ class StepsCubit extends Cubit<StepsState> {
       emit(StepFailed(errorMessage: e.toString()));
     }
   }
-  Future<int> getTodayStep()async{
 
-    try{
+  Future<int> getTodayStep() async {
+    try {
       final now = DateTime.now();
       final midnight = DateTime(now.year, now.month, now.day);
       bool stepsPermission =
@@ -58,11 +59,19 @@ class StepsCubit extends Cubit<StepsState> {
           permissions: [HealthDataAccess.READ_WRITE],
         );
       }
-      final res= Health().getTotalStepsInInterval(midnight, now);
-      return await res??0;
-    }catch(e){
+      final data = await Health().getHealthDataFromTypes(
+        types: [HealthDataType.STEPS],
+        startTime: midnight,
+        endTime: now,
+      );
+      final filtered =
+          data.where((e) => e.sourceName == "dev.raone.ahealth").toList();
+      return filtered.fold<int>(
+          0,
+          (sum, e) =>
+              sum + (e.value as NumericHealthValue).numericValue.toInt());
+    } catch (e) {
       return 0;
     }
-
   }
 }
