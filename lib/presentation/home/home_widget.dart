@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/presentation/sleep/sleep_picker.dart';
+import 'package:ahealth/services/step_tracking_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health/health.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
@@ -29,6 +31,15 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((prefs) {
+      final trackingEnabled = prefs.getBool('step_tracking_enabled') ?? false;
+      if(trackingEnabled) syncStepsNow();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,16 +163,18 @@ class _HomeWidgetState extends State<HomeWidget> {
                 onAdd: () => showHeightDialog(context),
               ),
               SpringButton(
-                SpringButtonType.withOpacity,onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent, // Ensures our dark curves render elegantly
-                  builder: (context) {
-                    return const SleepPickerBottomSheet();
-                  },
-                );
-              },
+                SpringButtonType.withOpacity,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors
+                        .transparent, // Ensures our dark curves render elegantly
+                    builder: (context) {
+                      return const SleepPickerBottomSheet();
+                    },
+                  );
+                },
                 uiChild: healthCard(
                   healthType: HealthDataType.SLEEP_SESSION,
                   context: context,
