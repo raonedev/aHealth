@@ -103,8 +103,6 @@ Rules:
           dev.log('SSE chunk parse error: $e');
         }
       }
-
-      dev.log('Thinking:\n$thinkingBuffer');
       dev.log('CSV:\n$csvBuffer');
 
       final foods = _parseCsv(csvBuffer.trim());
