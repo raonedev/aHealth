@@ -1,7 +1,11 @@
 import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:ahealth/presentation/nutririon/widgets/build_card_content.dart';
+import 'package:ahealth/presentation/nutririon/widgets/card_shell.dart';
+import 'package:ahealth/presentation/nutririon/widgets/food_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,15 +22,15 @@ import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/macro_card.dart';
-import 'widgets/macro_chip.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'widgets/nutrition_group_dialog.dart';
+
 // Light Theme Color Palette
-const Color _bg = Color(0xFFF6F6F9); // Light grayish-white background
-const Color _card = Color(0xFFFFFFFF); // White cards
-const Color _textPrimary = Color(0xFF1A1A1A); // Dark charcoal for primary text
-const Color _textSecondary =
-    Color(0xFF757575); // Muted gray for subtitles/labels
+const Color _bg = Color(0xFFF6F6F9);
+const Color _card = Color(0xFFFFFFFF);
+const Color _textPrimary = Color(0xFF1A1A1A);
+const Color _textSecondary = Color(0xFF757575);
 
 const Color _proteinColor = Color(0xFFE05252);
 const Color _carbsColor = Color(0xFFE0A952);
@@ -46,26 +50,42 @@ class _NutritionState extends State<Nutrition> {
     context.read<NutritionCubit>().getNutritionData();
   }
 
-  Widget _buildFoodImage(NutritionModel item) {
-    final groups = NutritionService.getAllGroups();
-    // match by name since HC uuid differs from our group uuid
-    final group = groups.cast<FoodScanGroup?>().firstWhere(
-          (g) => g!.foods.any((f) => f.name == item.value?.name),
-          orElse: () => null,
-        );
 
-    if (group != null) {
-      final file = File(group.imagePath);
-      if (file.existsSync()) {
-        return Image.file(file, width: 60, height: 60, fit: BoxFit.cover);
+  Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
+    final groups = NutritionService.getAllGroups();
+    final Map<String, List<NutritionModel>> grouped = {};
+    final List<NutritionModel> ungrouped = [];
+
+    for (final item in items) {
+      final group = groups.cast<FoodScanGroup?>().firstWhere(
+            (g) => g!.foods.any((f) => f.name == item.value?.name),
+            orElse: () => null,
+          );
+      if (group != null) {
+        grouped.putIfAbsent(group.imagePath, () => []).add(item);
+      } else {
+        ungrouped.add(item);
       }
     }
 
-    return Container(
-      width: 60,
-      height: 60,
-      color: Colors.grey.shade100,
-      child: Icon(Icons.restaurant, color: Colors.grey.shade400),
+    return {
+      ...grouped,
+      for (final i in ungrouped) i.value?.name ?? '': [i]
+    };
+  }
+
+
+  void _showGroupSheet(BuildContext context, List<NutritionModel> groupItems) {
+    showModalBottomSheet(
+      context: context,
+      elevation: 0,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.35),
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: GroupFoodDialog(groupItems: groupItems),
+      ),
     );
   }
 
@@ -80,15 +100,13 @@ class _NutritionState extends State<Nutrition> {
           onTap: () async {
             try {
               final picker = ImagePicker();
-              final picked = await picker.pickImage(
-                  source: ImageSource.gallery); // or camera
+              final picked =
+                  await picker.pickImage(source: ImageSource.gallery);
               if (picked == null) return;
 
-              // Prepare image (compress + save + base64)
               final prepared =
                   await NutritionService.prepareImage(File(picked.path));
 
-              // Show bottomSheet
               if (!context.mounted) return;
               showModalBottomSheet(
                 context: context,
@@ -101,7 +119,6 @@ class _NutritionState extends State<Nutrition> {
                 ),
               );
 
-              // Start scan
               context.read<FoodScanCubit>().scanFoodImage(
                     base64Image: prepared.base64,
                     groupUuid: prepared.uuid,
@@ -117,11 +134,7 @@ class _NutritionState extends State<Nutrition> {
               decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                    )
-                  ]),
+                  boxShadow: const [BoxShadow(color: Colors.grey)]),
               child: Transform.scale(
                 scale: 0.6,
                 child: HugeIcon(
@@ -178,6 +191,7 @@ class _NutritionState extends State<Nutrition> {
               ),
             );
           }
+
           final items = state is NutritionSuccess
               ? state.nutritionModel
               : <NutritionModel>[];
@@ -195,9 +209,12 @@ class _NutritionState extends State<Nutrition> {
           const double targetCarbs = 300;
           const double targetFat = 80;
 
+          // Compute once, not inside builder
+          final groupedItems = _groupItems(items);
+
           return SafeArea(
             child: CustomScrollView(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
@@ -205,7 +222,6 @@ class _NutritionState extends State<Nutrition> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header
                         Row(
                           children: [
                             const SizedBox(width: 8),
@@ -260,7 +276,6 @@ class _NutritionState extends State<Nutrition> {
                                 value: (totalCalories / targetCalories)
                                     .clamp(0.0, 1.0),
                                 color: Colors.orange,
-                                // Pop color for the main calorie ring
                                 size: 80,
                                 icon: Icons.local_fire_department,
                                 iconColor: Colors.orange,
@@ -275,8 +290,9 @@ class _NutritionState extends State<Nutrition> {
                           children: [
                             Expanded(
                               child: MacroCard(
-                                label:
-                                    'Protein${totalProtein > targetProtein ? ' over' : ''}',
+                                label: totalProtein > targetProtein
+                                    ? 'Protein over'
+                                    : 'Protein',
                                 value: totalProtein > targetProtein
                                     ? totalProtein - targetProtein
                                     : targetProtein - totalProtein,
@@ -332,104 +348,59 @@ class _NutritionState extends State<Nutrition> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final item = items[index];
-                      final time = item.dateTo != null
-                          ? TimeOfDay.fromDateTime(DateTime.parse(item.dateTo!))
-                          : null;
-                      final timeStr = time != null
-                          ? '${time.hourOfPeriod}:${time.minute.toString().padLeft(2, '0')}${time.period == DayPeriod.am ? 'am' : 'pm'}'
-                          : '';
+                      final entry = groupedItems.entries.elementAt(index);
+                      final entryItems = entry.value;
+                      final first = entryItems.first;
+                      final isGroup = entryItems.length > 1;
+                      final heroTag = entry.key;
 
                       return SpringButton(
                         SpringButtonType.withOpacity,
                         onTap: () async {
                           HapticFeedback.mediumImpact();
                           await Future.delayed(Durations.short4);
-                          context.push('/nutrition/detail', extra: item);
+                          if (isGroup) {
+                            _showGroupSheet(context, entryItems);
+                          } else {
+                            context.push('/nutrition/detail', extra: first);
+                          }
                         },
                         uiChild: Padding(
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: _card,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                )
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
+                          child: SizedBox(
+                            height: 84 + (isGroup ? 16.0 : 10),
+                            child: Stack(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: _buildFoodImage(item),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              item.value?.name ?? 'Unknown',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: _textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 15),
-                                            ),
-                                          ),
-                                          Text(timeStr,
-                                              style: const TextStyle(
-                                                  color: _textSecondary,
-                                                  fontSize: 12)),
-                                        ],
+                                if (isGroup) ...[
+                                  Positioned(
+                                    left: 6, right: 0, bottom: 0, top: 6,
+                                    child: CardShell(),
+                                  ),
+                                  if (entryItems.length > 2)
+                                    Positioned(
+                                      left: 12, right: 0, bottom: 0, top: 12,
+                                      child: CardShell(),
+                                    ),
+                                ],
+                                Positioned(
+                                  left: 0,
+                                  right: isGroup ? 6 : 0,
+                                  top: 0,
+                                  bottom: isGroup ? 6 : 0,
+                                  // Wrap the main interactive card shell with Hero
+                                  child: Hero(
+                                    tag: heroTag,
+                                    // Material ensures text styling behaves during flight
+                                    child: Material(
+                                      type: MaterialType.transparency,
+                                      child: CardShell(
+                                        child: BuildCardContent(
+                                          item: first,
+                                          count: entryItems.length,
+                                          groupItems: entryItems,
+                                        ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                              Icons.local_fire_department,
-                                              color: Colors.orange,
-                                              size: 14),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${item.value?.calories?.toInt() ?? 0} kcal',
-                                            style: const TextStyle(
-                                                color: _textPrimary,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          MacroChip(
-                                              icon: Icons.bolt,
-                                              color: _proteinColor,
-                                              value: item.value?.protein ?? 0),
-                                          const SizedBox(width: 8),
-                                          MacroChip(
-                                              icon: Icons.grain,
-                                              color: _carbsColor,
-                                              value: item.value?.carbs ?? 0),
-                                          const SizedBox(width: 8),
-                                          MacroChip(
-                                              icon: Icons.water_drop,
-                                              color: _fatColor,
-                                              value: item.value?.fat ?? 0),
-                                        ],
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -438,9 +409,10 @@ class _NutritionState extends State<Nutrition> {
                         ),
                       );
                     },
-                    childCount: items.length,
+                    childCount: groupedItems.length,
                   ),
                 ),
+
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
             ),
