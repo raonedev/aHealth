@@ -9,6 +9,7 @@ import androidx.work.WorkManager
 import androidx.work.OneTimeWorkRequestBuilder
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import androidx.work.ExistingWorkPolicy
 
 class MainActivity : FlutterFragmentActivity() {
 
@@ -41,7 +42,9 @@ class MainActivity : FlutterFragmentActivity() {
                         scope.launch {
                             try {
                                 val worker = OneTimeWorkRequestBuilder<StepSyncWorker>().build()
-                                WorkManager.getInstance(this@MainActivity).enqueue(worker)
+                                // WorkManager.getInstance(this@MainActivity).enqueue(worker)
+                                            WorkManager.getInstance(this@MainActivity)
+               .enqueueUniqueWork("step_sync", ExistingWorkPolicy.REPLACE, worker)
                                 result.success(true)
                             } catch (e: Exception) {
                                 result.success(false)

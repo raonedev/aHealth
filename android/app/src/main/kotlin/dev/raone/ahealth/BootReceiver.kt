@@ -30,8 +30,12 @@ class BootReceiver : BroadcastReceiver() {
 }
 
 fun enqueueWork(context: Context) {
-    val request = PeriodicWorkRequestBuilder<StepSyncWorker>(30, TimeUnit.MINUTES).build()
-    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        "step_sync", ExistingPeriodicWorkPolicy.KEEP, request
-    )
+    // val request = PeriodicWorkRequestBuilder<StepSyncWorker>(30, TimeUnit.MINUTES).build()
+    // WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+    //     "step_sync", ExistingPeriodicWorkPolicy.UPDATE, request
+    // )
+    val request = OneTimeWorkRequestBuilder<StepSyncWorker>().build()
+   WorkManager.getInstance(context).enqueueUniqueWork(
+        "step_sync", ExistingWorkPolicy.REPLACE, request
+   )
 }

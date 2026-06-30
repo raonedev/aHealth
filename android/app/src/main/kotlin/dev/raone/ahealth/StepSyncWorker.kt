@@ -10,6 +10,7 @@ import androidx.work.*
 import kotlinx.coroutines.*
 import java.time.*
 import kotlin.coroutines.*
+import java.util.concurrent.TimeUnit
 
 class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
@@ -42,6 +43,8 @@ class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
         }
 
         prefs.edit().putLong("last_step_count", current).putLong("last_sync_time", now).commit()
+        val next = OneTimeWorkRequestBuilder<StepSyncWorker>().setInitialDelay(30, TimeUnit.MINUTES).build()
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork("step_sync", ExistingWorkPolicy.REPLACE, next)
         return Result.success()
     }
 
