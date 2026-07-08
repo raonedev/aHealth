@@ -2,7 +2,6 @@ import 'dart:developer' as dev;
 
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/presentation/sleep/sleep_picker.dart';
-import 'package:ahealth/services/step_tracking_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,10 +33,6 @@ class _HomeWidgetState extends State<HomeWidget> {
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((prefs) {
-      final trackingEnabled = prefs.getBool('step_tracking_enabled') ?? false;
-      if(trackingEnabled) syncStepsNow();
-    });
   }
 
   @override

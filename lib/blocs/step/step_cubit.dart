@@ -1,10 +1,8 @@
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/step_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
-import 'dart:developer' as dev;
 
 part 'step_state.dart';
 
@@ -29,17 +27,6 @@ class StepsCubit extends Cubit<StepsState> {
         startTime: midnight,
         endTime: now,
       );
-      final prefs = await SharedPreferences.getInstance();
-      final trackingEnabled = prefs.getBool('step_tracking_enabled') ?? false;
-      if (trackingEnabled) {
-        // healthData = healthData
-            .where((e) {
-      //   dev.log(e.toString());
-      //   return e.sourceId == "dev.raone.ahealth";
-      // })
-            .toList();
-      
-      }
       if (healthData.isEmpty) {
         emit(const StepFailed(errorMessage: "NULL"));
       } else {

@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'dart:developer' as dev;
+// import 'dart:developer' as dev;
 
 import 'package:health/health.dart';
 
@@ -37,7 +37,6 @@ Future<Map<DateTime, double>> getDataForDaysBatch({
   required DateTime startDate,
   required DateTime endDate,
   required HealthDataType healthType,
-  bool filterByApp = false, 
 }) async {
   final start = DateTime(startDate.year, startDate.month, startDate.day);
   final end =
@@ -58,8 +57,7 @@ Future<Map<DateTime, double>> getDataForDaysBatch({
     );
 
     for (final HealthDataPoint point in healthData) {
-        dev.log("sourceId:${point.sourceId}, sourceName:${point.sourceName}, dateFrom:${point.dateFrom}, value:${point.value.toJson()['numericValue'].toString()}");
-        if (filterByApp && point.sourceName != 'dev.raone.ahealth') continue;
+        // dev.log("sourceId:${point.sourceId}, sourceName:${point.sourceName}, dateFrom:${point.dateFrom}, value:${point.value.toJson()['numericValue'].toString()}");
       final day = DateTime(
           point.dateFrom.year, point.dateFrom.month, point.dateFrom.day);
       final value =
