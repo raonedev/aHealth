@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/step_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,7 +13,6 @@ class StepsCubit extends Cubit<StepsState> {
 
   Future<void> getStepData() async {
     emit(StepLoadingState());
-
     final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day);
     bool stepsPermission =
@@ -19,26 +20,29 @@ class StepsCubit extends Cubit<StepsState> {
     if (!stepsPermission) {
       stepsPermission = await Health().requestAuthorization(
         [HealthDataType.STEPS],
-        permissions: [HealthDataAccess.READ_WRITE],
+        permissions: [HealthDataAccess.READ],
       );
     }
-
     try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.STEPS],
         startTime: midnight,
         endTime: now,
       );
-      // healthData.where((e) {
+      final prefs = await SharedPreferences.getInstance();
+      final trackingEnabled = prefs.getBool('step_tracking_enabled') ?? false;
+      if (trackingEnabled) {
+        // healthData = healthData
+            .where((e) {
       //   dev.log(e.toString());
       //   return e.sourceId == "dev.raone.ahealth";
-      // }).toList();
+      // })
+            .toList();
       
-
+      }
       if (healthData.isEmpty) {
         emit(const StepFailed(errorMessage: "NULL"));
       } else {
-        // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
         List<StepModel> stepModel0 = [];
         for (HealthDataPoint healthDataPoint in healthData) {

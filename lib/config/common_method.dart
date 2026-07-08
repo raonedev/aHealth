@@ -1,11 +1,14 @@
 import 'dart:developer';
+import 'dart:developer' as dev;
 
 import 'package:health/health.dart';
 
-Future<double> getDataForDay({required DateTime date, required HealthDataType healthType}) async {
+Future<double> getDataForDay(
+    {required DateTime date, required HealthDataType healthType}) async {
   double total = 0;
   DateTime startOfDay = DateTime(date.year, date.month, date.day, 0, 0);
-  DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+  DateTime endOfDay =
+      DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
 
   try {
     List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
@@ -34,9 +37,11 @@ Future<Map<DateTime, double>> getDataForDaysBatch({
   required DateTime startDate,
   required DateTime endDate,
   required HealthDataType healthType,
+  bool filterByApp = false, 
 }) async {
   final start = DateTime(startDate.year, startDate.month, startDate.day);
-  final end = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
+  final end =
+      DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
 
   final Map<DateTime, double> result = {};
 
@@ -52,9 +57,13 @@ Future<Map<DateTime, double>> getDataForDaysBatch({
       endTime: end,
     );
 
-    for (final point in healthData) {
-      final day = DateTime(point.dateFrom.year, point.dateFrom.month, point.dateFrom.day);
-      final value = double.tryParse(point.value.toJson()['numericValue'].toString()) ?? 0;
+    for (final HealthDataPoint point in healthData) {
+        dev.log("sourceId:${point.sourceId}, sourceName:${point.sourceName}, dateFrom:${point.dateFrom}, value:${point.value.toJson()['numericValue'].toString()}");
+        if (filterByApp && point.sourceName != 'dev.raone.ahealth') continue;
+      final day = DateTime(
+          point.dateFrom.year, point.dateFrom.month, point.dateFrom.day);
+      final value =
+          double.tryParse(point.value.toJson()['numericValue'].toString()) ?? 0;
       result[day] = (result[day] ?? 0) + value;
     }
   } catch (e) {

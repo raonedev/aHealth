@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'dart:developer' as dev;
 
+import 'package:flutter/material.dart';
+
 import '../../models/nutrition_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -81,43 +83,18 @@ class NutritionCubit extends Cubit<NutritionState> {
         protein: valueFood.protein,
         fatTotal: valueFood.fat,
         carbohydrates: valueFood.carbs,
-        calcium: valueFood.calcium,
-        cholesterol: valueFood.cholesterol,
+        calcium: _mgToG(valueFood.calcium),
+        cholesterol: _mgToG(valueFood.cholesterol),
         fiber: valueFood.fiber,
-        iron: valueFood.iron,
-        potassium: valueFood.potassium,
-        sodium: valueFood.sodium,
+        iron: _mgToG(valueFood.iron),
+        potassium: _mgToG(valueFood.potassium),
+        sodium: _mgToG(valueFood.sodium),
+        vitaminC: _mgToG(valueFood.vitaminC),
+        vitaminA: _mgToG(valueFood.vitaminA),
         sugar: valueFood.sugar,
         name: valueFood.name,
-        vitaminC: valueFood.vitaminC,
-        vitaminA: valueFood.vitaminA,
         fatMonounsaturated: valueFood.monounsaturatedFat,
         recordingMethod: RecordingMethod.manual
-        // caffeine: 0.002,
-        // vitaminA: 0.001,
-        // vitaminC: 0.002,
-        // vitaminD: 0.003,
-        // vitaminE: 0.004,
-        // vitaminK: 0.005,
-        // b1Thiamin: 0.006,
-        // b2Riboflavin: 0.007,
-        // b3Niacin: 0.008,
-        // b5PantothenicAcid: 0.009,
-        // b6Pyridoxine: 0.010,
-        // b7Biotin: 0.011,
-        // b9Folate: 0.012,
-        // b12Cobalamin: 0.013,
-        // copper: 0.016,
-        // iodine: 0.017,
-        // magnesium: 0.019,
-        // manganese: 0.020,
-        // phosphorus: 0.021,
-        // selenium: 0.023,
-        // zinc: 0.025,
-        // water: 0.026,
-        // molybdenum: 0.027,
-        // chloride: 0.028,
-        // chromium: 0.029,
         );
     if (success) {
       getNutritionData();
@@ -126,6 +103,8 @@ class NutritionCubit extends Cubit<NutritionState> {
     }
     return success;
   }
+
+  double? _mgToG(double? mg) => mg == null ? null : mg / 1000;
 
   Future<bool> addMultipleNutritionData({required List<ValueFood> selectedFoods}) async {
   // 1. Emit loading once for the entire batch operation
@@ -146,6 +125,7 @@ class NutritionCubit extends Cubit<NutritionState> {
       final itemStartTime = itemEndTime.subtract(const Duration(minutes: 20));
 
       dev.log("Batch logging item [${i + 1}/${selectedFoods.length}]: ${valueFood.name}");
+      await Future.delayed(Durations.short4);
 
       bool success = await Health().writeMeal(
         mealType: _getMealType(itemEndTime.hour),
@@ -155,16 +135,16 @@ class NutritionCubit extends Cubit<NutritionState> {
         protein: valueFood.protein,
         fatTotal: valueFood.fat,
         carbohydrates: valueFood.carbs,
-        calcium: valueFood.calcium,
-        cholesterol: valueFood.cholesterol,
+        calcium: _mgToG(valueFood.calcium),
+        cholesterol: _mgToG(valueFood.cholesterol),
         fiber: valueFood.fiber,
-        iron: valueFood.iron,
-        potassium: valueFood.potassium,
-        sodium: valueFood.sodium,
+        iron: _mgToG(valueFood.iron),
+        potassium: _mgToG(valueFood.potassium),
+        sodium: _mgToG(valueFood.sodium),
         sugar: valueFood.sugar,
         name: valueFood.name,
-        vitaminC: valueFood.vitaminC,
-        vitaminA: valueFood.vitaminA,
+        vitaminC: _mgToG(valueFood.vitaminC),
+        vitaminA: _mgToG(valueFood.vitaminA),
         fatMonounsaturated: valueFood.monounsaturatedFat,
         recordingMethod: RecordingMethod.manual,
       );
@@ -179,8 +159,9 @@ class NutritionCubit extends Cubit<NutritionState> {
       emit(NutritionFailed(errorMessage: "Failed to log some or all food items."));
     }
     
-  } catch (e) {
+  } catch (e,s) {
     allSuccess = false;
+    dev.log("Exception adding addMultipleNutritionData ",error: e,stackTrace: s);
     emit(NutritionFailed(errorMessage: "An error occurred while saving: $e"));
   }
 

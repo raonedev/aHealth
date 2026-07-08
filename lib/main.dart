@@ -33,6 +33,9 @@ import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart
     show FoodScanGroupAdapter, ValueFoodHiveAdapter;
 
 ///dart run build_runner build --delete-conflicting-outputs
+/// adb logcat -s StepSync
+/// adb shell dumpsys jobscheduler | grep ahealth
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter(); // Initialize Hive for Flutter

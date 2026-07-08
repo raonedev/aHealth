@@ -10,6 +10,7 @@ import androidx.work.*
 import kotlinx.coroutines.*
 import java.time.*
 import kotlin.coroutines.*
+import java.util.concurrent.TimeUnit
 
 class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
@@ -17,7 +18,6 @@ class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
         val prefs = applicationContext.getSharedPreferences("step_prefs", Context.MODE_PRIVATE)
         val sensorManager = applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-        // Read sensor with a 5-second timeout so the worker doesn't hang if phone is completely still
         val current = withTimeoutOrNull(5000) {
             readStepCounter(sensorManager)
         } ?: return Result.retry()
@@ -26,22 +26,25 @@ class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
         val lastTime = prefs.getLong("last_sync_time", System.currentTimeMillis())
         val now = System.currentTimeMillis()
 
+        android.util.Log.d("StepSync", "current=$current, last=$last")
+        android.util.Log.d("StepSync", "prefs all: ${prefs.all}")
+
         if (last == -1L) {
-            // First run — save baseline, nothing to sync yet
-            prefs.edit().putLong("last_step_count", current).putLong("last_sync_time", now).apply()
+            prefs.edit().putLong("last_step_count", current).putLong("last_sync_time", now).commit()
+            android.util.Log.d("StepSync", "Baseline saved: $current")
             return Result.success()
         }
 
-        // Handle reboot logic: if current < last, the hardware counter reset to 0
-        val delta = if (current < last) current else current - last 
-        
+        val delta = if (current < last) current else current - last
+        android.util.Log.d("StepSync", "delta=$delta")
         if (delta > 0) {
             val success = writeToHealthConnect(delta, lastTime, now)
-            if (!success) return Result.retry() // Retry if Health Connect was temporarily unavailable
+            if (!success) return Result.retry()
         }
-        
-        // Save current state for next sync cycle
-        prefs.edit().putLong("last_step_count", current).putLong("last_sync_time", now).apply()
+
+        prefs.edit().putLong("last_step_count", current).putLong("last_sync_time", now).commit()
+        val next = OneTimeWorkRequestBuilder<StepSyncWorker>().setInitialDelay(30, TimeUnit.MINUTES).build()
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork("step_sync", ExistingWorkPolicy.REPLACE, next)
         return Result.success()
     }
 
@@ -76,6 +79,7 @@ class StepSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
                     endZoneOffset = zoneOffset,
                     metadata = Metadata.autoRecorded(
                         device = HealthDevice(
+
                             type = HealthDevice.TYPE_PHONE,
                             manufacturer = android.os.Build.MANUFACTURER, // Avoids hardcoded nulls
                             model = android.os.Build.MODEL               // Provides better context
