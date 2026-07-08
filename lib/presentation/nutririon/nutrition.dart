@@ -373,12 +373,12 @@ class _NutritionState extends State<Nutrition> {
                               children: [
                                 if (isGroup) ...[
                                   Positioned(
-                                    left: 6, right: 0, bottom: 0, top: 6,
+                                    left: 6, right: 14, bottom: 0, top: 6,
                                     child: CardShell(),
                                   ),
                                   if (entryItems.length > 2)
                                     Positioned(
-                                      left: 12, right: 0, bottom: 0, top: 12,
+                                      left: 12, right: 10, bottom: 0, top: 12,
                                       child: CardShell(),
                                     ),
                                 ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health/health.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import '../../app_routes.dart';
 import '../../blocs/water/water_cubit.dart';
 
 const Color background = Color(0xFFF1F5F9);
@@ -83,7 +84,8 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
             ),
             actions: [
               IconButton(onPressed: () {
-                context.push('/chart/${HealthDataType.WATER.name}');
+                
+                  context.push(AppRoutes.waterChartScreen);
               }, icon: Icon(Icons.history))
             ],
 
