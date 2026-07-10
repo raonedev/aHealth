@@ -15,9 +15,19 @@ class FoodScanCubit extends Cubit<FoodScanState> {
   FoodScanCubit() : super(FoodScanInitial());
 
   static const _apiKey = GEMINI_API_KEY;
-  static const _model = 'gemma-4-26b-a4b-it';
-  static const _streamUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:streamGenerateContent?alt=sse&key=$_apiKey';
+  // static const _model = 'gemma-4-26b-a4b-it';
+  // static const _streamUrl =
+  //     'https://generativelanguage.googleapis.com/v1beta/models/$_model:streamGenerateContent?alt=sse&key=$_apiKey';
+  static const _fallbackModels = [
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-3-flash',
+  'gemma-4-27b-it',
+  'gemma-4-31b-it',
+];
+static String _urlFor(String model) =>
+    'https://generativelanguage.googleapis.com/v1beta/models/$model:streamGenerateContent?alt=sse&key=$_apiKey';
 
   static const _csvHeaders =
       'name,calories,protein,fat,carbs,calcium,cholesterol,fiber,iron,potassium,sodium,sugar,quantity,unit,servingDescription,metricServingAmount,metricServingUnit,numberOfUnits,measurementDescription,saturatedFat,polyunsaturatedFat,monounsaturatedFat,vitaminA,vitaminC';
@@ -41,88 +51,107 @@ Rules:
 - NO markdown, NO explanation, NO extra text — only the CSV
 ''';
 
-  Future<void> scanFoodImage({
-    required String base64Image,
-    required String groupUuid,
-    required String imagePath,
-  }) async {
-    emit(FoodScanLoading());
+ Future<void> scanFoodImage({
+  required String base64Image,
+  required String groupUuid,
+  required String imagePath,
+}) async {
+  emit(FoodScanLoading());
 
-    try {
-      final request = http.Request('POST', Uri.parse(_streamUrl));
-      request.headers['Content-Type'] = 'application/json';
-      request.body = jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {
-                'inline_data': {
-                  'mime_type': 'image/jpeg',
-                  'data': base64Image,
-                }
-              },
-              {'text': _prompt},
-            ]
-          }
-        ],
-        'generationConfig': {'temperature': 0.2},
-      });
-
-      final streamedResponse = await http.Client().send(request);
-
-      if (streamedResponse.statusCode != 200) {
-        final body = await streamedResponse.stream.bytesToString();
-        throw Exception('API error ${streamedResponse.statusCode}: $body');
-      }
-
-      String thinkingBuffer = '';
-      String csvBuffer = '';
-
-      await for (final line in streamedResponse.stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())) {
-        if (!line.startsWith('data: ')) continue;
-        final jsonStr = line.substring(6).trim();
-        if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
-
-        try {
-          final chunk = jsonDecode(jsonStr);
-          final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
-          if (parts == null) continue;
-
-          for (final part in parts) {
-            final text = part['text'] as String? ?? '';
-            if (part['thought'] == true) {
-              thinkingBuffer += text;
-              emit(FoodScanThinking(thinkingText: thinkingBuffer));
-            } else {
-              csvBuffer += text;
-            }
-          }
-        } catch (e) {
-          dev.log('SSE chunk parse error: $e');
+  try {
+    final body = jsonEncode({
+      'contents': [
+        {
+          'parts': [
+            {
+              'inline_data': {
+                'mime_type': 'image/jpeg',
+                'data': base64Image,
+              }
+            },
+            {'text': _prompt},
+          ]
         }
-      }
-      dev.log('CSV:\n$csvBuffer');
+      ],
+      'generationConfig': {'temperature': 0.2},
+    });
 
-      final foods = _parseCsv(csvBuffer.trim());
+    http.StreamedResponse? streamedResponse;
 
-      if (foods.isEmpty) {
-        emit(FoodScanNoItems());
-      } else {
-        emit(FoodScanSuccess(
-          foods: foods,
-          thinkingText: thinkingBuffer.trim(),
-          groupUuid: groupUuid,
-          imagePath: imagePath,
-        ));
+    for (final model in _fallbackModels) {
+      final request = http.Request('POST', Uri.parse(_urlFor(model)))
+        ..headers['Content-Type'] = 'application/json'
+        ..body = body;
+
+      try {
+        final res = await request.send();
+        if (res.statusCode == 200) {
+          streamedResponse = res;
+          break;
+        } else if (res.statusCode == 429 || res.statusCode >= 500) {
+          dev.log('Model $model returned ${res.statusCode}, trying next');
+          continue;
+        } else {
+          final err = await res.stream.bytesToString();
+          throw Exception('API error ${res.statusCode}: $err');
+        }
+      } catch (e) {
+        dev.log('Model $model failed: $e');
+        continue;
       }
-    } catch (e, s) {
-      dev.log('FoodScanCubit error', error: e, stackTrace: s);
-      emit(FoodScanError(message: e.toString()));
     }
-  }
 
+    if (streamedResponse == null) {
+      throw Exception('All models failed or rate-limited');
+    }
+
+    String thinkingBuffer = '';
+    String csvBuffer = '';
+
+    await for (final line in streamedResponse.stream
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())) {
+      if (!line.startsWith('data: ')) continue;
+      final jsonStr = line.substring(6).trim();
+      if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
+
+      try {
+        final chunk = jsonDecode(jsonStr);
+        final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
+        if (parts == null) continue;
+
+        for (final part in parts) {
+          final text = part['text'] as String? ?? '';
+          if (part['thought'] == true) {
+            thinkingBuffer += text;
+            emit(FoodScanThinking(thinkingText: thinkingBuffer));
+          } else {
+            csvBuffer += text;
+          }
+        }
+      } catch (e) {
+        dev.log('SSE chunk parse error: $e');
+      }
+    }
+    dev.log('CSV:\n$csvBuffer');
+
+    final foods = _parseCsv(csvBuffer.trim());
+
+    if (foods.isEmpty) {
+      emit(FoodScanNoItems());
+    } else {
+      emit(FoodScanSuccess(
+        foods: foods,
+        thinkingText: thinkingBuffer.trim(),
+        groupUuid: groupUuid,
+        imagePath: imagePath,
+      ));
+    }
+  } catch (e, s) {
+    dev.log('FoodScanCubit error', error: e, stackTrace: s);
+    emit(FoodScanError(message: e.toString()));
+  }
+}
   List<ValueFood> _parseCsv(String csv) {
     final lines = csv
         .split('\n')
