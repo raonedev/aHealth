@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -231,7 +232,7 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    f.name ?? 'Unknown Item',
+                                    "${f.name ?? 'Unknown Item'} ${f.servingDescription}",
                                     style: TextStyle(
                                       color: isCurrentSelected
                                           ? _textPrimary
@@ -311,11 +312,16 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                       .read<NutritionCubit>()
                       .addMultipleNutritionData(selectedFoods: selectedFoods);
 
-                  await NutritionService.saveScanGroup(
-                    uuid: widget.groupUuid,
-                    imagePath: widget.imagePath,
-                    foods: selectedFoods,
-                  );
+                  try {
+  await NutritionService.saveScanGroup(
+    uuid: widget.groupUuid,
+    imagePath: widget.imagePath,
+    foods: selectedFoods,
+  );
+  dev.log('Group saved successfully');
+} catch (e, s) {
+  dev.log('saveScanGroup failed', error: e, stackTrace: s);
+}
                   if (context.mounted) {
                     Navigator.popUntil(context, (r) => r.isFirst);
                   }

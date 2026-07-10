@@ -142,10 +142,11 @@ class NutritionCubit extends Cubit<NutritionState> {
         potassium: _mgToG(valueFood.potassium),
         sodium: _mgToG(valueFood.sodium),
         sugar: valueFood.sugar,
-        name: valueFood.name,
+       name: '${valueFood.name} (${valueFood.servingDescription})',
         vitaminC: _mgToG(valueFood.vitaminC),
         vitaminA: _mgToG(valueFood.vitaminA),
         fatMonounsaturated: valueFood.monounsaturatedFat,
+        
         recordingMethod: RecordingMethod.manual,
       );
 

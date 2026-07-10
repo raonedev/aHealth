@@ -15,7 +15,10 @@ class FoodImage extends StatelessWidget {
 
     final groups = NutritionService.getAllGroups();
     final group = groups.cast<FoodScanGroup?>().firstWhere(
-          (g) => g!.foods.any((f) => f.name == item.value?.name),
+      (g) => g!.foods.any((f) =>
+          item.value?.name != null &&
+          f.name != null &&
+          item.value!.name!.startsWith(f.name!)),
       orElse: () => null,
     );
 

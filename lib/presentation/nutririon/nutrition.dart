@@ -58,9 +58,12 @@ class _NutritionState extends State<Nutrition> {
 
     for (final item in items) {
       final group = groups.cast<FoodScanGroup?>().firstWhere(
-            (g) => g!.foods.any((f) => f.name == item.value?.name),
-            orElse: () => null,
-          );
+      (g) => g!.foods.any((f) =>
+          item.value?.name != null &&
+          f.name != null &&
+          item.value!.name!.startsWith(f.name!)),
+      orElse: () => null,
+    );
       if (group != null) {
         grouped.putIfAbsent(group.imagePath, () => []).add(item);
       } else {

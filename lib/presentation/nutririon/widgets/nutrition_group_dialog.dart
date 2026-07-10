@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:ahealth/presentation/nutririon/widgets/food_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -51,7 +52,7 @@ class GroupFoodCard extends StatelessWidget {
                 // Food image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: _FoodImage(item: item),
+                  child: FoodImage(item: item),
                 ),
                 const SizedBox(width: 14),
                 // Info
@@ -84,14 +85,14 @@ class GroupFoodCard extends StatelessWidget {
                             icon: Icons.bolt,
                             color: const Color(0xFFE05252),
                             label:
-                            '${(item.value?.protein ?? 0).toStringAsFixed(1)}g',
+                            '${(item.value?.protein ?? 0).toStringAsFixed(0)}g',
                           ),
                           const SizedBox(width: 8),
                           _MacroTag(
                             icon: Icons.grain,
                             color: const Color(0xFFE0A952),
                             label:
-                            '${(item.value?.carbs ?? 0).toStringAsFixed(1)}g',
+                            '${(item.value?.carbs ?? 0).toStringAsFixed(0)}g',
                           ),
                         ],
                       ),
@@ -129,34 +130,6 @@ class _MacroTag extends StatelessWidget {
                 color: color,
                 fontWeight: FontWeight.w500)),
       ],
-    );
-  }
-}
-
-class _FoodImage extends StatelessWidget {
-  final NutritionModel item;
-  const _FoodImage({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    final groups = NutritionService.getAllGroups();
-    final group = groups.cast<FoodScanGroup?>().firstWhere(
-          (g) => g!.foods.any((f) => f.name == item.value?.name),
-      orElse: () => null,
-    );
-
-    if (group != null) {
-      final file = File(group.imagePath);
-      if (file.existsSync()) {
-        return Image.file(file, width: 52, height: 52, fit: BoxFit.cover);
-      }
-    }
-
-    return Container(
-      width: 52,
-      height: 52,
-      color: Colors.grey.shade100,
-      child: Icon(Icons.restaurant, color: Colors.grey.shade400),
     );
   }
 }
