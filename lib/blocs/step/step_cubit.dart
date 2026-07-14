@@ -1,4 +1,6 @@
 
+import 'dart:developer' as dev;
+
 import '../../models/step_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,8 +13,12 @@ class StepsCubit extends Cubit<StepsState> {
 
   Future<void> getStepData() async {
     emit(StepLoadingState());
-    final now = DateTime.now();
+    
+    try {
+      final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day);
+    dev.log('getStepData');
+    
     bool stepsPermission =
         await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
     if (!stepsPermission) {
@@ -21,7 +27,6 @@ class StepsCubit extends Cubit<StepsState> {
         permissions: [HealthDataAccess.READ],
       );
     }
-    try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.STEPS],
         startTime: midnight,
@@ -38,7 +43,8 @@ class StepsCubit extends Cubit<StepsState> {
         }
         emit(StepSuccessState(stepModel: stepModel0));
       }
-    } catch (e) {
+    } catch (e,s) {
+      dev.log("Exception StepFailed",error: e,stackTrace: s);
       emit(StepFailed(errorMessage: e.toString()));
     }
   }

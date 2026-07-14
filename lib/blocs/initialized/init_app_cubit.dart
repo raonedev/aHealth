@@ -25,18 +25,28 @@ class InitAppCubit extends Cubit<InitAppState> {
           : [];
 
   //  both READ and WRITE
-  List<HealthDataAccess> get permissions => types
-      .map((type) => [
-            HealthDataType.WALKING_HEART_RATE,
-            HealthDataType.ELECTROCARDIOGRAM,
-            HealthDataType.HIGH_HEART_RATE_EVENT,
-            HealthDataType.LOW_HEART_RATE_EVENT,
-            HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-            HealthDataType.EXERCISE_TIME,
-            HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
-          ].contains(type)
-              ? HealthDataAccess.READ
-              : HealthDataAccess.READ_WRITE)
+   List<HealthDataAccess> get permissions => types
+      .map(
+        (type) =>
+            // can only request READ permissions to the following list of types on iOS
+            [
+              HealthDataType.GENDER,
+              HealthDataType.BLOOD_TYPE,
+              HealthDataType.BIRTH_DATE,
+              HealthDataType.APPLE_MOVE_TIME,
+              HealthDataType.APPLE_STAND_HOUR,
+              HealthDataType.APPLE_STAND_TIME,
+              HealthDataType.WALKING_HEART_RATE,
+              HealthDataType.ELECTROCARDIOGRAM,
+              HealthDataType.HIGH_HEART_RATE_EVENT,
+              HealthDataType.LOW_HEART_RATE_EVENT,
+              HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+              HealthDataType.EXERCISE_TIME,
+              HealthDataType.SLEEP_WRIST_TEMPERATURE,
+            ].contains(type)
+            ? HealthDataAccess.READ
+            : HealthDataAccess.READ_WRITE,
+      )
       .toList();
 
   Future<void> initializeHealthSdk() async {

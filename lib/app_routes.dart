@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
@@ -78,6 +80,7 @@ class AppRoutes {
                   future: checkOnboardingStatus(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
+                      dev.log(" checkOnboardingStatus waiting");
                       return const Scaffold(
                         body: Center(
                           child: CircularProgressIndicator(
@@ -86,14 +89,18 @@ class AppRoutes {
                         ),
                       );
                     } else if (snapshot.hasError) {
+                      dev.log(" checkOnboardingStatus hasError");
                       // return Text('Error loading onboarding status: ${snapshot.error}');
                       return const GetStartingScreen();
                     } else {
+                       dev.log(" checkOnboardingStatus sucess");
                       final hasSeenOnboarding = snapshot.data ?? false;
                       if (hasSeenOnboarding) {
+                         dev.log(" hasSeenOnboarding sucess");
                         WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/shell/home'));
                         return const Scaffold(body: Center(child: CircularProgressIndicator(color: primary)));
                       } else {
+                        dev.log(" hasSeenOnboarding fail");
                         return const GetStartingScreen();
                       }
                     }

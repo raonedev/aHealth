@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:developer' as dev;
 
 import 'package:ahealth/models/water_model.dart';
 import 'package:bloc/bloc.dart';
@@ -13,6 +14,9 @@ class WaterCubit extends Cubit<WaterState> {
   Future<void> getWaterData() async {
     emit(WaterLoadingState());
 
+
+    try {
+
     final endTime = DateTime.now();
     final fromTime = DateTime(endTime.year, endTime.month, endTime.day);
     // log("from ${fromTime.toIso8601String()} to ${endTime.toIso8601String()} ");
@@ -24,8 +28,6 @@ class WaterCubit extends Cubit<WaterState> {
         permissions: [HealthDataAccess.READ_WRITE],
       );
     }
-
-    try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.WATER],
         startTime: fromTime,
@@ -45,7 +47,8 @@ class WaterCubit extends Cubit<WaterState> {
         }
         emit(WaterSuccessState(waterModel: sleepModel0));
       }
-    } catch (e) {
+    } catch (e,s) {
+      dev.log("Exception WaterFailed",error: e,stackTrace: s);
       emit(WaterFailed(errorMessage: e.toString()));
     }
   }

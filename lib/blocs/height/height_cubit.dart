@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import '../../models/height_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -10,7 +12,10 @@ class HeightCubit extends Cubit<HeightState> {
 
   Future<void> getHeight() async {
     emit(HeightLoading());
-    final now = DateTime.now();
+    
+
+    try {
+      final now = DateTime.now();
     final midnight = DateTime(now.year, now.month - 1, now.day);
     bool stepsPermission =
         await Health().hasPermissions([HealthDataType.HEIGHT]) ?? false;
@@ -20,8 +25,6 @@ class HeightCubit extends Cubit<HeightState> {
         permissions: [HealthDataAccess.READ_WRITE],
       );
     }
-
-    try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.HEIGHT],
         startTime: midnight,
@@ -40,7 +43,9 @@ class HeightCubit extends Cubit<HeightState> {
         }
         emit(HeightSuccess(heightModel: heightModel0));
       }
-    } catch (e) {
+    } catch (e,s) {
+
+      dev.log("Exception StepFailed",error: e,stackTrace: s);
       emit(HeightFailed(errorMessage: e.toString()));
     }
   }

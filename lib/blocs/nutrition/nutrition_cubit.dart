@@ -16,17 +16,17 @@ class NutritionCubit extends Cubit<NutritionState> {
   Future<void> getNutritionData() async {
     emit(NutritionLoading());
     final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day);
-    bool stepsPermission =
-        await Health().hasPermissions([HealthDataType.NUTRITION]) ?? false;
-    if (!stepsPermission) {
-      stepsPermission = await Health().requestAuthorization(
-        [HealthDataType.NUTRITION],
-        permissions: [HealthDataAccess.READ_WRITE],
-      );
-    }
 
     try {
+      final midnight = DateTime(now.year, now.month, now.day);
+      bool stepsPermission =
+          await Health().hasPermissions([HealthDataType.NUTRITION]) ?? false;
+      if (!stepsPermission) {
+        stepsPermission = await Health().requestAuthorization(
+          [HealthDataType.NUTRITION],
+          permissions: [HealthDataAccess.READ_WRITE],
+        );
+      }
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.NUTRITION],
         startTime: midnight,
@@ -46,7 +46,8 @@ class NutritionCubit extends Cubit<NutritionState> {
         }
         emit(NutritionSuccess(nutritionModel: nutritionModel0));
       }
-    } catch (e) {
+    } catch (e,s) {
+      dev.log("Exception nutrition",error: e,stackTrace: s);
       emit(NutritionFailed(errorMessage: e.toString()));
     }
   }
@@ -94,8 +95,7 @@ class NutritionCubit extends Cubit<NutritionState> {
         sugar: valueFood.sugar,
         name: valueFood.name,
         fatMonounsaturated: valueFood.monounsaturatedFat,
-        recordingMethod: RecordingMethod.manual
-        );
+        recordingMethod: RecordingMethod.manual);
     if (success) {
       getNutritionData();
     } else {
@@ -106,66 +106,68 @@ class NutritionCubit extends Cubit<NutritionState> {
 
   double? _mgToG(double? mg) => mg == null ? null : mg / 1000;
 
-  Future<bool> addMultipleNutritionData({required List<ValueFood> selectedFoods}) async {
-  // 1. Emit loading once for the entire batch operation
-  emit(NutritionLoading());
-  
-  final now = DateTime.now();
-  bool allSuccess = true;
-  
-  dev.log("Starting batch logging for ${selectedFoods.length} items...");
+  Future<bool> addMultipleNutritionData(
+      {required List<ValueFood> selectedFoods}) async {
+    // 1. Emit loading once for the entire batch operation
+    emit(NutritionLoading());
 
-  try {
-    for (int i = 0; i < selectedFoods.length; i++) {
-      final valueFood = selectedFoods[i];
-      
-      // Slightly stagger the timestamps by a few seconds so Health Connect / Health Connect 
-      // treats them as distinct records within the batch if processed quickly.
-      final itemEndTime = now.subtract(Duration(seconds: i * 5));
-      final itemStartTime = itemEndTime.subtract(const Duration(minutes: 20));
+    final now = DateTime.now();
+    bool allSuccess = true;
 
-      dev.log("Batch logging item [${i + 1}/${selectedFoods.length}]: ${valueFood.name}");
-      await Future.delayed(Durations.short4);
+    dev.log("Starting batch logging for ${selectedFoods.length} items...");
 
-      bool success = await Health().writeMeal(
-        mealType: _getMealType(itemEndTime.hour),
-        startTime: itemStartTime,
-        endTime: itemEndTime,
-        caloriesConsumed: valueFood.calories,
-        protein: valueFood.protein,
-        fatTotal: valueFood.fat,
-        carbohydrates: valueFood.carbs,
-        calcium: _mgToG(valueFood.calcium),
-        cholesterol: _mgToG(valueFood.cholesterol),
-        fiber: valueFood.fiber,
-        iron: _mgToG(valueFood.iron),
-        potassium: _mgToG(valueFood.potassium),
-        sodium: _mgToG(valueFood.sodium),
-        sugar: valueFood.sugar,
-       name: '${valueFood.name} (${valueFood.servingDescription})',
-        vitaminC: _mgToG(valueFood.vitaminC),
-        vitaminA: _mgToG(valueFood.vitaminA),
-        fatMonounsaturated: valueFood.monounsaturatedFat,
-        
-        recordingMethod: RecordingMethod.manual,
-      );
+    try {
+      for (int i = 0; i < selectedFoods.length; i++) {
+        final valueFood = selectedFoods[i];
 
-      allSuccess &= success;
+        // Slightly stagger the timestamps by a few seconds so Health Connect / Health Connect
+        // treats them as distinct records within the batch if processed quickly.
+        final itemEndTime = now.subtract(Duration(seconds: i * 5));
+        final itemStartTime = itemEndTime.subtract(const Duration(minutes: 20));
+
+        dev.log(
+            "Batch logging item [${i + 1}/${selectedFoods.length}]: ${valueFood.name}");
+        await Future.delayed(Durations.short4);
+
+        bool success = await Health().writeMeal(
+          mealType: _getMealType(itemEndTime.hour),
+          startTime: itemStartTime,
+          endTime: itemEndTime,
+          caloriesConsumed: valueFood.calories,
+          protein: valueFood.protein,
+          fatTotal: valueFood.fat,
+          carbohydrates: valueFood.carbs,
+          calcium: _mgToG(valueFood.calcium),
+          cholesterol: _mgToG(valueFood.cholesterol),
+          fiber: valueFood.fiber,
+          iron: _mgToG(valueFood.iron),
+          potassium: _mgToG(valueFood.potassium),
+          sodium: _mgToG(valueFood.sodium),
+          sugar: valueFood.sugar,
+          name: '${valueFood.name} (${valueFood.servingDescription})',
+          vitaminC: _mgToG(valueFood.vitaminC),
+          vitaminA: _mgToG(valueFood.vitaminA),
+          fatMonounsaturated: valueFood.monounsaturatedFat,
+          recordingMethod: RecordingMethod.manual,
+        );
+
+        allSuccess &= success;
+      }
+
+      if (allSuccess) {
+        // 2. Refresh your main landing data once everything is written successfully
+        await getNutritionData();
+      } else {
+        emit(NutritionFailed(
+            errorMessage: "Failed to log some or all food items."));
+      }
+    } catch (e, s) {
+      allSuccess = false;
+      dev.log("Exception adding addMultipleNutritionData ",
+          error: e, stackTrace: s);
+      emit(NutritionFailed(errorMessage: "An error occurred while saving: $e"));
     }
-    
-    if (allSuccess) {
-      // 2. Refresh your main landing data once everything is written successfully
-      await getNutritionData();
-    } else {
-      emit(NutritionFailed(errorMessage: "Failed to log some or all food items."));
-    }
-    
-  } catch (e,s) {
-    allSuccess = false;
-    dev.log("Exception adding addMultipleNutritionData ",error: e,stackTrace: s);
-    emit(NutritionFailed(errorMessage: "An error occurred while saving: $e"));
+
+    return allSuccess;
   }
-
-  return allSuccess;
-}
 }
