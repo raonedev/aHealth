@@ -33,6 +33,7 @@ class InitAppCubit extends Cubit<InitAppState> {
             HealthDataType.LOW_HEART_RATE_EVENT,
             HealthDataType.IRREGULAR_HEART_RATE_EVENT,
             HealthDataType.EXERCISE_TIME,
+            HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
           ].contains(type)
               ? HealthDataAccess.READ
               : HealthDataAccess.READ_WRITE)
@@ -46,7 +47,7 @@ class InitAppCubit extends Cubit<InitAppState> {
     if (healthSdkStatus == HealthConnectSdkStatus.sdkUnavailable) {
       emit(InitAppSdkUnavailable());
       //await Health().installHealthConnect();
-    } else if (healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
+    } else if (Platform.isIOS ||healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
       await Permission.activityRecognition.request();
 
       ///sdk available now we will check for health permission from user
@@ -88,54 +89,4 @@ class InitAppCubit extends Cubit<InitAppState> {
       }
     }
   }
-
-  /*
-
-
-
-  Future<void> getAllHealthData()async{
-
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(hours: 24));
-
-
-    // Clear old data points
-    _healthDataList.clear();
-    try {
-      // fetch health data
-      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-        types: types,
-        startTime: yesterday,
-        endTime: now,
-      );
-      // sort the data points by date
-      healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-      _healthDataList.addAll(healthData);
-    } catch (error) {
-      log("Exception in getHealthDataFromTypes:",error:  error);
-    }
-
-    // filter out duplicates
-    setState(() {
-      _healthDataList = Health().removeDuplicates(_healthDataList);
-    });
-    log(_healthDataList.length.toString());
-  }
-
-  Future<void> getSingleData()async{
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(hours: 24));
-    List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-      types: [HealthDataType.SLEEP_SESSION],
-      startTime: yesterday,
-      endTime: now,
-    );
-
-    log(healthData[0].toJson().toString());
-  }
-
-
-  */
 }

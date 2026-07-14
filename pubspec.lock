@@ -524,10 +524,10 @@ packages:
     dependency: "direct main"
     description:
       name: health
-      sha256: ec6ba8485bb86cac9001fe721811dae470172d0a153ad6778e77fb1ff975dd8f
+      sha256: "2d9e119f3a1d281139f93149b41032b9f80b759960875bc784c5a25dd3c17524"
       url: "https://pub.dev"
     source: hosted
-    version: "13.2.1"
+    version: "13.3.1"
   hive:
     dependency: "direct main"
     description:
@@ -860,10 +860,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler
-      sha256: bc917da36261b00137bbc8896bf1482169cd76f866282368948f032c8c1caae1
+      sha256: fe54465bcc62a4564c6e4db337bbaded6c0c0fa6e10487414436d163114784f6
       url: "https://pub.dev"
     source: hosted
-    version: "12.0.1"
+    version: "12.0.3"
   permission_handler_android:
     dependency: transitive
     description:
