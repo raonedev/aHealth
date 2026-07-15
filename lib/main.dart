@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
+import 'core/di/service_locator.dart';
+import 'features/step_tracking/presentation/viewmodels/tracking_cubit.dart';
 import 'models/chat/chat_message_model.dart';
 import 'models/chat/chat_session_model.dart';
 import 'models/food_search_model.dart';
@@ -46,6 +48,7 @@ void main() async {
   Hive.registerAdapter(ServingAdapter());
   Hive.registerAdapter(ChatMessageAdapter());
   Hive.registerAdapter(ChatSessionAdapter());
+  await setupLocator(); 
   await ChatHiveService.instance.openBoxes();
   // init once in main.dart
   await HealthNotificationService().init();
@@ -131,6 +134,8 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => ChatCubit()),
         BlocProvider(create: (_) => FoodScanCubit()),
+
+        BlocProvider(create: (_) => sl<TrackingCubit>()),
       ],
       child: MaterialApp.router(
         title: 'A-HealthApp',

@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health/health.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -201,6 +202,14 @@ class _HomeWidgetState extends State<HomeWidget> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: kToolbarHeight*2+20),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          onPressed: () {
+            context.push(AppRoutes.stepsTrackingScreen);
+          },child: HugeIcon(icon: HugeIcons.strokeRoundedWorkoutRun,color: Colors.white,),),
       ),
     );
   }

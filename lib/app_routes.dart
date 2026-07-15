@@ -20,6 +20,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
+import 'features/step_tracking/presentation/views/tracking_view.dart';
 import 'helper/helper_func.dart';
 import 'models/nutrition_model.dart';
 import 'presentation/nutririon/nitritiondetailscreen.dart';
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String searchFoodScreen = "/searchFood";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
+  static const String stepsTrackingScreen = "/steps-tracking";
 
   static final GoRouter router = GoRouter(
     initialLocation: getStart,
@@ -172,6 +174,11 @@ class AppRoutes {
       GoRoute(
         path: waterChartScreen,
         builder: (context, state) => const WaterChartScreen(),
+      ),
+
+      GoRoute(
+        path: stepsTrackingScreen,
+        builder: (context, state) => const StepsTrackingView(),
       ),
     ],
   );

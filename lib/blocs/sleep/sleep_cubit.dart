@@ -63,50 +63,62 @@ class SleepCubit extends Cubit<SleepState> {
 }
 
   Future<void> addSleep(
-      {required DateTime startingTime, required DateTime endTime}) async {
-    bool success = true;
-    success &= await Health().writeHealthData(
-      value: 0.0,
-      type: HealthDataType.SLEEP_SESSION,
-      startTime: startingTime,
-      endTime: endTime,
-    );
-    if (success) {
-      getSleepData();
-    } else {
-      emit(const SleepFailedState(errorMessage: "failed to add data"));
-    }
+    {required DateTime startingTime, required DateTime endTime}) async {
+  bool success = true;
+  success &= await Health().writeHealthData(
+    value: 0.0,
+    type: Platform.isIOS ? HealthDataType.SLEEP_ASLEEP : HealthDataType.SLEEP_SESSION,
+    startTime: startingTime,
+    endTime: endTime,
+  );
+  if (success) {
+    getSleepData();
+  } else {
+    emit(const SleepFailedState(errorMessage: "failed to add data"));
   }
+}
 
   Future<void> deleteToadySleepData() async {
-    emit(SleepLoadingState());
+  emit(SleepLoadingState());
 
-    final endTime = DateTime.now();
-    final fromTime = DateTime(endTime.year, endTime.month, endTime.day - 1);
-    bool stepsPermission =
-        await Health().hasPermissions([HealthDataType.SLEEP_SESSION]) ?? false;
-    if (!stepsPermission) {
-      stepsPermission = await Health().requestAuthorization(
-        [HealthDataType.SLEEP_SESSION],
-        permissions: [HealthDataAccess.READ_WRITE],
-      );
-    }
+  final endTime = DateTime.now();
+  final fromTime = DateTime(endTime.year, endTime.month, endTime.day - 1);
 
-    try {
-      bool success = true;
+  final sleepTypes = Platform.isIOS
+      ? [
+          HealthDataType.SLEEP_ASLEEP,
+          HealthDataType.SLEEP_AWAKE,
+          HealthDataType.SLEEP_IN_BED,
+          HealthDataType.SLEEP_LIGHT,
+          HealthDataType.SLEEP_DEEP,
+          HealthDataType.SLEEP_REM,
+        ]
+      : [HealthDataType.SLEEP_SESSION];
+
+  bool sleepPermission = await Health().hasPermissions(sleepTypes) ?? false;
+  if (!sleepPermission) {
+    sleepPermission = await Health().requestAuthorization(
+      sleepTypes,
+      permissions: sleepTypes.map((_) => HealthDataAccess.READ_WRITE).toList(),
+    );
+  }
+
+  try {
+    bool success = true;
+    for (final type in sleepTypes) {
       success &= await Health().delete(
-        type: HealthDataType.SLEEP_SESSION,
+        type: type,
         startTime: fromTime,
         endTime: endTime,
       );
-      if (success) {
-        getSleepData();
-      } else {
-        emit(const SleepFailedState(
-            errorMessage: "cant able to delete sleep data"));
-      }
-    } catch (e) {
-      emit(SleepFailedState(errorMessage: e.toString()));
     }
+    if (success) {
+      getSleepData();
+    } else {
+      emit(const SleepFailedState(errorMessage: "cant able to delete sleep data"));
+    }
+  } catch (e) {
+    emit(SleepFailedState(errorMessage: e.toString()));
   }
+}
 }
