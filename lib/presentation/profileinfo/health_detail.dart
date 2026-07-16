@@ -397,16 +397,39 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           ),
         ),
         RulerSlider(
-          minValue: (heightUnit == HeightUnit.ft) ? -15 : 0,
-          maxValue: (heightUnit == HeightUnit.ft) ? 30 : 400,
-          initialValue: (heightUnit == HeightUnit.ft)
-              ? initialHeightValue.clamp(1, 7)
-              : initialHeightValue,
-          onValueChanged: (value) {
-            heightTextEditingController.text = value.toStringAsFixed(1);
-            initialHeightValue = value;
-          },
-        ),
+  minValue: (heightUnit == HeightUnit.ft) ? 12 : 0,
+  maxValue: (heightUnit == HeightUnit.ft) ? 96 : 400,
+  majorTickInterval: (heightUnit == HeightUnit.ft) ? 12 : 10,
+  initialValue: (heightUnit == HeightUnit.ft)
+      ? (initialHeightValue * 12).clamp(12, 96)
+      : initialHeightValue,
+  labelBuilder: (heightUnit == HeightUnit.ft)
+      ? (v) => '${(v ~/ 12)}\''
+      : null,
+  onValueChanged: (value) {
+    if (heightUnit == HeightUnit.ft) {
+      final totalInches = value.round();
+      final feet = totalInches ~/ 12;
+      final inches = totalInches % 12;
+      heightTextEditingController.text = "$feet'$inches\"";
+      initialHeightValue = totalInches / 12;
+    } else {
+      heightTextEditingController.text = value.toStringAsFixed(1);
+      initialHeightValue = value;
+    }
+  },
+),
+        // RulerSlider(
+        //   minValue: (heightUnit == HeightUnit.ft) ? -15 : 0,
+        //   maxValue: (heightUnit == HeightUnit.ft) ? 30 : 400,
+        //   initialValue: (heightUnit == HeightUnit.ft)
+        //       ? initialHeightValue.clamp(1, 7)
+        //       : initialHeightValue,
+        //   onValueChanged: (value) {
+        //     heightTextEditingController.text = value.toStringAsFixed(1);
+        //     initialHeightValue = value;
+        //   },
+        // ),
         const Spacer(),
         SpringButton(
           SpringButtonType.onlyScale,

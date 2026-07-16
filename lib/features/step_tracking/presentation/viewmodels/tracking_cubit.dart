@@ -67,6 +67,8 @@ Future<bool> _ensureLocationPermission() async {
   return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
 }
 
+Future<List<Activity>> getHistory() => repository.getActivities();
+
   void _onPosition(Position pos) {
     if (pos.accuracy > _accuracyThreshold) return;
 

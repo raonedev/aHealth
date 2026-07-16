@@ -73,6 +73,8 @@ dependencies:
   latlong2: ^0.10.1
   flutter_map: ^8.3.1
   get_it: ^9.2.1
+  platform_maps_flutter: ^1.0.2
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

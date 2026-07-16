@@ -7,6 +7,8 @@ class RulerSlider extends StatefulWidget {
   final double maxValue;
   final double initialValue;
   final ValueChanged<double> onValueChanged;
+  final String Function(double)? labelBuilder;
+  final int majorTickInterval;
 
   const RulerSlider({
     super.key,
@@ -14,6 +16,8 @@ class RulerSlider extends StatefulWidget {
     required this.maxValue,
     required this.initialValue,
     required this.onValueChanged,
+    this.labelBuilder,
+    this.majorTickInterval = 10,
   });
 
   @override
@@ -98,6 +102,8 @@ class _RulerSliderState extends State<RulerSlider> {
                 painter: RulerPainter(
                   minValue: widget.minValue,
                   maxValue: widget.maxValue,
+                  labelBuilder: widget.labelBuilder,
+                  numberOfminorBetweenMajor: widget.majorTickInterval,
                 ),
               ),
             ),
@@ -143,6 +149,7 @@ class RulerPainter extends CustomPainter {
   final TextStyle textStyle;
   final Color minorTickColor;
   final double minorTickWidth;
+  final String Function(double)? labelBuilder;
 
   RulerPainter({
     required this.minValue,
@@ -155,6 +162,7 @@ class RulerPainter extends CustomPainter {
         color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold),
     this.minorTickColor = Colors.grey,
     this.minorTickWidth = 1.5,
+    this.labelBuilder,
   });
 
   @override
@@ -175,7 +183,7 @@ class RulerPainter extends CustomPainter {
         );
         TextPainter(
           text: TextSpan(
-            text: i.toStringAsFixed(0),
+            text: labelBuilder != null ? labelBuilder!(i) : i.toStringAsFixed(0),
             style: textStyle,
           ),
           textDirection: TextDirection.ltr,

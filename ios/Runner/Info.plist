@@ -86,5 +86,7 @@
 	<key>track steps</key>
 	<string>The App requires temporary access to the devices precise location. so that path cane be detemined.</string>
 	</dict>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>We need your location to track your activity</string>
 </dict>
 </plist>
