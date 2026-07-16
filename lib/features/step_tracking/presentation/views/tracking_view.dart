@@ -180,6 +180,7 @@ Future<void> _shareWithImage() async {
                         initialCameraPosition: CameraPosition(
                           target: resolvedCenter,
                           zoom: 16,
+                          bearing: 2
                         ),
                         onMapCreated: (c) => _mapController = c,
                         polylines: latLngs.length >= 2

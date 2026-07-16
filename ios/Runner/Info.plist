@@ -76,8 +76,9 @@
 	<array/>
 	<key>UIBackgroundModes</key>
 	<array>
-	<string>fetch</string>
-	<string>remote-notification</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>location</string>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs access to location when open.</string>
@@ -87,6 +88,7 @@
 	<string>The App requires temporary access to the devices precise location. so that path cane be detemined.</string>
 	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>We need your location to track your activity</string>
+	<string>We need your location to track your activity</string>
+	
 </dict>
 </plist>
