@@ -22,30 +22,48 @@ class _TrackingHistoryViewState extends State<TrackingHistoryView> {
   String _shareTime = '';
 
   Future<void> _shareItem(Activity a) async {
-    final cubit = context.read<TrackingCubit>();
-    final points = await cubit.repository.getPointsForActivity(a.id);
+  final cubit = context.read<TrackingCubit>();
+  final points = await cubit.repository.getPointsForActivity(a.id);
 
-    setState(() {
-      _shareLatLngs = points.map((p) => LatLng(p.lat, p.lng)).toList();
-      _shareKm = (a.distanceMeters / 1000).toStringAsFixed(2);
-      _shareTime =
-          '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
-    });
+  setState(() {
+    _shareLatLngs = points.map((p) => LatLng(p.lat, p.lng)).toList();
+    _shareKm = (a.distanceMeters / 1000).toStringAsFixed(2);
+    _shareTime =
+        '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
+  });
 
-    await WidgetsBinding.instance.endOfFrame;
-    final bytes = await captureCardAsPng(_shareCardKey);
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/journey_${a.id}.png');
-    await file.writeAsBytes(bytes);
+  await WidgetsBinding.instance.endOfFrame;
+  final bytes = await captureCardAsPng(_shareCardKey);
+  final dir = await getTemporaryDirectory();
+  final file = File('${dir.path}/journey_${a.id}.png');
+  await file.writeAsBytes(bytes);
 
-    await SharePlus.instance.share(
-      ShareParams(
-         files: [XFile(file.path)],
-         text: 'I tracked $_shareKm km in $_shareTime on aHealth! 🏃‍♂️',
-         subject: 'My Activity on aHealth',
-      ),
-    );
+  if (!mounted) return;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      content: SingleChildScrollView(child: Image.file(file)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Share'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text: 'I tracked $_shareKm km in $_shareTime on aHealth! 🏃‍♂️',
+      subject: 'My Activity on aHealth',
+    ));
   }
+}
 
   @override
   Widget build(BuildContext context) {

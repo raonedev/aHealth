@@ -32,16 +32,39 @@ String _lastKm = '';
 String _lastTime = '';
 
 Future<void> _shareWithImage() async {
-  await WidgetsBinding.instance.endOfFrame; // ensure painted
+  await WidgetsBinding.instance.endOfFrame;
   final bytes = await captureCardAsPng(_shareCardKey);
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/journey.png');
   await file.writeAsBytes(bytes);
-  await Share.shareXFiles(
-    [XFile(file.path)],
-    text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
-    subject: 'My Activity on aHealth',
+
+  if (!mounted) return;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      content: SingleChildScrollView(
+        child: Image.file(file),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Share'),
+        ),
+      ],
+    ),
   );
+
+  if (confirmed == true) {
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
+      subject: 'My Activity on aHealth',
+    ));
+  }
 }
 
   @override
