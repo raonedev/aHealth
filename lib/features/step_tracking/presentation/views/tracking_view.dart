@@ -27,7 +27,6 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   LatLng? _initialCenter;
 
   final GlobalKey _shareCardKey = GlobalKey();
-List<LatLng> _lastLatLngs = [];
 String _lastKm = '';
 String _lastTime = '';
 
@@ -206,7 +205,6 @@ Future<void> _shareWithImage() async {
               _StatsBar(state: state,onShare: () {
     if (state is TrackingCompleted) {
       final a = (state).activity;
-      _lastLatLngs = latLngs;
       _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
       _lastTime = '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
       setState(() {});
@@ -272,16 +270,6 @@ class _StatsBar extends StatelessWidget {
       );
     }
     return const SizedBox.shrink();
-  }
-
-  void _shareActivity(Activity a) {
-    final km = (a.distanceMeters / 1000).toStringAsFixed(2);
-    final mins = a.durationSeconds ~/ 60;
-    final secs = (a.durationSeconds % 60).toString().padLeft(2, '0');
-    Share.share(
-      'I just tracked $km km in $mins:$secs on aHealth! 🏃‍♂️',
-      subject: 'My Activity on aHealth',
-    );
   }
 }
 

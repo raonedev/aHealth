@@ -17,7 +17,6 @@ final class ChatUpdated extends ChatState {
   const ChatUpdated({required this.messages, this.isLoading = false,this.isThinking = false,});
 
   @override
-  // TODO: implement props
   List<Object?> get props => [
     isLoading,
     messages,

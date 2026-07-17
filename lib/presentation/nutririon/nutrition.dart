@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/presentation/nutririon/widgets/build_card_content.dart';
 import 'package:ahealth/presentation/nutririon/widgets/card_shell.dart';
-import 'package:ahealth/presentation/nutririon/widgets/food_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -363,8 +362,10 @@ class _NutritionState extends State<Nutrition> {
                           HapticFeedback.mediumImpact();
                           await Future.delayed(Durations.short4);
                           if (isGroup) {
+                            // ignore: use_build_context_synchronously
                             _showGroupSheet(context, entryItems);
                           } else {
+                            // ignore: use_build_context_synchronously
                             context.push('/nutrition/detail', extra: first);
                           }
                         },

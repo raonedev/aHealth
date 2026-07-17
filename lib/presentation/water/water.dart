@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:health/health.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../app_routes.dart';

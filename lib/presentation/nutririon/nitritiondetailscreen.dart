@@ -91,7 +91,7 @@ class NutritionDetailScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.12),
+                            color: Colors.orange.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.local_fire_department_rounded, color: Colors.orange, size: 28),

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../config/common_method.dart';
 

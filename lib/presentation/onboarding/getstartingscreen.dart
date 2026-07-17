@@ -42,9 +42,7 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
             ),
             Flexible(child: SvgPicture.asset('assets/svgs/getstarted.svg')),
             ElevatedButton(
-              onPressed: () {
-                context.push(AppRoutes.onBoarding);
-              },
+              onPressed: () => context.push(AppRoutes.onBoarding),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -69,13 +67,14 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                   children: const [
                     TextSpan(
-                        text: ' Sign In.',
-                        style: TextStyle(
-                          color: red,
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
-                          decorationColor: red,
-                        ))
+                      text: ' Sign In.',
+                      style: TextStyle(
+                        color: red,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.underline,
+                        decorationColor: red,
+                      ),
+                    ),
                   ]),
             ),
           ],

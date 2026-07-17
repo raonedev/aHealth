@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:ahealth/presentation/nutririon/widgets/food_image.dart';
@@ -6,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../models/nutrition_model.dart';
-import '../../../services/nutrition_service.dart';
-import '../nutrition_group/models/food_scan_group_model.dart';
 
 const Color _surface = Color(0xFFFFFFFF);
 const Color _textPrimary = Color(0xFF1A1A1A);

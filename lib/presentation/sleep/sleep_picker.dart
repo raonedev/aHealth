@@ -38,7 +38,7 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
 
-    return '${hours} hr ${minutes} min';
+    return '$hours hr $minutes min';
   }
 
   @override

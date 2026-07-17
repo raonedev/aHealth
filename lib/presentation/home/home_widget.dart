@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer' as dev;
 
 import 'package:ahealth/common/spring_button_widget.dart';
@@ -11,7 +13,6 @@ import 'package:go_router/go_router.dart';
 import 'package:health/health.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
