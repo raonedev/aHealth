@@ -195,7 +195,7 @@ class _GroupFoodDialogState extends State<GroupFoodDialog>
                       ),
                     ),
                   ),
-
+    
                   // Summary header card
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -261,7 +261,7 @@ class _GroupFoodDialogState extends State<GroupFoodDialog>
                       ),
                     ),
                   ),
-
+    
                   // Animated list
                   ConstrainedBox(
                     constraints: BoxConstraints(
@@ -282,7 +282,7 @@ class _GroupFoodDialogState extends State<GroupFoodDialog>
                           child: GroupFoodCard(
                             item: item,
                             onTap: () {
-                              Navigator.pop(context);
+                              context.pop();
                               context.push('/nutrition/detail',
                                   extra: item);
                             },

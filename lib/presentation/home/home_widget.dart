@@ -64,12 +64,12 @@ class _HomeWidgetState extends State<HomeWidget> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: kToolbarHeight+20),
         child: SizedBox(
           width: 56,
           height: 56,
           child: FloatingActionButton(
-            backgroundColor: _kPrimary,
+            backgroundColor: Colors.black,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -114,7 +114,6 @@ class _HomeWidgetState extends State<HomeWidget> {
                   ),
                 ),
                 const Text(
-                  // TODO: bind to real user name
                   'Alex',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
@@ -124,7 +123,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         ),
         SpringButton(
           SpringButtonType.withOpacity,
-          onTap: () {},
+           onTap: () => context.push(AppRoutes.searchFoodScreen),
           uiChild: Container(
             width: 40,
             height: 40,

@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'dart:ui';
 
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
@@ -22,8 +23,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/initialized/init_app_cubit.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
 import 'helper/helper_func.dart';
+import 'helper/model_router.dart';
 import 'models/nutrition_model.dart';
 import 'presentation/nutririon/nitritiondetailscreen.dart';
+import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
 
@@ -39,7 +42,11 @@ class AppRoutes {
   static const String waterChartScreen = "/chart/water";
   static const String stepsTrackingScreen = "/steps-tracking";
 
+   static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
+    navigatorKey: rootNavigatorKey,  
     initialLocation: getStart,
     routes: [
       GoRoute(
@@ -153,31 +160,48 @@ class AppRoutes {
       ),
       GoRoute(
         path: '/nutrition/detail',
+        parentNavigatorKey: rootNavigatorKey,  
         builder: (c, s) => NutritionDetailScreen(
           nutritionModel: s.extra as NutritionModel,
         ),
       ),
       GoRoute(
         path: searchFoodScreen,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const SearchFoodScreen(),
       ),
       GoRoute(
         path: '/foodDetail/:foodId',
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => FoodDetailScreen(
           foodId: state.pathParameters['foodId']!,
         ),
       ),
       GoRoute(
+  path: '/group_food',
+  pageBuilder: (context, state) {
+    final groupItems = state.extra as List<NutritionModel>;
+    return ModalSheetPage(
+      builder: (_) => BackdropFilter(
+         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: GroupFoodDialog(groupItems: groupItems)),
+    );
+  },
+),
+      GoRoute(
         path: stepChartScreen,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepChartScreen(),
       ),
       GoRoute(
         path: waterChartScreen,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WaterChartScreen(),
       ),
 
       GoRoute(
         path: stepsTrackingScreen,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepsTrackingView(),
       ),
     ],

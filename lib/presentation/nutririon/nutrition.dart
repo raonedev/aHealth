@@ -23,7 +23,6 @@ import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/macro_card.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'widgets/nutrition_group_dialog.dart';
 
 // Light Theme Color Palette
 const Color _bg = Color(0xFFF6F6F9);
@@ -49,7 +48,6 @@ class _NutritionState extends State<Nutrition> {
     context.read<NutritionCubit>().getNutritionData();
   }
 
-
   Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
     final groups = NutritionService.getAllGroups();
     final Map<String, List<NutritionModel>> grouped = {};
@@ -57,12 +55,12 @@ class _NutritionState extends State<Nutrition> {
 
     for (final item in items) {
       final group = groups.cast<FoodScanGroup?>().firstWhere(
-      (g) => g!.foods.any((f) =>
-          item.value?.name != null &&
-          f.name != null &&
-          item.value!.name!.startsWith(f.name!)),
-      orElse: () => null,
-    );
+            (g) => g!.foods.any((f) =>
+                item.value?.name != null &&
+                f.name != null &&
+                item.value!.name!.startsWith(f.name!)),
+            orElse: () => null,
+          );
       if (group != null) {
         grouped.putIfAbsent(group.imagePath, () => []).add(item);
       } else {
@@ -74,21 +72,6 @@ class _NutritionState extends State<Nutrition> {
       ...grouped,
       for (final i in ungrouped) i.value?.name ?? '': [i]
     };
-  }
-
-
-  void _showGroupSheet(BuildContext context, List<NutritionModel> groupItems) {
-    showModalBottomSheet(
-      context: context,
-      elevation: 0,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.35),
-      builder: (_) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: GroupFoodDialog(groupItems: groupItems),
-      ),
-    );
   }
 
   @override
@@ -360,10 +343,10 @@ class _NutritionState extends State<Nutrition> {
                         SpringButtonType.withOpacity,
                         onTap: () async {
                           HapticFeedback.mediumImpact();
-                          await Future.delayed(Durations.short4);
                           if (isGroup) {
                             // ignore: use_build_context_synchronously
-                            _showGroupSheet(context, entryItems);
+                            // await _showGroupSheet(context, entryItems);
+                           context.push('/group_food', extra: entryItems);
                           } else {
                             // ignore: use_build_context_synchronously
                             context.push('/nutrition/detail', extra: first);
@@ -377,12 +360,18 @@ class _NutritionState extends State<Nutrition> {
                               children: [
                                 if (isGroup) ...[
                                   Positioned(
-                                    left: 6, right: 14, bottom: 0, top: 6,
+                                    left: 6,
+                                    right: 14,
+                                    bottom: 0,
+                                    top: 6,
                                     child: CardShell(),
                                   ),
                                   if (entryItems.length > 2)
                                     Positioned(
-                                      left: 12, right: 10, bottom: 0, top: 12,
+                                      left: 12,
+                                      right: 10,
+                                      bottom: 0,
+                                      top: 12,
                                       child: CardShell(),
                                     ),
                                 ],

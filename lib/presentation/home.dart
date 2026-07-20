@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
-          padding: const EdgeInsets.only(left: 50),
+          padding: const EdgeInsets.only(left: 40),
           child: SafeArea(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24.0),
