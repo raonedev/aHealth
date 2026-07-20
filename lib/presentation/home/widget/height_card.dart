@@ -50,24 +50,30 @@ final _kSurfaceContainerHighest = Color(0xFFE3E2E2);
                   style: const TextStyle(fontSize: 12, color: Colors.red));
             } else if (state is HeightSuccess && state.heightModel.isNotEmpty) {
               final meters = state.heightModel[0].value?.numericValue;
-              trailing = meters != null
-                  ? Text.rich(
+              if (meters == null) {
+                trailing = const Text('UNKNOWN', style: TextStyle(fontSize: 20));
+              } else if (_useFeet) {
+                final totalInches = (meters / 0.0254).round();
+                final feet = totalInches ~/ 12;
+                final inches = totalInches % 12;
+                trailing = Text(
+                  "$feet' $inches\"",
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                );
+              } else {
+                trailing = Text.rich(
+                  TextSpan(
+                    text: '${(meters * 100).toStringAsFixed(1)} ',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    children: const [
                       TextSpan(
-                        text: _useFeet
-                            ? '${(meters * 3.28084).toStringAsFixed(2)} '
-                            : '${(meters * 100).toStringAsFixed(1)} ',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w600),
-                        children: [
-                          TextSpan(
-                            text: _useFeet ? 'ft' : 'cm',
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.normal),
-                          ),
-                        ],
+                        text: 'cm',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
                       ),
-                    )
-                  : const Text('UNKNOWN', style: TextStyle(fontSize: 20));
+                    ],
+                  ),
+                );
+              }
             } else {
               trailing = const Text('No Height Data', style: TextStyle(fontSize: 12));
             }

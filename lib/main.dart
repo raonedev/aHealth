@@ -94,6 +94,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
+
       providers: [
         BlocProvider(
           create: (context) => InitAppCubit()..initializeHealthSdk(),
@@ -144,6 +145,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<TrackingCubit>()),
       ],
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         title: 'A-HealthApp',
         theme: appTheme,
         routerConfig: AppRoutes.router,

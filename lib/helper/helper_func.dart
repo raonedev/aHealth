@@ -187,7 +187,7 @@ Future showHeightDialog(BuildContext context) {
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.4),
     builder: (context) {
-      double? enteredValue;
+      String? rawInput;
       int unit = 0; // 0 = cm, 1 = ft
 
       return StatefulBuilder(
@@ -254,11 +254,11 @@ Future showHeightDialog(BuildContext context) {
                           autofocus: true,
                           decoration: const BoxDecoration(),
                           padding: EdgeInsets.zero,
-                          placeholder: unit == 0 ? "e.g. 178" : "e.g. 5.9",
+                          placeholder: unit == 0 ? "e.g. 178" : "e.g. 5.10 = 5ft 10in",
                           keyboardType: const TextInputType.numberWithOptions(
                               signed: false, decimal: true),
                           onChanged: (value) {
-                            enteredValue = double.tryParse(value);
+                            rawInput = value;
                           },
                         ),
                       ],
@@ -282,10 +282,18 @@ Future showHeightDialog(BuildContext context) {
                           background: const Color(0xFF3B82F6),
                           textColor: Colors.white,
                           onTap: () {
-                            if (enteredValue != null) {
-                              final heightInMeter = unit == 0
-                                  ? enteredValue! / 100
-                                  : enteredValue! * 0.3048;
+                            double? heightInMeter;
+                            if (unit == 0) {
+                              final cm = double.tryParse(rawInput ?? '');
+                              if (cm != null) heightInMeter = cm / 100;
+                            } else {
+                              final parts = (rawInput ?? '').split('.');
+                              final feet = int.tryParse(parts[0]) ?? 0;
+                              final inches =
+                                  parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+                              heightInMeter = (feet * 12 + inches) * 0.0254;
+                            }
+                            if (heightInMeter != null) {
                               context
                                   .read<HeightCubit>()
                                   .addHeight(heightInMeter: heightInMeter);
@@ -305,7 +313,6 @@ Future showHeightDialog(BuildContext context) {
     },
   );
 }
-
 Widget _dialogButton({
   required String label,
   required Color background,
