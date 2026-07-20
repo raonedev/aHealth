@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +7,6 @@ import 'package:platform_maps_flutter/platform_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import '../../../../secrets/secrets.dart';
 import '../../domain/entities/activity.dart';
 import '../viewmodels/tracking_cubit.dart';
 import '../viewmodels/tracking_state.dart';
@@ -17,7 +15,7 @@ import 'widgets/journey_share_card.dart';
 
 class StepsTrackingView extends StatefulWidget {
   const StepsTrackingView({super.key});
-  static const String name = '/steps-tracking';
+  static const String name='/steps-tracking';
   @override
   State<StepsTrackingView> createState() => _StepsTrackingViewState();
 }
@@ -31,6 +29,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   final GlobalKey _shareCardKey = GlobalKey();
 String _lastKm = '';
 String _lastTime = '';
+double _currentZoom = 16;
 
 Future<void> _shareWithImage() async {
   await WidgetsBinding.instance.endOfFrame;
@@ -134,16 +133,16 @@ Future<void> _shareWithImage() async {
     return BlocConsumer<TrackingCubit, TrackingState>(
       listener: (context, state) {
         if (state is TrackingActive) {
-          WakelockPlus.enable();
-          if (state.points.isNotEmpty) {
-            final last = state.points.last;
-            _mapController?.animateCamera(
-              CameraUpdate.newLatLng(LatLng(last.lat, last.lng)),
-            );
-          }
-        } else {
-          WakelockPlus.disable();
-        }
+    WakelockPlus.enable();
+    if (state.points.isNotEmpty) {
+      final last = state.points.last;
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(last.lat, last.lng), _currentZoom),
+      );
+    }
+  } else {
+    WakelockPlus.disable();
+  }
       },
       builder: (context, state) {
         // build(): fix points extraction
@@ -158,82 +157,65 @@ Future<void> _shareWithImage() async {
             : (_initialCenter ?? _fallbackCenter);
         final stillLoading = _initialCenter == null && latLngs.isEmpty;
 
-        // StepsTrackingView.build(), inside the builder callback:
-return Scaffold(
-  appBar: AppBar(
-    title: const Text('Track Activity'),
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.history),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TrackingHistoryView()),
-        ),
-      ),
-    ],
-  ),
-  body: Stack(
-    children: [
-      Column(
-        children: [
-          Expanded(
-            child: stillLoading
-                ? const Center(child: CircularProgressIndicator())
-                : PlatformMap(
-                    initialCameraPosition: CameraPosition(
-                        target: resolvedCenter, zoom: 16, bearing: 2),
-                    onMapCreated: (c) => _mapController = c,
-                    polylines: latLngs.length >= 2
-                        ? {
-                            Polyline(
-                              polylineId: PolylineId('route'),
-                              points: latLngs,
-                              width: 4,
-                              color: Colors.blue,
-                            ),
-                          }
-                        : {},
-                    markers: {
-                      Marker(
-                        markerId: MarkerId('current'),
-                        position: latLngs.isNotEmpty
-                            ? latLngs.last
-                            : resolvedCenter,
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Track Activity'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.history),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const TrackingHistoryView()),
+                ),
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: stillLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : PlatformMap(
+                        initialCameraPosition: CameraPosition(
+                          target: resolvedCenter,
+                          zoom: 16,
+                          bearing: 2
+                        ),
+                        onMapCreated: (c) => _mapController = c,
+                        polylines: latLngs.length >= 2
+                            ? {
+                                Polyline(
+                                  polylineId: PolylineId('route'),
+                                  points: latLngs,
+                                  width: 4,
+                                  color: Colors.blue,
+                                ),
+                              }
+                            : {},
+                        markers: {
+                          Marker(
+                            markerId: MarkerId('current'),
+                            position: latLngs.isNotEmpty
+                                ? latLngs.last
+                                : resolvedCenter,
+                          ),
+                        },
                       ),
-                    },
-                  ),
+              ),
+              _StatsBar(state: state,onShare: () {
+    if (state is TrackingCompleted) {
+      final a = (state).activity;
+      _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
+      _lastTime = '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
+      setState(() {});
+      Future.delayed(const Duration(milliseconds: 100), _shareWithImage);
+    }
+  },),
+              _Controls(state: state),
+            ],
           ),
-          _StatsBar(
-            state: state,
-            onShare: () {
-              if (state is TrackingCompleted) {
-                final a = (state).activity;
-                _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
-                _lastTime =
-                    '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
-                setState(() {});
-                Future.delayed(
-                    const Duration(milliseconds: 100), _shareWithImage);
-              }
-            },
-          ),
-          _Controls(state: state),
-        ],
-      ),
-      // Off-screen mount — exists only so RepaintBoundary has content to capture.
-      Positioned(
-        left: -9999,
-        top: 0,
-        child: JourneyShareCard(
-          repaintKey: _shareCardKey,
-          points: latLngs,
-          km: _lastKm,
-          time: _lastTime,
-        ),
-      ),
-    ],
-  ),
-);
+        );
       },
     );
   }
