@@ -18,6 +18,7 @@ import '../../blocs/sleep/sleep_cubit.dart';
 import '../../blocs/step/step_cubit.dart';
 import '../../blocs/water/water_cubit.dart';
 import '../../blocs/weight/weight_cubit.dart';
+import '../../features/step_tracking/presentation/views/tracking_view.dart';
 import '../../helper/helper_func.dart';
 const _kPrimary = Color(0xFF0D631B);
 const _kPrimaryContainer = Color(0xFF2E7D32);
@@ -74,7 +75,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               borderRadius: BorderRadius.circular(16),
             ),
             onPressed: () {
-              context.push(AppRoutes.stepsTrackingScreen);
+              context.push(StepsTrackingView.name);
             },
             child: const HugeIcon(
               icon: HugeIcons.strokeRoundedWorkoutRun,

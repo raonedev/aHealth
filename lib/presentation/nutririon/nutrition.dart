@@ -1,6 +1,5 @@
 import 'dart:developer' as dev;
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/presentation/nutririon/widgets/build_card_content.dart';
@@ -22,6 +21,8 @@ import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/macro_card.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'widgets/nutrition_group_dialog.dart';
 
 
 // Light Theme Color Palette
@@ -346,7 +347,7 @@ class _NutritionState extends State<Nutrition> {
                           if (isGroup) {
                             // ignore: use_build_context_synchronously
                             // await _showGroupSheet(context, entryItems);
-                           context.push('/group_food', extra: entryItems);
+                           context.push(GroupFoodDialog.name, extra: entryItems);
                           } else {
                             // ignore: use_build_context_synchronously
                             context.push('/nutrition/detail', extra: first);

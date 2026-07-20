@@ -137,6 +137,7 @@ class GroupFoodDialog extends StatefulWidget {
   final List<NutritionModel> groupItems;
 
   const GroupFoodDialog({super.key, required this.groupItems});
+  static const String name="/group_food";
 
   @override
   State<GroupFoodDialog> createState() => _GroupFoodDialogState();

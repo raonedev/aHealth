@@ -40,13 +40,12 @@ class AppRoutes {
   static const String searchFoodScreen = "/searchFood";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
-  static const String stepsTrackingScreen = "/steps-tracking";
 
-   static final GlobalKey<NavigatorState> rootNavigatorKey =
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    navigatorKey: rootNavigatorKey,  
+    navigatorKey: rootNavigatorKey,
     initialLocation: getStart,
     routes: [
       GoRoute(
@@ -102,12 +101,16 @@ class AppRoutes {
                       // return Text('Error loading onboarding status: ${snapshot.error}');
                       return const GetStartingScreen();
                     } else {
-                       dev.log(" checkOnboardingStatus sucess");
+                      dev.log(" checkOnboardingStatus sucess");
                       final hasSeenOnboarding = snapshot.data ?? false;
                       if (hasSeenOnboarding) {
-                         dev.log(" hasSeenOnboarding sucess");
-                        WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/shell/home'));
-                        return const Scaffold(body: Center(child: CircularProgressIndicator(color: primary)));
+                        dev.log(" hasSeenOnboarding sucess");
+                        WidgetsBinding.instance.addPostFrameCallback(
+                            (_) => context.go('/shell/home'));
+                        return const Scaffold(
+                            body: Center(
+                                child:
+                                    CircularProgressIndicator(color: primary)));
                       } else {
                         dev.log(" hasSeenOnboarding fail");
                         return const GetStartingScreen();
@@ -145,22 +148,31 @@ class AppRoutes {
             path: '/shell/home',
             pageBuilder: (c, s) => const NoTransitionPage(child: HomeWidget()),
           ),
-          GoRoute(path: '/shell/water', pageBuilder: (c, s) => const NoTransitionPage(child: WaterWidget())),
+          GoRoute(
+              path: '/shell/water',
+              pageBuilder: (c, s) =>
+                  const NoTransitionPage(child: WaterWidget())),
           GoRoute(
             path: '/shell/nutrition',
             pageBuilder: (c, s) => const NoTransitionPage(child: Nutrition()),
             routes: [
-              GoRoute(path: 'search', builder: (c, s) => const SearchFoodScreen()),
-              GoRoute(path: 'foodDetail/:foodId', builder: (c, s) => FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
-
+              GoRoute(
+                  path: 'search', builder: (c, s) => const SearchFoodScreen()),
+              GoRoute(
+                  path: 'foodDetail/:foodId',
+                  builder: (c, s) =>
+                      FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
             ],
           ),
-          GoRoute(path: '/shell/chat', pageBuilder: (c, s) => const NoTransitionPage(child: ChatWidget())),
+          GoRoute(
+              path: '/shell/chat',
+              pageBuilder: (c, s) =>
+                  const NoTransitionPage(child: ChatWidget())),
         ],
       ),
       GoRoute(
         path: '/nutrition/detail',
-        parentNavigatorKey: rootNavigatorKey,  
+        parentNavigatorKey: rootNavigatorKey,
         builder: (c, s) => NutritionDetailScreen(
           nutritionModel: s.extra as NutritionModel,
         ),
@@ -178,16 +190,16 @@ class AppRoutes {
         ),
       ),
       GoRoute(
-  path: '/group_food',
-  pageBuilder: (context, state) {
-    final groupItems = state.extra as List<NutritionModel>;
-    return ModalSheetPage(
-      builder: (_) => BackdropFilter(
-         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: GroupFoodDialog(groupItems: groupItems)),
-    );
-  },
-),
+        path: GroupFoodDialog.name,
+        pageBuilder: (context, state) {
+          final groupItems = state.extra as List<NutritionModel>;
+          return ModalSheetPage(
+            builder: (_) => BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: GroupFoodDialog(groupItems: groupItems)),
+          );
+        },
+      ),
       GoRoute(
         path: stepChartScreen,
         parentNavigatorKey: rootNavigatorKey,
@@ -198,9 +210,8 @@ class AppRoutes {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WaterChartScreen(),
       ),
-
       GoRoute(
-        path: stepsTrackingScreen,
+        path: StepsTrackingView.name,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepsTrackingView(),
       ),

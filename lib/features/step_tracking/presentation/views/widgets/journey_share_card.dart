@@ -47,6 +47,7 @@ class JourneyShareCard extends StatelessWidget {
                 _stat('Time', time),
               ],
             ),
+            Text("Tracked with OCTO.")
           ],
         ),
       ),
