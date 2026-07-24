@@ -152,7 +152,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                   ),
                 ),
                 Text(
-                  _userName.isNotEmpty ? _userName : '',
+                  _userName.isNotEmpty ? _userName : 'there',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ],

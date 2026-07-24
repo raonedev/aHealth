@@ -5,6 +5,7 @@ import 'dart:developer' as dev;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/nutrition_model.dart';
 import '../../secrets/secrets.dart';
@@ -13,6 +14,10 @@ part 'food_scan_state.dart';
 
 class FoodScanCubit extends Cubit<FoodScanState> {
   FoodScanCubit() : super(FoodScanInitial());
+
+  static const _scanCountKey = 'foodScanCountSharedPreferenceKey';
+static const _scanDateKey = 'foodScanDateSharedPreferenceKey';
+static const _maxScansPerDay = 2;
 
   static const _apiKey = GEMINI_API_KEY;
   // static const _model = 'gemma-4-26b-a4b-it';
@@ -51,11 +56,32 @@ Rules:
 - NO markdown, NO explanation, NO extra text — only the CSV
 ''';
 
+  Future<bool> _canScanToday() async {
+  final prefs = await SharedPreferences.getInstance();
+  final today = DateTime.now().toIso8601String().substring(0, 10); // yyyy-MM-dd
+  final storedDate = prefs.getString(_scanDateKey);
+  int count = prefs.getInt(_scanCountKey) ?? 0;
+
+  if (storedDate != today) {
+    count = 0;
+    await prefs.setString(_scanDateKey, today);
+  }
+
+  if (count >= _maxScansPerDay) return false;
+
+  await prefs.setInt(_scanCountKey, count + 1);
+  return true;
+}
+
  Future<void> scanFoodImage({
   required String base64Image,
   required String groupUuid,
   required String imagePath,
 }) async {
+  if (!await _canScanToday()) {
+    emit(FoodScanError(message: 'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.'));
+    return;
+  }
   emit(FoodScanLoading());
 
   try {

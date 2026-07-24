@@ -35,6 +35,15 @@ class FoodScanLoadingSheet extends StatelessWidget {
           );
         } else if (state is FoodScanError || state is FoodScanNoItems) {
           Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state is FoodScanError
+                    ? state.message
+                    : 'No food items detected in the image.',
+              ),
+            ),
+          );
         }
       },
       child: BlocBuilder<FoodScanCubit, FoodScanState>(
