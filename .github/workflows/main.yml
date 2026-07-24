@@ -1,10 +1,10 @@
-name: Build & Release
+name: "Build & Release"
 
 on:
-  push:
+  pull_request:
     branches:
       - master
-  pull_request:
+  push:
     branches:
       - master
 
@@ -12,51 +12,49 @@ jobs:
   build:
     name: Build & Release
     runs-on: macos-latest
-
     steps:
-      # Checkout repository
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # Step 1: Checkout the code
+      - uses: actions/checkout@v3
 
-      # Create secrets.dart
+      # Step 2: Create secrets.dart dynamically
       - name: Create secrets.dart
         run: |
           mkdir -p lib/secrets
-          cat > lib/secrets/secrets.dart <<EOF
-          const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';
-          const String GOOGLE_MAP_API_KEY = '${{ secrets.GOOGLE_MAP_API_KEY }}';
-          EOF
+          echo "const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > lib/secrets/secrets.dart
+          echo "const String GOOGLE_MAP_API_KEY = '${{ secrets.GOOGLE_MAP_API_KEY }}';" >> lib/secrets/secrets.dart
+          cat lib/secrets/secrets.dart 
 
-      # Setup Flutter from .fvmrc
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      # Step 3: Set up Flutter environment
+      - uses: subosito/flutter-action@v2
         with:
-          flutter-version-file: .fvmrc
-          cache: true
+          channel: 'stable'
+          architecture: x64
 
-      # Setup Java
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      # Step 4: Set up Java environment
+      - uses: actions/setup-java@v3
         with:
-          distribution: zulu
-          java-version: "17"
+          distribution: 'zulu'
+          java-version: '17'
 
-      # Verify versions
-      - name: Flutter Version
-        run: flutter --version
-
-      # Install dependencies
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Build Android APK
+      # Step 5: Build the release APK
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi
 
-      # Upload GitHub Release
+      # Step 6: Build the release IPA
+#      - name: Build iOS IPA
+#        run: |
+#          flutter build ios --no-codesign
+#          cd build/ios/iphoneos
+#          mkdir Payload
+#          cd Payload
+#          ln -s ../Runner.app
+#          cd ..
+#          zip -r app.ipa Payload
+
+      # Step 7: Upload artifacts to GitHub Releases
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: build/app/outputs/apk/release/*
+          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.TOKEN }}
