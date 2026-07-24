@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import '../../models/weightmodel.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,6 +13,9 @@ class WeightCubit extends Cubit<WeightState> {
   Future<void> getWeightData() async {
     emit(WeightLoading());
 
+
+    try {
+
     final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day-30);
     bool stepsPermission = await Health().hasPermissions([HealthDataType.WEIGHT]) ?? false;
@@ -20,8 +25,6 @@ class WeightCubit extends Cubit<WeightState> {
         permissions: [HealthDataAccess.READ_WRITE],
       );
     }
-
-    try {
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.WEIGHT],
         startTime: midnight,
@@ -39,7 +42,8 @@ class WeightCubit extends Cubit<WeightState> {
         }
         emit(WeightSuccess(weightModel: weightModel0));
       }
-    } catch (e) {
+    } catch (e,s) {
+      dev.log("Exception WeightFailed",error: e,stackTrace: s);
       emit(WeightFailed(errorMessage: e.toString()));
     }
   }

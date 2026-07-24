@@ -1,20 +1,14 @@
+import 'dart:developer';
+// import 'dart:developer' as dev;
+
 import 'package:health/health.dart';
 
-Future<double> getDataForDay({required DateTime date,required HealthDataType healthType}) async {
+Future<double> getDataForDay(
+    {required DateTime date, required HealthDataType healthType}) async {
   double total = 0;
-  // Start of the day (00:00)
   DateTime startOfDay = DateTime(date.year, date.month, date.day, 0, 0);
-
-  // End of the day (24:00, which is equivalent to the start of the next day)
-  DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
-
-  bool healthTypePermission = await Health().hasPermissions([healthType]) ?? false;
-  if (!healthTypePermission) {
-    healthTypePermission = await Health().requestAuthorization(
-      [healthType],
-      permissions: [HealthDataAccess.READ],
-    );
-  }
+  DateTime endOfDay =
+      DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
 
   try {
     List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
@@ -23,16 +17,56 @@ Future<double> getDataForDay({required DateTime date,required HealthDataType hea
       endTime: endOfDay,
     );
 
-    if (healthData.isEmpty) {
-      return 0;
-    } else {
-      healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-      for (HealthDataPoint healthDataPoint in healthData) {
-        total += healthDataPoint.value.toJson()['numericValue'] ?? 0;
+    if (healthData.isEmpty) return 0;
+
+    for (HealthDataPoint healthDataPoint in healthData) {
+      // Safely extract the numeric value depending on how your health plugin structure looks
+      final value = healthDataPoint.value.toJson()['numericValue'];
+      if (value != null) {
+        total += double.parse(value.toString());
       }
-      return total;
     }
+    return total;
   } catch (e) {
+    log('Error fetching data for $date: $e');
     return 0;
   }
+}
+
+Future<Map<DateTime, double>> getDataForDaysBatch({
+  required DateTime startDate,
+  required DateTime endDate,
+  required HealthDataType healthType,
+}) async {
+  final start = DateTime(startDate.year, startDate.month, startDate.day);
+  final end =
+      DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
+
+  final Map<DateTime, double> result = {};
+
+  // Pre-fill all days with 0
+  for (var d = start; !d.isAfter(end); d = d.add(const Duration(days: 1))) {
+    result[DateTime(d.year, d.month, d.day)] = 0;
+  }
+
+  try {
+    final healthData = await Health().getHealthDataFromTypes(
+      types: [healthType],
+      startTime: start,
+      endTime: end,
+    );
+
+    for (final HealthDataPoint point in healthData) {
+        // dev.log("sourceId:${point.sourceId}, sourceName:${point.sourceName}, dateFrom:${point.dateFrom}, value:${point.value.toJson()['numericValue'].toString()}");
+      final day = DateTime(
+          point.dateFrom.year, point.dateFrom.month, point.dateFrom.day);
+      final value =
+          double.tryParse(point.value.toJson()['numericValue'].toString()) ?? 0;
+      result[day] = (result[day] ?? 0) + value;
+    }
+  } catch (e) {
+    log('Error batch fetching $healthType: $e');
+  }
+
+  return result;
 }

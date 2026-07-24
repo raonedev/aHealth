@@ -1,17 +1,25 @@
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
-import 'package:ahealth/presentation/onboarding/permissionerror.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ahealth/services/chat_hive_service.dart';
+import 'package:ahealth/services/notification_services.dart';
+import 'package:ahealth/services/nutrition_service.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
 import 'blocs/charts/weight_chart/weight_chart_cubit.dart';
+import 'blocs/chat/chat_cubit.dart';
+import 'blocs/food_scan/food_scan_cubit.dart';
 import 'blocs/food_search/food_search_cubit.dart';
 import 'package:flutter/services.dart';
 import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
-import 'models/FoodSearchModel.dart';
+import 'core/di/service_locator.dart';
+import 'features/step_tracking/presentation/viewmodels/tracking_cubit.dart';
+import 'models/chat/chat_message_model.dart';
+import 'models/chat/chat_session_model.dart';
+import 'models/food_search_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'blocs/height/height_cubit.dart';
@@ -20,25 +28,60 @@ import 'blocs/sleep/sleep_cubit.dart';
 import 'blocs/step/step_cubit.dart';
 import 'blocs/water/water_cubit.dart';
 import 'blocs/weight/weight_cubit.dart';
-import 'models/FoodWithServingsModel.dart';
-// import 'presentation/home.dart';
+import 'models/food_with_servings_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import './helper/helper_func.dart';
+
+import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart'
+    show FoodScanGroupAdapter, ValueFoodHiveAdapter;
+
+///dart run build_runner build --delete-conflicting-outputs
+/// adb logcat -s StepSync
+/// adb shell dumpsys jobscheduler | grep ahealth
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+   WidgetsFlutterBinding.ensureInitialized();
+  FlutterForegroundTask.initCommunicationPort();
+
+  // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
+  //   await FlutterForegroundTask.requestNotificationPermission();
+  // }
   await Hive.initFlutter(); // Initialize Hive for Flutter
   Hive.registerAdapter(FoodsAdapter()); // Register the Foods adapter
   Hive.registerAdapter(FoodWithServingsModelAdapter());
   Hive.registerAdapter(FoodAdapter());
   Hive.registerAdapter(ServingsAdapter());
   Hive.registerAdapter(ServingAdapter());
+  Hive.registerAdapter(ChatMessageAdapter());
+  Hive.registerAdapter(ChatSessionAdapter());
+  await setupLocator(); 
+  await ChatHiveService.instance.openBoxes();
+  // init once in main.dart
+  await HealthNotificationService().init();
+
+// Water reminders: 8 AM → 10 PM, every 2 hours
+  await HealthNotificationService().scheduleWaterReminders(
+    startTime: TimeOfDay(hour: 8, minute: 0),
+    endTime: TimeOfDay(hour: 22, minute: 0),
+    frequencyHours: 2, // customizable
+  );
+
+// Meal reminders (pass null to disable any meal)
+  await HealthNotificationService().scheduleMealReminders(
+    breakfastTime: TimeOfDay(hour: 8, minute: 0),
+    lunchTime: TimeOfDay(hour: 13, minute: 0),
+    dinnerTime: TimeOfDay(hour: 19, minute: 30),
+  );
+
+  Hive.registerAdapter(FoodScanGroupAdapter());
+  Hive.registerAdapter(ValueFoodHiveAdapter());
+  await NutritionService.init();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors
-        .transparent, // Make the status bar transparent (or use your preferred color)
-    statusBarIconBrightness: Brightness.dark, // Makes the icons black
+    statusBarColor: Colors.transparent,
+    // Make the status bar transparent (or use your preferred color)
+    statusBarIconBrightness: Brightness.dark,
+    // Makes the icons black
     statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
   ));
 
@@ -51,6 +94,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
+
       providers: [
         BlocProvider(
           create: (context) => InitAppCubit()..initializeHealthSdk(),
@@ -95,8 +139,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => WeightChartCubit(),
         ),
+        BlocProvider(create: (_) => ChatCubit()),
+        BlocProvider(create: (_) => FoodScanCubit()),
+
+        BlocProvider(create: (_) => sl<TrackingCubit>()),
       ],
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         title: 'A-HealthApp',
         theme: appTheme,
         routerConfig: AppRoutes.router,

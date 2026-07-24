@@ -17,12 +17,19 @@ final class StepChartsFailed extends StepChartState{
   List<Object?> get props => [errorMessage];
 }
 
-final class StepChartsSuccess extends StepChartState{
+final class StepChartsSuccess extends StepChartState {
   final List<double> weekData;
   final List<double> monthData;
+  final bool monthLoaded;
+  final DateTime weekStartDate;
 
-  const StepChartsSuccess({required this.weekData, required this.monthData});
+  const StepChartsSuccess({
+    required this.weekData,
+    required this.monthData,
+    required this.monthLoaded,
+    required this.weekStartDate,
+  });
+
   @override
-  List<Object?> get props => [weekData,monthData];
+  List<Object?> get props => [weekData, monthData, monthLoaded, weekStartDate];
 }
-

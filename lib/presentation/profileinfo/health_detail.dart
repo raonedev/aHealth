@@ -1,4 +1,5 @@
-import 'package:ahealth/app_routes.dart';
+import 'dart:io';
+
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/constants.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum HeightUnit { cm, ft }
@@ -44,10 +47,14 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
 
   final TextEditingController heightTextEditingController =
       TextEditingController();
+
+      final TextEditingController nameTextEditingController = TextEditingController();
   double initialHeightValue = 150.0;
   HeightUnit heightUnit = HeightUnit.cm;
 
   int age = 24;
+
+  File? selectedImageFile;
 
   @override
   void initState() {
@@ -60,8 +67,26 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   void dispose() {
     wightTextEditingController.dispose();
     heightTextEditingController.dispose();
+    nameTextEditingController.dispose(); 
     super.dispose();
   }
+
+  Future<void> pickAndSaveProfileImage() async {
+  final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+  if (picked == null) return;
+
+  final appDir = await getApplicationDocumentsDirectory();
+  final ext = picked.path.split('.').last;
+  final savedPath = '${appDir.path}/profile_image.$ext';
+  final savedFile = await File(picked.path).copy(savedPath);
+
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('userProfileImagePathSharedPreferenceKey', savedFile.path);
+
+  setState(() {
+    selectedImageFile = savedFile;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +109,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                   step--;
                 });
               } else {
-                if(context.canPop()){
+                if (context.canPop()) {
                   context.pop();
                 }
               }
@@ -110,7 +135,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 15 * 2 * step.toDouble(),
+                width: (150 / 6) * step.toDouble(),
                 height: 8,
                 decoration: BoxDecoration(
                   color: black,
@@ -142,7 +167,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                       ? genderWidget(context)
                       : (step == 4)
                           ? healthGoalWidget(context)
-                          : ageWidget(context),
+                          : (step == 5)
+                              ? ageWidget(context)
+                              : nameWidget(context),
         ),
       ),
     );
@@ -398,16 +425,38 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           ),
         ),
         RulerSlider(
-          minValue: (heightUnit == HeightUnit.ft) ? -15 : 0,
-          maxValue: (heightUnit == HeightUnit.ft) ? 30 : 400,
+          minValue: (heightUnit == HeightUnit.ft) ? 12 : 0,
+          maxValue: (heightUnit == HeightUnit.ft) ? 96 : 400,
+          majorTickInterval: (heightUnit == HeightUnit.ft) ? 12 : 10,
           initialValue: (heightUnit == HeightUnit.ft)
-              ? initialHeightValue.clamp(1, 7)
+              ? (initialHeightValue * 12).clamp(12, 96)
               : initialHeightValue,
+          labelBuilder:
+              (heightUnit == HeightUnit.ft) ? (v) => '${(v ~/ 12)}\'' : null,
           onValueChanged: (value) {
-            heightTextEditingController.text = value.toStringAsFixed(1);
-            initialHeightValue = value;
+            if (heightUnit == HeightUnit.ft) {
+              final totalInches = value.round();
+              final feet = totalInches ~/ 12;
+              final inches = totalInches % 12;
+              heightTextEditingController.text = "$feet'$inches\"";
+              initialHeightValue = totalInches / 12;
+            } else {
+              heightTextEditingController.text = value.toStringAsFixed(1);
+              initialHeightValue = value;
+            }
           },
         ),
+        // RulerSlider(
+        //   minValue: (heightUnit == HeightUnit.ft) ? -15 : 0,
+        //   maxValue: (heightUnit == HeightUnit.ft) ? 30 : 400,
+        //   initialValue: (heightUnit == HeightUnit.ft)
+        //       ? initialHeightValue.clamp(1, 7)
+        //       : initialHeightValue,
+        //   onValueChanged: (value) {
+        //     heightTextEditingController.text = value.toStringAsFixed(1);
+        //     initialHeightValue = value;
+        //   },
+        // ),
         const Spacer(),
         SpringButton(
           SpringButtonType.onlyScale,
@@ -732,9 +781,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         SpringButton(
           SpringButtonType.onlyScale,
           onTap: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
-            context.go(AppRoutes.home);
+            setState(() {
+              step = 6;
+            });
           },
           uiChild: Container(
             width: double.infinity,
@@ -767,4 +816,79 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
       ],
     );
   }
+
+  // nameWidget — add avatar picker above the name field
+Widget nameWidget(BuildContext context) {
+  return Column(
+    children: [
+      const SizedBox(height: kToolbarHeight),
+      Text(
+        'What should we call you?',
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+      const SizedBox(height: 10),
+      Text(
+        'This helps us personalize your experience.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SizedBox(height: kToolbarHeight),
+      SpringButton(
+        SpringButtonType.onlyScale,
+        onTap: pickAndSaveProfileImage,
+        uiChild: CircleAvatar(
+          radius: 48,
+          backgroundColor: grey,
+          backgroundImage: selectedImageFile != null ? FileImage(selectedImageFile!) : null,
+          child: selectedImageFile == null
+              ? const Icon(Icons.add_a_photo_outlined, color: black)
+              : null,
+        ),
+      ),
+      const SizedBox(height: kToolbarHeight),
+      TextField(
+        controller: nameTextEditingController,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          hintText: 'Your name',
+        ),
+      ),
+      const Spacer(),
+      SpringButton(
+        SpringButtonType.onlyScale,
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userNameSharedPreferenceKey', nameTextEditingController.text.trim());
+          await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+          if (context.mounted) {
+            context.go('/shell/home');
+          }
+        },
+        uiChild: Container(
+          width: double.infinity,
+          height: 52,
+          padding: const EdgeInsets.all(16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: primary,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Continue",
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.arrow_forward, color: white),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
 }

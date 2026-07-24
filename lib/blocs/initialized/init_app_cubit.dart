@@ -25,17 +25,28 @@ class InitAppCubit extends Cubit<InitAppState> {
           : [];
 
   //  both READ and WRITE
-  List<HealthDataAccess> get permissions => types
-      .map((type) => [
-            HealthDataType.WALKING_HEART_RATE,
-            HealthDataType.ELECTROCARDIOGRAM,
-            HealthDataType.HIGH_HEART_RATE_EVENT,
-            HealthDataType.LOW_HEART_RATE_EVENT,
-            HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-            HealthDataType.EXERCISE_TIME,
-          ].contains(type)
-              ? HealthDataAccess.READ
-              : HealthDataAccess.READ_WRITE)
+   List<HealthDataAccess> get permissions => types
+      .map(
+        (type) =>
+            // can only request READ permissions to the following list of types on iOS
+            [
+              HealthDataType.GENDER,
+              HealthDataType.BLOOD_TYPE,
+              HealthDataType.BIRTH_DATE,
+              HealthDataType.APPLE_MOVE_TIME,
+              HealthDataType.APPLE_STAND_HOUR,
+              HealthDataType.APPLE_STAND_TIME,
+              HealthDataType.WALKING_HEART_RATE,
+              HealthDataType.ELECTROCARDIOGRAM,
+              HealthDataType.HIGH_HEART_RATE_EVENT,
+              HealthDataType.LOW_HEART_RATE_EVENT,
+              HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+              HealthDataType.EXERCISE_TIME,
+              HealthDataType.SLEEP_WRIST_TEMPERATURE,
+            ].contains(type)
+            ? HealthDataAccess.READ
+            : HealthDataAccess.READ_WRITE,
+      )
       .toList();
 
   Future<void> initializeHealthSdk() async {
@@ -46,7 +57,7 @@ class InitAppCubit extends Cubit<InitAppState> {
     if (healthSdkStatus == HealthConnectSdkStatus.sdkUnavailable) {
       emit(InitAppSdkUnavailable());
       //await Health().installHealthConnect();
-    } else if (healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
+    } else if (Platform.isIOS ||healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
       await Permission.activityRecognition.request();
 
       ///sdk available now we will check for health permission from user
@@ -88,54 +99,4 @@ class InitAppCubit extends Cubit<InitAppState> {
       }
     }
   }
-
-  /*
-
-
-
-  Future<void> getAllHealthData()async{
-
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(hours: 24));
-
-
-    // Clear old data points
-    _healthDataList.clear();
-    try {
-      // fetch health data
-      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-        types: types,
-        startTime: yesterday,
-        endTime: now,
-      );
-      // sort the data points by date
-      healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-      _healthDataList.addAll(healthData);
-    } catch (error) {
-      log("Exception in getHealthDataFromTypes:",error:  error);
-    }
-
-    // filter out duplicates
-    setState(() {
-      _healthDataList = Health().removeDuplicates(_healthDataList);
-    });
-    log(_healthDataList.length.toString());
-  }
-
-  Future<void> getSingleData()async{
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(hours: 24));
-    List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-      types: [HealthDataType.SLEEP_SESSION],
-      startTime: yesterday,
-      endTime: now,
-    );
-
-    log(healthData[0].toJson().toString());
-  }
-
-
-  */
 }

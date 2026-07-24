@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
 class RulerSlider extends StatefulWidget {
@@ -5,6 +7,8 @@ class RulerSlider extends StatefulWidget {
   final double maxValue;
   final double initialValue;
   final ValueChanged<double> onValueChanged;
+  final String Function(double)? labelBuilder;
+  final int majorTickInterval;
 
   const RulerSlider({
     super.key,
@@ -12,6 +16,8 @@ class RulerSlider extends StatefulWidget {
     required this.maxValue,
     required this.initialValue,
     required this.onValueChanged,
+    this.labelBuilder,
+    this.majorTickInterval = 10,
   });
 
   @override
@@ -33,7 +39,7 @@ class _RulerSliderState extends State<RulerSlider> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Get screen width in didChangeDependencies
-    _screenWidth = MediaQuery.of(context).size.width-20;
+    _screenWidth = MediaQuery.of(context).size.width - 20;
     // Set the initial scroll offset
     _scrollController = ScrollController(
       initialScrollOffset: _valueToScrollOffset(widget.initialValue),
@@ -65,13 +71,16 @@ class _RulerSliderState extends State<RulerSlider> {
 
   double _valueToScrollOffset(double value) {
     // Offset based on value, adjusted for centering
-    return (value - widget.minValue) * _tickSpacing - (_screenWidth / 2 - _tickSpacing / 2);
+    return (value - widget.minValue) * _tickSpacing -
+        (_screenWidth / 2 - _tickSpacing / 2);
   }
 
   double _scrollOffsetToValue(double offset) {
     // Convert offset to value, adjusted for centering
-    double centeredOffset = offset + (_screenWidth / 2 - _tickSpacing / 2 );
-    return (centeredOffset / _tickSpacing).clamp(widget.minValue, widget.maxValue) + widget.minValue;
+    double centeredOffset = offset + (_screenWidth / 2 - _tickSpacing / 2);
+    return (centeredOffset / _tickSpacing)
+            .clamp(widget.minValue, widget.maxValue) +
+        widget.minValue;
   }
 
   @override
@@ -88,10 +97,13 @@ class _RulerSliderState extends State<RulerSlider> {
               scrollDirection: Axis.horizontal,
               controller: _scrollController,
               child: CustomPaint(
-                size: Size((widget.maxValue - widget.minValue) * _tickSpacing, 200),
+                size: Size(
+                    (widget.maxValue - widget.minValue) * _tickSpacing, 200),
                 painter: RulerPainter(
                   minValue: widget.minValue,
                   maxValue: widget.maxValue,
+                  labelBuilder: widget.labelBuilder,
+                  numberOfminorBetweenMajor: widget.majorTickInterval,
                 ),
               ),
             ),
@@ -127,8 +139,6 @@ class _RulerSliderState extends State<RulerSlider> {
   }
 }
 
-
-
 class RulerPainter extends CustomPainter {
   final double minValue;
   final double maxValue;
@@ -139,6 +149,7 @@ class RulerPainter extends CustomPainter {
   final TextStyle textStyle;
   final Color minorTickColor;
   final double minorTickWidth;
+  final String Function(double)? labelBuilder;
 
   RulerPainter({
     required this.minValue,
@@ -151,6 +162,7 @@ class RulerPainter extends CustomPainter {
         color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold),
     this.minorTickColor = Colors.grey,
     this.minorTickWidth = 1.5,
+    this.labelBuilder,
   });
 
   @override
@@ -171,7 +183,7 @@ class RulerPainter extends CustomPainter {
         );
         TextPainter(
           text: TextSpan(
-            text: i.toStringAsFixed(0),
+            text: labelBuilder != null ? labelBuilder!(i) : i.toStringAsFixed(0),
             style: textStyle,
           ),
           textDirection: TextDirection.ltr,

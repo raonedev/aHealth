@@ -40,15 +40,9 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
               "Your  Health  Companion",
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            SvgPicture.asset('assets/svgs/getstarted.svg'),
+            Flexible(child: SvgPicture.asset('assets/svgs/getstarted.svg')),
             ElevatedButton(
-              onPressed: () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (_) => const OnboardingScreen()));
-                context.push(AppRoutes.onBoarding);
-              },
+              onPressed: () => context.push(AppRoutes.onBoarding),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -73,13 +67,14 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                   children: const [
                     TextSpan(
-                        text: ' Sign In.',
-                        style: TextStyle(
-                          color: red,
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
-                          decorationColor: red,
-                        ))
+                      text: ' Sign In.',
+                      style: TextStyle(
+                        color: red,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.underline,
+                        decorationColor: red,
+                      ),
+                    ),
                   ]),
             ),
           ],

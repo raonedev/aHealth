@@ -31,3 +31,5 @@ final class FoodSearchSuccess extends FoodSearchState {
   List<Object> get props => [foodSearchModel];
 }
 
+
+

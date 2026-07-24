@@ -11,41 +11,62 @@ part 'step_chart_state.dart';
 class StepChartCubit extends Cubit<StepChartState> {
   StepChartCubit() : super(StepChartsLoading());
 
-  Future<void> getDataFromNow()async{
+  Future<void> getDataFromNow() async {
     if (state is StepChartsSuccess) {
       log('Week data is already loaded. Skipping execution.');
       return;
     }
 
     emit(StepChartsLoading());
-    List<double> dataWeek = [];
-    for (var i = 0; i < 7; i++) {
-      double total = await getDataForDay(
-        date: DateTime.now().subtract(const Duration(days: 7)).add(Duration(days: i)),
-        healthType: HealthDataType.STEPS,
+
+    bool hasPermission =
+        await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+    if (!hasPermission) {
+      hasPermission = await Health().requestAuthorization(
+        [HealthDataType.STEPS],
+        permissions: [HealthDataAccess.READ],
       );
-      dataWeek.add(total);
     }
 
+    if (!hasPermission) {
+      log('Permissions denied by user.');
+      emit(StepChartsFailed(errorMessage: "Permission Denied"));
+      return;
+    }
+
+    final now = DateTime.now();
+    final weekStart = now.subtract(const Duration(days: 6));
+    final monthStart = now.subtract(const Duration(days: 29));
+
+    // Fetch entire 30-day range in one call
+    final batch = await getDataForDaysBatch(
+      startDate: monthStart,
+      endDate: now,
+      healthType: HealthDataType.STEPS,
+    );
+
+    final dataWeek = List.generate(7, (i) {
+      final d = weekStart.add(Duration(days: i));
+      return batch[DateTime(d.year, d.month, d.day)] ?? 0;
+    });
+
     emit(StepChartsSuccess(
+      weekStartDate: weekStart,
       weekData: dataWeek,
       monthData: [],
+      monthLoaded: false,
     ));
 
-    //get month data
-    List<double> dataMonth = [];
-    for (var i = 0; i < 30; i++) {
-      double total = await getDataForDay(
-        date: DateTime.now().subtract(const Duration(days: 30)).add(Duration(days: i)),
-        healthType: HealthDataType.STEPS,
-      );
-      dataMonth.add(total);
-    }
+    final dataMonth = List.generate(30, (i) {
+      final d = monthStart.add(Duration(days: i));
+      return batch[DateTime(d.year, d.month, d.day)] ?? 0;
+    });
 
     emit(StepChartsSuccess(
+      weekStartDate: weekStart,
       weekData: dataWeek,
       monthData: dataMonth,
+      monthLoaded: true,
     ));
   }
-
 }
