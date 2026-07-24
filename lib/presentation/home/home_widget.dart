@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
 
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/presentation/home/widget/height_card.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
@@ -20,6 +22,7 @@ import '../../blocs/water/water_cubit.dart';
 import '../../blocs/weight/weight_cubit.dart';
 import '../../features/step_tracking/presentation/views/tracking_view.dart';
 import '../../helper/helper_func.dart';
+
 const _kPrimary = Color(0xFF0D631B);
 const _kPrimaryContainer = Color(0xFF2E7D32);
 const _kSecondaryContainer = Color(0xFFFC820C);
@@ -36,6 +39,37 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
+  String _userName = '';
+  File? _userImageFile;
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+    _loadUserImage();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('userNameSharedPreferenceKey') ?? '';
+    if (mounted) {
+      setState(() {
+        _userName = name;
+      });
+    }
+  }
+
+  Future<void> _loadUserImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('userProfileImagePathSharedPreferenceKey');
+    if (path != null && await File(path).exists()) {
+      if (mounted) {
+        setState(() {
+          _userImageFile = File(path);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +84,7 @@ class _HomeWidgetState extends State<HomeWidget> {
             const SizedBox(height: 16),
             _buildStepsCard(context),
             const SizedBox(height: 16),
-             Row(
+            Row(
               children: [
                 Expanded(child: _buildHydrationCard(context)),
                 const SizedBox(width: 16),
@@ -65,7 +99,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: kToolbarHeight+20),
+        padding: const EdgeInsets.only(bottom: kToolbarHeight + 20),
         child: SizedBox(
           width: 56,
           height: 56,
@@ -95,11 +129,14 @@ class _HomeWidgetState extends State<HomeWidget> {
       children: [
         Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 22,
-              backgroundImage: NetworkImage(
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuAJtVbqxggIsR_e7KqZyZO0g0gVoC-0DoAHd_qh9wmN9na-aOysN3OTP7HvohOtLfx72vUeWuToNo_oOWeGjUISmoxk4zzB99FGOjY7kz3yQduM-xAoJx4UTitnmCUsGDpY_-Upg_tCwfs1cjS9bWSwAYcuW9bDkrdbQ8u9NcQp0Jrc6cIesmtnQc-8JppW3xMJIxoMbtqqNCWc_4IxmKv9PULowc0Qpd6mUSdL7UMqGrs7EpJGy2lGaw20E9AnfTWkDu5NCn-xKGc',
-              ),
+              backgroundColor: grey,
+              backgroundImage:
+                  _userImageFile != null ? FileImage(_userImageFile!) : null,
+              child: _userImageFile == null
+                  ? Icon(Icons.person, color: _kOnSurfaceVariant)
+                  : null,
             ),
             const SizedBox(width: 12),
             Column(
@@ -114,8 +151,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                     color: _kOnSurfaceVariant,
                   ),
                 ),
-                const Text(
-                  'Alex',
+                Text(
+                  _userName.isNotEmpty ? _userName : '',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ],
@@ -124,7 +161,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         ),
         SpringButton(
           SpringButtonType.withOpacity,
-           onTap: () => context.push(AppRoutes.searchFoodScreen),
+          onTap: () => context.push(AppRoutes.searchFoodScreen),
           uiChild: Container(
             width: 40,
             height: 40,
@@ -133,7 +170,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha:  0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
@@ -181,7 +218,7 @@ class _HomeWidgetState extends State<HomeWidget> {
             num protein = 0, carbs = 0, fats = 0;
 
             if (state is NutritionSuccess) {
-               for (final entry in state.nutritionModel) {
+              for (final entry in state.nutritionModel) {
                 consumed += entry.value?.calories ?? 0;
                 protein += entry.value?.protein ?? 0;
                 carbs += entry.value?.carbs ?? 0;
@@ -190,12 +227,13 @@ class _HomeWidgetState extends State<HomeWidget> {
             }
 
             final remaining = (target - consumed).clamp(0, target);
-            final percent = target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
+            final percent =
+                target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               Row(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -244,10 +282,12 @@ class _HomeWidgetState extends State<HomeWidget> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: _kSecondaryContainer.withValues(alpha: 0.1),
+                                color:
+                                    _kSecondaryContainer.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(999),
                                 border: Border.all(
-                                  color: _kSecondaryContainer.withValues(alpha: 0.2),
+                                  color: _kSecondaryContainer.withValues(
+                                      alpha: 0.2),
                                 ),
                               ),
                               child: Text(
@@ -297,7 +337,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                   ],
-                ), const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 20),
                 Row(
                   children: [
                     _macroChip('PROTEIN', '${protein}g', _kPrimary),
@@ -500,7 +541,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         child: BlocBuilder<WaterCubit, WaterState>(
           builder: (context, state) {
             double liters = 0;
-             if (state is WaterSuccessState) {
+            if (state is WaterSuccessState) {
               for (final entry in state.waterModel) {
                 liters += entry.value?.numericValue ?? 0;
               }
@@ -616,7 +657,8 @@ class _HomeWidgetState extends State<HomeWidget> {
               ],
             );
           } else {
-            content = const Text('No Weight Data', style: TextStyle(fontSize: 12));
+            content =
+                const Text('No Weight Data', style: TextStyle(fontSize: 12));
           }
 
           return GestureDetector(
@@ -684,7 +726,8 @@ class _HomeWidgetState extends State<HomeWidget> {
             if (state is SleepSuccessState && state.sleepModel.isNotEmpty) {
               final minutes = state.sleepModel[0].value?.numericValue ?? 0;
               final hours = (minutes / 60);
-              duration = '${hours.floor()}h ${((hours - hours.floor()) * 60).round()}m';
+              duration =
+                  '${hours.floor()}h ${((hours - hours.floor()) * 60).round()}m';
             }
 
             return Column(
@@ -734,16 +777,18 @@ class _HomeWidgetState extends State<HomeWidget> {
                     ),
                     // TODO: real sleep score isn't in SleepState — wire up if available
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: _kPrimary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _kPrimary.withValues(alpha: 0.2)),
+                        border:
+                            Border.all(color: _kPrimary.withValues(alpha: 0.2)),
                       ),
                       child: const Text(
                         'SCORE: 84',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],
@@ -757,11 +802,13 @@ class _HomeWidgetState extends State<HomeWidget> {
                     children: [0.3, 0.6, 0.85, 0.45, 0.75, 0.35, 0.65, 1.0, 0.4]
                         .map((h) => Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 2),
                                 child: Container(
                                   height: 80 * h,
                                   decoration: BoxDecoration(
-                                    color: _kTertiary.withValues(alpha: 0.3 + h * 0.4),
+                                    color: _kTertiary.withValues(
+                                        alpha: 0.3 + h * 0.4),
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                 ),
@@ -781,7 +828,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                             color: _kOnSurfaceVariant.withValues(alpha: 0.6))),
                     // TODO: real REM duration isn't in SleepState — wire up if available
                     const Text('REM Sleep: 1h 45m',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w700)),
                     Text('06:50 AM',
                         style: TextStyle(
                             fontSize: 11,
