@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p lib/secrets
           echo "const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > lib/secrets/secrets.dart
-          echo "const String GOOGLE_MAP_API_KEY = '${{ secrets.GOOGLE_MAP_API_KEY }}';" >> lib/secrets/secrets.dart
+          echo "const String GOOGLE_MAP_API_KEY = '${{ secrets.MAPS_API_KEY }}';" >> lib/secrets/secrets.dart
           cat lib/secrets/secrets.dart
 
       # Step 3: Create secrets.properties for Android (MAPS_API_KEY)
