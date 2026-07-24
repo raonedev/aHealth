@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build & Release
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout the code
       - uses: actions/checkout@v3
@@ -22,28 +22,33 @@ jobs:
           echo "const String GOOGLE_MAP_API_KEY = '${{ secrets.GOOGLE_MAP_API_KEY }}';" >> lib/secrets/secrets.dart
           cat lib/secrets/secrets.dart
 
-      # Step 3: Read Flutter version from .fvmrc
+      # Step 3: Create secrets.properties for Android (MAPS_API_KEY)
+      - name: Create secrets.properties
+        run: |
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > android/secrets.properties
+
+      # Step 4: Read Flutter version from .fvmrc
       - name: Read Flutter version from .fvmrc
         id: fvm-config
         uses: kuhnroyal/flutter-fvm-config-action@v3
 
-      # Step 4: Set up Flutter using the version from .fvmrc
+      # Step 5: Set up Flutter using the version from .fvmrc
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
           architecture: x64
 
-      # Step 5: Set up Java environment
+      # Step 6: Set up Java environment
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # Step 6: Build the release APK
+      # Step 7: Build the release APK
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi
 
-      # Step 7: Build the release IPA
+      # Step 8: Build the release IPA
 #      - name: Build iOS IPA
 #        run: |
 #          flutter build ios --no-codesign
@@ -54,7 +59,7 @@ jobs:
 #          cd ..
 #          zip -r app.ipa Payload
 
-      # Step 8: Upload artifacts to GitHub Releases
+      # Step 9: Upload artifacts to GitHub Releases
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
