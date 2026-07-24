@@ -1,5 +1,4 @@
 name: "Build & Release"
-
 on:
   pull_request:
     branches:
@@ -7,7 +6,6 @@ on:
   push:
     branches:
       - master
-
 jobs:
   build:
     name: Build & Release
@@ -22,25 +20,30 @@ jobs:
           mkdir -p lib/secrets
           echo "const String GEMINI_API_KEY = '${{ secrets.GEMINI_API_KEY }}';" > lib/secrets/secrets.dart
           echo "const String GOOGLE_MAP_API_KEY = '${{ secrets.GOOGLE_MAP_API_KEY }}';" >> lib/secrets/secrets.dart
-          cat lib/secrets/secrets.dart 
+          cat lib/secrets/secrets.dart
 
-      # Step 3: Set up Flutter environment
+      # Step 3: Read Flutter version from .fvmrc
+      - name: Read Flutter version from .fvmrc
+        id: fvm-config
+        uses: kuhnroyal/flutter-fvm-config-action@v3
+
+      # Step 4: Set up Flutter using the version from .fvmrc
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
           architecture: x64
 
-      # Step 4: Set up Java environment
+      # Step 5: Set up Java environment
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # Step 5: Build the release APK
+      # Step 6: Build the release APK
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi
 
-      # Step 6: Build the release IPA
+      # Step 7: Build the release IPA
 #      - name: Build iOS IPA
 #        run: |
 #          flutter build ios --no-codesign
@@ -51,7 +54,7 @@ jobs:
 #          cd ..
 #          zip -r app.ipa Payload
 
-      # Step 7: Upload artifacts to GitHub Releases
+      # Step 8: Upload artifacts to GitHub Releases
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
