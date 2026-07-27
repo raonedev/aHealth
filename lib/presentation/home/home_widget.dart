@@ -345,7 +345,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                     const SizedBox(width: 12),
                     _macroChip('CARBS', '${carbs}g', _kSecondaryContainer),
                     const SizedBox(width: 12),
-                    _macroChip('FATS', '${fats}g', _kTertiary),
+                    _macroChip('FATS', '${fats.toStringAsPrecision(2)}g', _kTertiary),
                   ],
                 ),
               ],

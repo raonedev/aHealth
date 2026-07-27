@@ -1,7 +1,9 @@
+import 'package:ahealth/app_routes.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
+import 'package:health/health.dart';
 
 class HealthNotificationService {
   static final HealthNotificationService _instance =
@@ -13,15 +15,41 @@ class HealthNotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
+  static const String _logWaterActionId = 'log_water_glass';
+  static const String _logMealActionId = 'log_meal';
+  static const double _glassSizeLiters = 0.25;
+
   Future<void> init() async {
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const darwin = DarwinInitializationSettings(
+    final darwin = DarwinInitializationSettings(
       requestSoundPermission: true,
       requestBadgePermission: true,
       requestAlertPermission: true,
+      notificationCategories: [
+        DarwinNotificationCategory(
+          'water_category',
+          actions: [
+            DarwinNotificationAction.plain(
+              _logWaterActionId,
+              'Log 1 Glass',
+              options: {DarwinNotificationActionOption.foreground},
+            ),
+          ],
+        ),
+        DarwinNotificationCategory(
+          'meal_category',
+          actions: [
+            DarwinNotificationAction.plain(
+              _logMealActionId,
+              'Log Meal',
+              options: {DarwinNotificationActionOption.foreground},
+            ),
+          ],
+        ),
+      ],
     );
 
     await _plugin.initialize(
@@ -45,7 +73,30 @@ class HealthNotificationService {
 
   void _onTapped(NotificationResponse response) {
     debugPrint(
-        '[HealthNotif] Tapped id=${response.id} payload=${response.payload}');
+        '[HealthNotif] Tapped id=${response.id} actionId=${response.actionId} payload=${response.payload}');
+
+    if (response.actionId == _logWaterActionId) {
+      _logGlassToHealth();
+    } else if (response.actionId == _logMealActionId ||
+        response.payload == 'meal') {
+      AppRoutes.router.go('/shell/nutrition');
+    }
+  }
+
+  Future<void> _logGlassToHealth() async {
+    final now = DateTime.now();
+    final earlier = now.subtract(const Duration(seconds: 30));
+
+    final success = await Health().writeHealthData(
+      value: _glassSizeLiters,
+      type: HealthDataType.WATER,
+      startTime: earlier,
+      endTime: now,
+    );
+
+    debugPrint(success
+        ? '[HealthNotif] Logged $_glassSizeLiters L to Health Connect'
+        : '[HealthNotif] Failed to log water to Health Connect');
   }
 
   Future<void> scheduleWaterReminders({
@@ -174,11 +225,20 @@ class HealthNotificationService {
           enableVibration: true,
           playSound: true,
           icon: '@mipmap/ic_launcher',
+          actions: [
+            AndroidNotificationAction(
+              'log_water_glass',
+              'Log 1 Glass',
+              showsUserInterface: false,
+              cancelNotification: false,
+            ),
+          ],
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: false,
           presentSound: true,
+          categoryIdentifier: 'water_category',
         ),
       );
 
@@ -192,11 +252,19 @@ class HealthNotificationService {
           enableVibration: true,
           playSound: true,
           icon: '@mipmap/ic_launcher',
+          actions: [
+            AndroidNotificationAction(
+              'log_meal',
+              'Log Meal',
+              showsUserInterface: true,
+            ),
+          ],
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
+          categoryIdentifier: 'meal_category',
         ),
       );
 
