@@ -5,6 +5,65 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 
+// Add this OUTSIDE the class, at the bottom of the file (or top, either works)
+import 'dart:math';
+
+@pragma('vm:entry-point')
+void notificationBackgroundHandler(NotificationResponse response) async {
+  if (response.actionId == 'log_water_glass') {
+    await Health().configure();
+
+    final now = DateTime.now();
+    final earlier = now.subtract(const Duration(seconds: 30));
+
+    await Health().writeHealthData(
+      value: 0.25,
+      type: HealthDataType.WATER,
+      startTime: earlier,
+      endTime: now,
+    );
+
+    // Re-init timezone + a fresh plugin instance, since this isolate
+    // has none of the state from main()/HealthNotificationService.
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+
+    final bgPlugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await bgPlugin.initialize(
+      settings: const InitializationSettings(android: androidInit),
+    );
+
+    final midnight = DateTime(now.year, now.month, now.day);
+    final steps = await Health().getTotalStepsInInterval(midnight, now);
+
+    final randomMinutes = 5 + Random().nextInt(6); // 5,6,7,8,9,10
+    final scheduled =
+        tz.TZDateTime.now(tz.local).add(Duration(minutes: randomMinutes));
+
+    await bgPlugin.zonedSchedule(
+      id: 301,
+      title: '🚶 Steps Update',
+      body: steps != null
+          ? 'You\'ve taken $steps steps so far today!'
+          : 'Couldn\'t read your step count right now.',
+      scheduledDate: scheduled,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'steps_summary_channel',
+          'Step Count Summary',
+          channelDescription: 'Shows your current step count',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: 'steps',
+    );
+  }
+}
+
 class HealthNotificationService {
   static final HealthNotificationService _instance =
       HealthNotificationService._internal();
@@ -55,6 +114,7 @@ class HealthNotificationService {
     await _plugin.initialize(
       settings: InitializationSettings(android: android, iOS: darwin),
       onDidReceiveNotificationResponse: _onTapped,
+      onDidReceiveBackgroundNotificationResponse: notificationBackgroundHandler,
     );
 
     await _requestPermissions();
