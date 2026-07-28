@@ -15,7 +15,7 @@ import 'widgets/journey_share_card.dart';
 
 class StepsTrackingView extends StatefulWidget {
   const StepsTrackingView({super.key});
-  static const String name='/steps-tracking';
+  static const String name = '/steps-tracking';
   @override
   State<StepsTrackingView> createState() => _StepsTrackingViewState();
 }
@@ -27,45 +27,45 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   LatLng? _initialCenter;
 
   final GlobalKey _shareCardKey = GlobalKey();
-String _lastKm = '';
-String _lastTime = '';
-double _currentZoom = 16;
+  String _lastKm = '';
+  String _lastTime = '';
+  final double _currentZoom = 16;
 
-Future<void> _shareWithImage() async {
-  await WidgetsBinding.instance.endOfFrame;
-  final bytes = await captureCardAsPng(_shareCardKey);
-  final dir = await getTemporaryDirectory();
-  final file = File('${dir.path}/journey.png');
-  await file.writeAsBytes(bytes);
+  Future<void> _shareWithImage() async {
+    await WidgetsBinding.instance.endOfFrame;
+    final bytes = await captureCardAsPng(_shareCardKey);
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/journey.png');
+    await file.writeAsBytes(bytes);
 
-  if (!mounted) return;
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      content: SingleChildScrollView(
-        child: Image.file(file),
+    if (!mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Image.file(file),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Share'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Share'),
-        ),
-      ],
-    ),
-  );
+    );
 
-  if (confirmed == true) {
-    await SharePlus.instance.share(ShareParams(
-      files: [XFile(file.path)],
-      text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
-      subject: 'My Activity on aHealth',
-    ));
+    if (confirmed == true) {
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
+        text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
+        subject: 'My Activity on aHealth',
+      ));
+    }
   }
-}
 
   @override
   void initState() {
@@ -98,8 +98,24 @@ Future<void> _shareWithImage() async {
 
     try {
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: Platform.isAndroid
+            ? AndroidSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: 5,
+                intervalDuration: const Duration(seconds: 3),
+                foregroundNotificationConfig:
+                    const ForegroundNotificationConfig(
+                  notificationTitle: "OCTO is tracking",
+                  notificationText: "Recording your route in the background",
+                  enableWakeLock: true,
+                ),
+              )
+            : AppleSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: 5,
+                pauseLocationUpdatesAutomatically: false,
+                showBackgroundLocationIndicator: true,
+              ),
       ).timeout(const Duration(seconds: 10));
       if (mounted) {
         setState(() => _initialCenter = LatLng(pos.latitude, pos.longitude));
@@ -133,16 +149,17 @@ Future<void> _shareWithImage() async {
     return BlocConsumer<TrackingCubit, TrackingState>(
       listener: (context, state) {
         if (state is TrackingActive) {
-    WakelockPlus.enable();
-    if (state.points.isNotEmpty) {
-      final last = state.points.last;
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(LatLng(last.lat, last.lng), _currentZoom),
-      );
-    }
-  } else {
-    WakelockPlus.disable();
-  }
+          WakelockPlus.enable();
+          if (state.points.isNotEmpty) {
+            final last = state.points.last;
+            _mapController?.animateCamera(
+              CameraUpdate.newLatLngZoom(
+                  LatLng(last.lat, last.lng), _currentZoom),
+            );
+          }
+        } else {
+          WakelockPlus.disable();
+        }
       },
       builder: (context, state) {
         // build(): fix points extraction
@@ -178,10 +195,7 @@ Future<void> _shareWithImage() async {
                     ? const Center(child: CircularProgressIndicator())
                     : PlatformMap(
                         initialCameraPosition: CameraPosition(
-                          target: resolvedCenter,
-                          zoom: 16,
-                          bearing: 2
-                        ),
+                            target: resolvedCenter, zoom: 16, bearing: 2),
                         onMapCreated: (c) => _mapController = c,
                         polylines: latLngs.length >= 2
                             ? {
@@ -203,15 +217,20 @@ Future<void> _shareWithImage() async {
                         },
                       ),
               ),
-              _StatsBar(state: state,onShare: () {
-    if (state is TrackingCompleted) {
-      final a = (state).activity;
-      _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
-      _lastTime = '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
-      setState(() {});
-      Future.delayed(const Duration(milliseconds: 100), _shareWithImage);
-    }
-  },),
+              _StatsBar(
+                state: state,
+                onShare: () {
+                  if (state is TrackingCompleted) {
+                    final a = (state).activity;
+                    _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
+                    _lastTime =
+                        '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
+                    setState(() {});
+                    Future.delayed(
+                        const Duration(milliseconds: 100), _shareWithImage);
+                  }
+                },
+              ),
               _Controls(state: state),
             ],
           ),

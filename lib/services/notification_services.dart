@@ -290,7 +290,6 @@ class HealthNotificationService {
               'log_water_glass',
               'Log 1 Glass',
               showsUserInterface: false,
-              cancelNotification: false,
             ),
           ],
         ),

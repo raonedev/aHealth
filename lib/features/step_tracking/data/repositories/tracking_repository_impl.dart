@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:geolocator/geolocator.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/location_point.dart';
@@ -10,13 +12,27 @@ class TrackingRepositoryImpl implements TrackingRepository {
   final TrackingLocalDataSource local;
   TrackingRepositoryImpl(this.local);
 
-  @override
-  Stream<Position> get positionStream => Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 5,
-        ),
-      );
+  
+@override
+Stream<Position> get positionStream => Geolocator.getPositionStream(
+      locationSettings: Platform.isAndroid
+          ? AndroidSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+              intervalDuration: const Duration(seconds: 3),
+              foregroundNotificationConfig: const ForegroundNotificationConfig(
+                notificationTitle: "aHealth is tracking",
+                notificationText: "Recording your route in the background",
+                enableWakeLock: true,
+              ),
+            )
+          : AppleSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+              pauseLocationUpdatesAutomatically: false,
+              showBackgroundLocationIndicator: true,
+            ),
+    );
 
   @override
   Future<void> savePointsBatch(List<LocationPoint> points) => local.insertPointsBatch(
