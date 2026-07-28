@@ -48,7 +48,8 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   final TextEditingController heightTextEditingController =
       TextEditingController();
 
-      final TextEditingController nameTextEditingController = TextEditingController();
+  final TextEditingController nameTextEditingController =
+      TextEditingController();
   double initialHeightValue = 150.0;
   HeightUnit heightUnit = HeightUnit.cm;
 
@@ -67,26 +68,27 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   void dispose() {
     wightTextEditingController.dispose();
     heightTextEditingController.dispose();
-    nameTextEditingController.dispose(); 
+    nameTextEditingController.dispose();
     super.dispose();
   }
 
   Future<void> pickAndSaveProfileImage() async {
-  final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-  if (picked == null) return;
+    final picked = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (picked == null) return;
 
-  final appDir = await getApplicationDocumentsDirectory();
-  final ext = picked.path.split('.').last;
-  final savedPath = '${appDir.path}/profile_image.$ext';
-  final savedFile = await File(picked.path).copy(savedPath);
+    final appDir = await getApplicationDocumentsDirectory();
+    final ext = picked.path.split('.').last;
+    final savedPath = '${appDir.path}/profile_image.$ext';
+    final savedFile = await File(picked.path).copy(savedPath);
 
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('userProfileImagePathSharedPreferenceKey', savedFile.path);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PrefKeys.profileImagePath, savedFile.path);
 
-  setState(() {
-    selectedImageFile = savedFile;
-  });
-}
+    setState(() {
+      selectedImageFile = savedFile;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -408,7 +410,15 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onSubmitted: (value) {
               setState(() {
-                initialHeightValue = double.tryParse(value) ?? 0;
+                if (heightUnit == HeightUnit.ft) {
+                  final parts = value.split(RegExp(r"['.]"));
+                  final feet = int.tryParse(parts[0]) ?? 0;
+                  final inches =
+                      parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+                  initialHeightValue = (feet * 12 + inches) / 12;
+                } else {
+                  initialHeightValue = double.tryParse(value) ?? 0;
+                }
               });
             },
             decoration: InputDecoration(
@@ -818,77 +828,93 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   }
 
   // nameWidget — add avatar picker above the name field
-Widget nameWidget(BuildContext context) {
-  return Column(
-    children: [
-      const SizedBox(height: kToolbarHeight),
-      Text(
-        'What should we call you?',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 10),
-      Text(
-        'This helps us personalize your experience.',
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      const SizedBox(height: kToolbarHeight),
-      SpringButton(
-        SpringButtonType.onlyScale,
-        onTap: pickAndSaveProfileImage,
-        uiChild: CircleAvatar(
-          radius: 48,
-          backgroundColor: grey,
-          backgroundImage: selectedImageFile != null ? FileImage(selectedImageFile!) : null,
-          child: selectedImageFile == null
-              ? const Icon(Icons.add_a_photo_outlined, color: black)
-              : null,
+  Widget nameWidget(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: kToolbarHeight),
+        Text(
+          'What should we call you?',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-      ),
-      const SizedBox(height: kToolbarHeight),
-      TextField(
-        controller: nameTextEditingController,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          hintText: 'Your name',
+        const SizedBox(height: 10),
+        Text(
+          'This helps us personalize your experience.',
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-      ),
-      const Spacer(),
-      SpringButton(
-        SpringButtonType.onlyScale,
-        onTap: () async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userNameSharedPreferenceKey', nameTextEditingController.text.trim());
-          await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
-          if (context.mounted) {
-            context.go('/shell/home');
-          }
-        },
-        uiChild: Container(
-          width: double.infinity,
-          height: 52,
-          padding: const EdgeInsets.all(16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: primary,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Continue",
-                style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white),
-              ),
-              const SizedBox(width: 16),
-              const Icon(Icons.arrow_forward, color: white),
-            ],
+        const SizedBox(height: kToolbarHeight),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: pickAndSaveProfileImage,
+          uiChild: CircleAvatar(
+            radius: 48,
+            backgroundColor: grey,
+            backgroundImage: selectedImageFile != null
+                ? FileImage(selectedImageFile!)
+                : null,
+            child: selectedImageFile == null
+                ? const Icon(Icons.add_a_photo_outlined, color: black)
+                : null,
           ),
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: kToolbarHeight),
+        TextField(
+          controller: nameTextEditingController,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            hintText: 'Your name',
+          ),
+        ),
+        const Spacer(),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+                PrefKeys.userName, nameTextEditingController.text.trim());
+            await prefs.setDouble(PrefKeys.weight, initialWeightValue);
+            await prefs.setString(PrefKeys.weightUnit, weightUnit.name);
+            final heightInCm = heightUnit == HeightUnit.ft
+                ? initialHeightValue * 30.48
+                : initialHeightValue;
+            await prefs.setDouble(PrefKeys.height, heightInCm);
+            await prefs.setString(PrefKeys.heightUnit, heightUnit.name);
+            await prefs.setString(PrefKeys.gender, selectedGender.name);
+            await prefs.setString(PrefKeys.healthGoal, selectedHealthGoal.name);
+            await prefs.setInt(PrefKeys.age, age);
+            await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+            if (context.mounted) {
+              context.go('/shell/home');
+            }
+          },
+          uiChild: Container(
+            width: double.infinity,
+            height: 52,
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: primary,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Continue",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(color: white),
+                ),
+                const SizedBox(width: 16),
+                const Icon(Icons.arrow_forward, color: white),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
