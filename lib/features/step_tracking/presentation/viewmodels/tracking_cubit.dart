@@ -79,7 +79,7 @@ Future<List<Activity>> getHistory() => repository.getActivities();
   void _onPosition(Position pos) {
     if (pos.accuracy > _accuracyThreshold) return;
 
-    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude}");
+    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}");
     
 
     final point = LocationPoint(

@@ -1,6 +1,10 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:platform_maps_flutter/platform_maps_flutter.dart';
@@ -8,10 +12,12 @@ import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../domain/entities/activity.dart';
+import '../../domain/entities/location_point.dart';
 import '../viewmodels/tracking_cubit.dart';
 import '../viewmodels/tracking_state.dart';
 import 'tracking_history_view.dart';
 import 'widgets/journey_share_card.dart';
+import 'widgets/marker.dart';
 
 class StepsTrackingView extends StatefulWidget {
   const StepsTrackingView({super.key});
@@ -25,6 +31,9 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   PlatformMapController? _mapController;
   static const LatLng _fallbackCenter = LatLng(30.7046, 76.7179);
   LatLng? _initialCenter;
+  BitmapDescriptor? _runnerIcon;
+  bool? _lastIsMoving;
+  double _lastHeading = 0;
 
   final GlobalKey _shareCardKey = GlobalKey();
   String _lastKm = '';
@@ -126,6 +135,56 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     }
   }
 
+  Future<Uint8List> _widgetToBytes(Widget widget, {double size = 100}) async {
+    final repaintBoundary = RenderRepaintBoundary();
+    final renderView = RenderView(
+      view: WidgetsBinding.instance.platformDispatcher.views.first,
+      configuration: ViewConfiguration(
+        logicalConstraints: BoxConstraints.tight(Size(size, size)),
+        devicePixelRatio: 3.0,
+      ),
+      child: RenderPositionedBox(child: repaintBoundary),
+    );
+    final pipelineOwner = PipelineOwner()..rootNode = renderView;
+    renderView.prepareInitialFrame();
+
+    final buildOwner = BuildOwner(focusManager: FocusManager());
+    final element = RenderObjectToWidgetAdapter<RenderBox>(
+      container: repaintBoundary,
+      child: Directionality(textDirection: TextDirection.ltr, child: widget),
+    ).attachToRenderTree(buildOwner);
+
+    buildOwner
+      ..buildScope(element)
+      ..finalizeTree();
+    pipelineOwner
+      ..flushLayout()
+      ..flushCompositingBits()
+      ..flushPaint();
+
+    final image = await repaintBoundary.toImage(pixelRatio: 3.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  Future<BitmapDescriptor> _makeMarkerIcon(
+      {required bool isMoving, required double heading}) async {
+    final bytes = await _widgetToBytes(
+      RunnerMarker(isMoving: isMoving, heading: heading),
+    );
+    return BitmapDescriptor.fromBytes(bytes);
+  }
+
+  double _calculateHeading(LocationPoint from, LocationPoint to) {
+    final lat1 = from.lat * math.pi / 180;
+    final lat2 = to.lat * math.pi / 180;
+    final dLng = (to.lng - from.lng) * math.pi / 180;
+    final y = math.sin(dLng) * math.cos(lat2);
+    final x = math.cos(lat1) * math.sin(lat2) -
+        math.sin(lat1) * math.cos(lat2) * math.cos(dLng);
+    return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final cubit = context.read<TrackingCubit>();
@@ -147,14 +206,40 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TrackingCubit, TrackingState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is TrackingActive) {
           WakelockPlus.enable();
           if (state.points.isNotEmpty) {
             final last = state.points.last;
+            bool isMoving = last.speed > 0.15;
+            if (state.points.length >= 2) {
+              final prev = state.points[state.points.length - 2];
+              final distance = Geolocator.distanceBetween(
+                  prev.lat, prev.lng, last.lat, last.lng);
+              final timeDelta =
+                  last.timestamp.difference(prev.timestamp).inMilliseconds /
+                      1000;
+              final computedSpeed = timeDelta > 0 ? distance / timeDelta : 0.0;
+              isMoving = computedSpeed > 0.15 || last.speed > 0.15;
+            }
+            final heading = state.points.length >= 2
+                ? _calculateHeading(state.points[state.points.length - 2], last)
+                : 0.0; // adjust to your LocationPoint field
+            if (_lastIsMoving != isMoving ||
+                (heading - _lastHeading).abs() > 10) {
+              _lastIsMoving = isMoving;
+              _lastHeading = heading;
+              _runnerIcon =
+                  await _makeMarkerIcon(isMoving: isMoving, heading: heading);
+              if (mounted) setState(() {});
+            }
             _mapController?.animateCamera(
-              CameraUpdate.newLatLngZoom(
-                  LatLng(last.lat, last.lng), _currentZoom),
+              CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(last.lat, last.lng),
+                    zoom: _currentZoom,
+                    tilt: 45),
+              ),
             );
           }
         } else {
@@ -195,7 +280,11 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                     ? const Center(child: CircularProgressIndicator())
                     : PlatformMap(
                         initialCameraPosition: CameraPosition(
-                            target: resolvedCenter, zoom: 16, bearing: 2),
+                          target: resolvedCenter,
+                          zoom: 16,
+                          bearing: 2,
+                          tilt: 45,
+                        ),
                         onMapCreated: (c) => _mapController = c,
                         polylines: latLngs.length >= 2
                             ? {
@@ -213,6 +302,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                             position: latLngs.isNotEmpty
                                 ? latLngs.last
                                 : resolvedCenter,
+                            icon: _runnerIcon ?? BitmapDescriptor.defaultMarker,
                           ),
                         },
                       ),
