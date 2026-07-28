@@ -11,4 +11,5 @@ class PrefKeys {
   static const String gender = 'userGenderSharedPreferenceKey';
   static const String healthGoal = 'userHealthGoalSharedPreferenceKey';
   static const String age = 'userAgeSharedPreferenceKey';
+  static const String activityLevel = 'userActivityLevelSharedPreferenceKey';
 }

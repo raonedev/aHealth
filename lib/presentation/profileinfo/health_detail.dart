@@ -12,6 +12,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'activity_factor.dart';
+
 enum HeightUnit { cm, ft }
 
 enum WeightUnit { kg, lbs }
@@ -56,6 +58,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   int age = 24;
 
   File? selectedImageFile;
+  ActivityLevel selectedActivityLevel = ActivityLevel.lightlyActive;
 
   @override
   void initState() {
@@ -137,7 +140,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: (150 / 6) * step.toDouble(),
+                width: (150 / 7) * step.toDouble(),
                 height: 8,
                 decoration: BoxDecoration(
                   color: black,
@@ -171,7 +174,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                           ? healthGoalWidget(context)
                           : (step == 5)
                               ? ageWidget(context)
-                              : nameWidget(context),
+                              : (step == 6)
+                                  ? activityLevelWidget(context)
+                                  : nameWidget(context),
         ),
       ),
     );
@@ -827,6 +832,77 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
     );
   }
 
+  Widget activityLevelWidget(BuildContext context) {
+  return Column(
+    children: [
+      const SizedBox(height: 20),
+      Text('What is your activity level?', style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 20),
+      Expanded(
+        child: ListView(
+          children: ActivityLevel.values.map((level) => activityLevelCard(level)).toList(),
+        ),
+      ),
+      SpringButton(
+        SpringButtonType.onlyScale,
+        onTap: () {
+          setState(() {
+            step = 7;
+          });
+        },
+        uiChild: Container(
+          width: double.infinity,
+          height: 52,
+          padding: const EdgeInsets.all(16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: primary),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Continue", style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white)),
+              const SizedBox(width: 16),
+              const Icon(Icons.arrow_forward, color: white),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget activityLevelCard(ActivityLevel level) {
+  final labels = {
+    ActivityLevel.sedentary: ('Sedentary', 'Little or no exercise'),
+    ActivityLevel.lightlyActive: ('Lightly active', 'Light exercise 1-3 days/week'),
+    ActivityLevel.moderatelyActive: ('Moderately active', 'Moderate exercise 3-5 days/week'),
+    ActivityLevel.veryActive: ('Very active', 'Hard exercise 6-7 days/week'),
+    ActivityLevel.extraActive: ('Extra active', 'Very hard exercise & physical job'),
+  };
+  final (title, subtitle) = labels[level]!;
+  return SpringButton(
+    SpringButtonType.onlyScale,
+    onTap: () => setState(() => selectedActivityLevel = level),
+    uiChild: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: selectedActivityLevel == level ? primary : Colors.white,
+        boxShadow: [
+          BoxShadow(blurRadius: 10, offset: const Offset(0, 1), color: selectedActivityLevel == level ? primary : grey),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: selectedActivityLevel == level ? Colors.white : black)),
+          const SizedBox(height: 4),
+          Text(subtitle, style: TextStyle(fontSize: 12, color: selectedActivityLevel == level ? Colors.white70 : Colors.grey)),
+        ],
+      ),
+    ),
+  );
+}
   // nameWidget — add avatar picker above the name field
   Widget nameWidget(BuildContext context) {
     return Column(
@@ -884,6 +960,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             await prefs.setString(PrefKeys.gender, selectedGender.name);
             await prefs.setString(PrefKeys.healthGoal, selectedHealthGoal.name);
             await prefs.setInt(PrefKeys.age, age);
+            await prefs.setString(PrefKeys.activityLevel, selectedActivityLevel.name);
             await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
             if (context.mounted) {
               context.go('/shell/home');

@@ -16,7 +16,7 @@ import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../services/nutrition_service.dart';
-import '../home/widget/nutrition_card.dart';
+import '../common/nutrition_calc.dart';
 import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';

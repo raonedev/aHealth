@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/spring_button_widget.dart';
-import '../../../constants.dart';
+import '../../common/nutrition_calc.dart';
 
 const _kOnSurfaceVariant = Color(0xFF40493D);
 const _kSecondaryContainer = Color(0xFFFC820C);
@@ -75,7 +74,7 @@ class NutritionCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
-                            'BMR ${targets.bmr} · TDEE ${targets.tdee}',
+                            'BMR ${targets.bmr} · TDEE ${targets.tdee} · ${targets.activityLabel}',
                             style: TextStyle(
                                 fontSize: 10,
                                 color:
@@ -259,78 +258,6 @@ class _MacroChip extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class NutritionTargets {
-  final int bmr;
-  final int tdee;
-  final int target;
-  final double protein; // g
-  final double carbs; // g
-  final double fat; // g
-
-  NutritionTargets({
-    required this.bmr,
-    required this.tdee,
-    required this.target,
-    required this.protein,
-    required this.carbs,
-    required this.fat,
-  });
-}
-class TargetCalorieCalculator {
-  static Future<NutritionTargets> calculate() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final weight = prefs.getDouble(PrefKeys.weight) ?? 70;
-    final height = prefs.getDouble(PrefKeys.height) ?? 170;
-    final age = prefs.getInt(PrefKeys.age) ?? 25;
-    final gender = prefs.getString(PrefKeys.gender) ?? 'male';
-    final goal = prefs.getString(PrefKeys.healthGoal) ?? 'maintainWeight';
-
-    final bmr = gender == 'female'
-        ? (10 * weight) + (6.25 * height) - (5 * age) - 161
-        : (10 * weight) + (6.25 * height) - (5 * age) + 5;
-
-    const activityFactor = 1.375;
-    final tdee = bmr * activityFactor;
-
-    final targetCalories = switch (goal) {
-      'lossWeight' => tdee - 500,
-      'gainWeight' => tdee + 500,
-      'gainMuscle' => tdee + 300,
-      _ => tdee,
-    };
-
-    // Protein
-    final proteinPerKg = switch (goal) {
-      'lossWeight' => 2.0,
-      'gainWeight' => 1.8,
-      'gainMuscle' => 2.0,
-      _ => 1.6,
-    };
-
-    final protein = weight * proteinPerKg; // g
-
-    // Fat
-    final fat = weight * 1.0; // g
-
-    // Remaining calories go to carbs
-    final proteinCalories = protein * 4;
-    final fatCalories = fat * 9;
-    final carbCalories =
-        targetCalories - proteinCalories - fatCalories;
-    final carbs = carbCalories / 4;
-
-    return NutritionTargets(
-      bmr: bmr.round(),
-      tdee: tdee.round(),
-      target: targetCalories.round(),
-      protein: protein,
-      carbs: carbs,
-      fat: fat,
     );
   }
 }
