@@ -354,7 +354,7 @@ class _StatsBar extends StatelessWidget {
             Text('${km.toStringAsFixed(2)} km'),
             Text(
                 '${s.elapsed.inMinutes}:${(s.elapsed.inSeconds % 60).toString().padLeft(2, '0')}'),
-            Text('$paceFormatted /km'), // 👈 Shows "5:30 /km" instead of "330 s/km"
+            Text('$paceFormatted /km'), 
           ],
         ),
       );

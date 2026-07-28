@@ -26,6 +26,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
   int? selectIndex;
   ValueFood? valueFood;
+  double multiplier = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +67,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                 if (selectIndex == index) {
                                   setState(() {
                                     selectIndex = null;
+                                    multiplier = 1.0;
                                   });
                                 } else {
                                   setState(() {
                                     selectIndex = index;
+                                    multiplier = 1.0;
                                   });
                                 }
                               },
@@ -122,70 +125,124 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     bottom: 10,
                     right: 0,
                     left: 0,
-                    child: SpringButton(
-                      SpringButtonType.onlyScale,
-                      onTap: () {
-                        final serving = state.foodWithServingsModel.food?.servings?.serving?[selectIndex!];
-                        valueFood = ValueFood(
-                          name: state.foodWithServingsModel.food!.foodName ??
-                              "NULL Name",
-                          unit: serving?.metricServingUnit,
-                          quantity:
-                              double.parse(serving?.metricServingAmount ?? '0'),
-                          calcium: double.parse(serving?.calcium ?? '0') / 1000,
-                          //convert milligram to gram
-                          calories: double.parse(serving?.calories ?? '0'),
-                          carbs: double.parse(serving?.carbohydrate ?? '0'),
-                          cholesterol:
-                              double.parse(serving?.cholesterol ?? '0') / 1000,
-                          //convert milligram to gram
-                          fat: double.parse(serving?.fat ?? '0'),
-                          fiber: double.parse(serving?.fiber ?? '0'),
-                          iron: double.parse(serving?.iron ?? '0') / 1000,
-                          //convert milligram to gram
-                          measurementDescription:
-                              serving?.measurementDescription,
-                          metricServingAmount: serving?.metricServingAmount,
-                          metricServingUnit: serving?.metricServingUnit,
-                          monounsaturatedFat:
-                              double.parse(serving?.monounsaturatedFat ?? '0'),
-                          numberOfUnits: serving?.numberOfUnits,
-                          polyunsaturatedFat:
-                              double.parse(serving?.polyunsaturatedFat ?? '0'),
-                          potassium:
-                              double.parse(serving?.potassium ?? '0') / 1000,
-                          //convert milligram to gram
-                          protein: double.parse(serving?.protein ?? '0'),
-                          saturatedFat:
-                              double.parse(serving?.saturatedFat ?? '0'),
-                          servingDescription: serving?.servingDescription,
-                          sodium: double.parse(serving?.sodium ?? '0') / 1000,
-                          //convert milligram to gram
-                          sugar: double.parse(serving?.sugar ?? '0'),
-                          vitaminA:
-                              double.parse(serving?.vitaminA ?? '0') / 1000,
-                          //convert milligram to gram
-                          vitaminC: double.parse(serving?.vitaminC ?? '0') /
-                              1000, //convert milligram to gram
-                        );
-                        if (valueFood != null) {
-                          context.read<NutritionCubit>().addNutritionData(valueFood: valueFood!);
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        }
-                      },
-                      uiChild: Container(
-                        alignment: Alignment.center,
-                        margin: const EdgeInsets.all(16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: primary,
-                          borderRadius: BorderRadius.circular(12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                onPressed: () => setState(() => multiplier =
+                                    (multiplier - 0.5).clamp(0.5, 10)),
+                                icon: const Icon(Icons.remove_circle_outline),
+                              ),
+                              Text(
+                                  '${multiplier.toStringAsFixed(multiplier % 1 == 0 ? 0 : 1)}x serving',
+                                  style:
+                                      Theme.of(context).textTheme.titleSmall),
+                              IconButton(
+                                onPressed: () => setState(() => multiplier =
+                                    (multiplier + 0.5).clamp(0.5, 10)),
+                                icon: const Icon(Icons.add_circle_outline),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: const Text(
-                          "Add Meal",
-                          style: TextStyle(color: Colors.white),
+                        SpringButton(
+                          SpringButtonType.onlyScale,
+                          onTap: () {
+                            final serving = state.foodWithServingsModel.food
+                                ?.servings?.serving?[selectIndex!];
+                            valueFood = ValueFood(
+                              name: '${state.foodWithServingsModel.food!.foodName ?? "NULL Name"} (${multiplier.toStringAsFixed(multiplier % 1 == 0 ? 0 : 1)} ${serving?.measurementDescription ?? "serving"}${multiplier != 1 ? "s" : ""})',
+                              unit: serving?.metricServingUnit,
+                              quantity: double.parse(
+                                      serving?.metricServingAmount ?? '0') *
+                                  multiplier,
+                              calcium: double.parse(serving?.calcium ?? '0') /
+                                  1000 *
+                                  multiplier,
+                              calories: double.parse(serving?.calories ?? '0') *
+                                  multiplier,
+                              carbs:
+                                  double.parse(serving?.carbohydrate ?? '0') *
+                                      multiplier,
+                              cholesterol:
+                                  double.parse(serving?.cholesterol ?? '0') /
+                                      1000 *
+                                      multiplier,
+                              fat: double.parse(serving?.fat ?? '0') *
+                                  multiplier,
+                              fiber: double.parse(serving?.fiber ?? '0') *
+                                  multiplier,
+                              iron: double.parse(serving?.iron ?? '0') /
+                                  1000 *
+                                  multiplier,
+                              measurementDescription:
+                                  serving?.measurementDescription,
+                              metricServingAmount: serving?.metricServingAmount,
+                              metricServingUnit: serving?.metricServingUnit,
+                              monounsaturatedFat: double.parse(
+                                      serving?.monounsaturatedFat ?? '0') *
+                                  multiplier,
+                              numberOfUnits: serving?.numberOfUnits,
+                              polyunsaturatedFat: double.parse(
+                                      serving?.polyunsaturatedFat ?? '0') *
+                                  multiplier,
+                              potassium:
+                                  double.parse(serving?.potassium ?? '0') /
+                                      1000 *
+                                      multiplier,
+                              protein: double.parse(serving?.protein ?? '0') *
+                                  multiplier,
+                              saturatedFat:
+                                  double.parse(serving?.saturatedFat ?? '0') *
+                                      multiplier,
+                              servingDescription:
+                                  '${multiplier}x ${serving?.servingDescription ?? ''}',
+                              sodium: double.parse(serving?.sodium ?? '0') /
+                                  1000 *
+                                  multiplier,
+                              sugar: double.parse(serving?.sugar ?? '0') *
+                                  multiplier,
+                              vitaminA: double.parse(serving?.vitaminA ?? '0') /
+                                  1000 *
+                                  multiplier,
+                              vitaminC: double.parse(serving?.vitaminC ?? '0') /
+                                  1000 *
+                                  multiplier,
+                            );
+                            if (valueFood != null) {
+                              context
+                                  .read<NutritionCubit>()
+                                  .addNutritionData(valueFood: valueFood!);
+                              Navigator.popUntil(
+                                  context, (route) => route.isFirst);
+                            }
+                          },
+                          uiChild: Container(
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: primary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              "Add Meal",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
               ],

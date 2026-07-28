@@ -23,6 +23,11 @@ void notificationBackgroundHandler(NotificationResponse response) async {
       endTime: now,
     );
 
+    bool stepsPermission = await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+    if (!stepsPermission) {
+      return;
+    }
+
     // Re-init timezone + a fresh plugin instance, since this isolate
     // has none of the state from main()/HealthNotificationService.
     tz.initializeTimeZones();
@@ -35,7 +40,16 @@ void notificationBackgroundHandler(NotificationResponse response) async {
     );
 
     final midnight = DateTime(now.year, now.month, now.day);
-    final steps = await Health().getTotalStepsInInterval(midnight, now);
+    int? steps;
+    if (stepsPermission) {
+      final data = await Health().getHealthDataFromTypes(
+        types: [HealthDataType.STEPS],
+        startTime: midnight,
+        endTime: now,
+      );
+      steps = data.fold<int>(
+          0, (sum, e) => sum + (e.value as NumericHealthValue).numericValue.toInt());
+    }
 
     final randomMinutes = 5 + Random().nextInt(6); // 5,6,7,8,9,10
     final scheduled =
@@ -63,7 +77,6 @@ void notificationBackgroundHandler(NotificationResponse response) async {
     );
   }
 }
-
 class HealthNotificationService {
   static final HealthNotificationService _instance =
       HealthNotificationService._internal();
