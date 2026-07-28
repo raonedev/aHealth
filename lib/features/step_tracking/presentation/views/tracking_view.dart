@@ -340,6 +340,12 @@ class _StatsBar extends StatelessWidget {
     if (state is TrackingActive) {
       final s = state as TrackingActive;
       final km = s.distanceMeters / 1000;
+      
+      // Format pace as min:sec
+      final paceMinutes = s.paceSecPerKm ~/ 60;
+      final paceSeconds = (s.paceSecPerKm % 60).toInt();
+      final paceFormatted = '$paceMinutes:${paceSeconds.toString().padLeft(2, '0')}';
+      
       return Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -348,7 +354,7 @@ class _StatsBar extends StatelessWidget {
             Text('${km.toStringAsFixed(2)} km'),
             Text(
                 '${s.elapsed.inMinutes}:${(s.elapsed.inSeconds % 60).toString().padLeft(2, '0')}'),
-            Text('${s.paceSecPerKm.toStringAsFixed(0)} s/km'),
+            Text('$paceFormatted /km'), // 👈 Shows "5:30 /km" instead of "330 s/km"
           ],
         ),
       );
