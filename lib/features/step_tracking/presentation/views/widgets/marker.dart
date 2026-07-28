@@ -20,13 +20,13 @@ class RunnerMarker extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
       ),
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(4),
       child: isMoving
           ? Transform.rotate(
-               angle: (heading + 45) * math.pi / 180,
+               angle: (heading) * math.pi / 180,
               child: const Icon(
                 Icons.navigation_rounded,
-                size: 10,
+                size: 13,
                 color: Colors.white,
               ),
             )
