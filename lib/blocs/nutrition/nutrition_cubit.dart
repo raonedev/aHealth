@@ -155,7 +155,7 @@ class NutritionCubit extends Cubit<NutritionState> {
       }
 
       if (allSuccess) {
-        // 2. Refresh your main landing data once everything is written successfully
+        // Refresh your main landing data once everything is written successfully
         await getNutritionData();
       } else {
         emit(NutritionFailed(

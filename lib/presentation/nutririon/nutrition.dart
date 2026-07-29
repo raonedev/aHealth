@@ -16,12 +16,12 @@ import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../services/nutrition_service.dart';
+import '../common/camera_view.dart';
 import '../common/nutrition_calc.dart';
 import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/macro_card.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'widgets/nutrition_group_dialog.dart';
 
@@ -85,13 +85,10 @@ class _NutritionState extends State<Nutrition> {
           SpringButtonType.withOpacity,
           onTap: () async {
             try {
-              final picker = ImagePicker();
-              final picked =
-                  await picker.pickImage(source: ImageSource.gallery);
-              if (picked == null) return;
-
-              final prepared =
-                  await NutritionService.prepareImage(File(picked.path));
+              final result = await Navigator.push<File>(context,
+                  MaterialPageRoute(builder: (_) => const CameraScreen()));
+              if (result == null) return;
+              final prepared = await NutritionService.prepareImage(result);
 
               if (!context.mounted) return;
               showModalBottomSheet(

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as dev;
+import 'dart:io';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/location_point.dart';
@@ -70,6 +72,12 @@ Future<bool> _ensureLocationPermission() async {
   }
   if (permission == LocationPermission.whileInUse) {
     permission = await Geolocator.requestPermission(); // prompts for Always on supported OS versions
+  }
+    if (Platform.isAndroid) {
+    final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
+    if (!batteryStatus.isGranted) {
+      await Permission.ignoreBatteryOptimizations.request();
+    }
   }
   return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
 }

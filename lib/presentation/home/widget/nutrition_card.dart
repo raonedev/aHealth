@@ -191,12 +191,12 @@ class NutritionCard extends StatelessWidget {
                         children: [
                           _MacroChip(
                               label: 'PROTEIN',
-                              value: '${protein}g',
+                              value: '${protein.toStringAsFixed(0)}g',
                               color: _kPrimary),
                           const SizedBox(width: 12),
                           _MacroChip(
                               label: 'CARBS',
-                              value: '${carbs}g',
+                              value: '${carbs.toInt()}g',
                               color: _kSecondaryContainer),
                           const SizedBox(width: 12),
                           _MacroChip(
