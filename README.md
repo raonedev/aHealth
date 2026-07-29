@@ -1,4 +1,4 @@
-# aHealth  
+# DOCTO  
 
 ### 🩺 Your Comprehensive Health Management App  
 
@@ -26,7 +26,7 @@ aHealth is a Flutter-based application designed to help users take charge of the
 ## 🛠️ Tech Stack  
 
 - **Frontend:** Flutter   
-- **Database:** NA
+- **Database:** HIVE, ObjectBox
 - **AI Integration:** Google ML Kit  
 - **Health Data Integration:** [HealthConnect](https://developer.android.com/guide/health-and-fitness/health-connect)  
 
@@ -40,14 +40,16 @@ aHealth is a Flutter-based application designed to help users take charge of the
 2. Install dependencies:
     flutter pub get  
 
-3. Add your API keys to the /lib/secrets/secrets.dart file.
-  class Secrets {  
-    static const String apiKey = 'your_api_key_here';  
-  }  
+3. Add your API keys to the lib/secrets/secrets.dart file.
+    const String GEMINI_API_KEY = 'your_api_key_here';  
+   Add android/secrets.properties file.
+    MAPS_API_KEY=your_google_map_apikey
+    
 Note: Make sure to exclude this file from Git tracking by adding it to .gitignore.
 
 4. Run the app:
-   flutter run  
+   fvm flutter pub get
+   fvm flutter run  
 
 
 ## 🤖 AI Features
@@ -77,6 +79,21 @@ We welcome contributions! If you want to improve the app, please:
   git push origin feature-name
 
 #Open a pull request.
+
+## 📸 Screenshots
+<p float="left">
+  <img src="screenshots/1.png" width="180" />
+  <img src="screenshots/2.png" width="180" />
+  <img src="screenshots/3.png" width="180" />
+  <img src="screenshots/4.png" width="180" />
+  <img src="screenshots/5.png" width="180" />
+</p>
+<p float="left">
+  <img src="screenshots/6.png" width="180" />
+  <img src="screenshots/7.png" width="180" />
+  <img src="screenshots/8.png" width="180" />
+  <img src="screenshots/9.png" width="180" />
+</p>
     
 ## 📧 Contact
 
