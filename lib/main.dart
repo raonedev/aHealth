@@ -3,7 +3,6 @@ import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
 import 'package:ahealth/services/notification_services.dart';
 import 'package:ahealth/services/nutrition_service.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
@@ -41,7 +40,6 @@ import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart
 
 void main() async {
    WidgetsFlutterBinding.ensureInitialized();
-  FlutterForegroundTask.initCommunicationPort();
 
   // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
   //   await FlutterForegroundTask.requestNotificationPermission();

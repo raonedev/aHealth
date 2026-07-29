@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+
+import '../../blocs/sleep/sleep_cubit.dart';
 
 class SleepPickerBottomSheet extends StatefulWidget {
   const SleepPickerBottomSheet({super.key});
@@ -78,15 +81,43 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel', style: TextStyle(color: Color(0xff0A84FF), fontSize: 16)),
+                        child: const Text('Cancel',
+                            style: TextStyle(
+                                color: Color(0xff0A84FF), fontSize: 16)),
                       ),
                       const Text(
                         'Edit Your Schedule',
-                        style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Done', style: TextStyle(color: Color(0xff0A84FF), fontSize: 17, fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          final now = DateTime.now();
+                          final anchor = DateTime(now.year, now.month, now.day)
+                              .subtract(const Duration(days: 1));
+
+                          DateTime toDateTime(double t) =>
+                              anchor.add(Duration(minutes: (t * 60).round()));
+
+                          var start = toDateTime(_startTime);
+                          var end = toDateTime(_endTime);
+                          if (_endTime <= _startTime) {
+                            end = end.add(const Duration(days: 1));
+                          }
+
+                          await context
+                              .read<SleepCubit>()
+                              .addSleep(startingTime: start, endTime: end);
+                          await context.read<SleepCubit>().getSleepData();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Done',
+                            style: TextStyle(
+                                color: Color(0xff0A84FF),
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -94,13 +125,17 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
 
                   const Text(
                     'Bedtime and Wake Up',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
 
                   // Container containing both dynamic texts and YOUR UNCHANGED gauge layout
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 24, horizontal: 16),
                     decoration: BoxDecoration(
                       color: const Color(0xff1C1C1E),
                       borderRadius: BorderRadius.circular(14),
@@ -112,8 +147,16 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildTimeHeader(Icons.single_bed_rounded, 'BEDTIME', _formatTimeText(_startTime), const Color(0xff63E6E2)),
-                            _buildTimeHeader(Icons.alarm_rounded, 'WAKE UP - NO ALARM', _formatTimeText(_endTime), const Color(0xffAEAEB2)),
+                            _buildTimeHeader(
+                                Icons.single_bed_rounded,
+                                'BEDTIME',
+                                _formatTimeText(_startTime),
+                                const Color(0xff63E6E2)),
+                            _buildTimeHeader(
+                                Icons.alarm_rounded,
+                                'WAKE UP - NO ALARM',
+                                _formatTimeText(_endTime),
+                                const Color(0xffAEAEB2)),
                           ],
                         ),
                         const SizedBox(height: 24),
@@ -148,7 +191,8 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                     }
                                   }
                                 },
-                                axisLabelStyle: const GaugeTextStyle(color: Colors.white),
+                                axisLabelStyle:
+                                    const GaugeTextStyle(color: Colors.white),
                                 axisLineStyle: const AxisLineStyle(
                                     thickness: 42, color: Colors.black),
                                 minorTicksPerInterval: 3,
@@ -158,7 +202,9 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                   color: Colors.grey,
                                 ),
                                 minorTickStyle: const MinorTickStyle(
-                                    length: 2, thickness: 1.5, color: Colors.grey),
+                                    length: 2,
+                                    thickness: 1.5,
+                                    color: Colors.grey),
                                 tickOffset: 0,
                                 ranges: [
                                   GaugeRange(
@@ -180,11 +226,11 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                     gradient: SweepGradient(
                                       colors: List.generate(
                                           180,
-                                              (index) => index % 2 == 0
+                                          (index) => index % 2 == 0
                                               ? Colors.black
-                                              : Colors.transparent
-                                      ),
-                                      stops: List.generate(180, (index) => index / 179),
+                                              : Colors.transparent),
+                                      stops: List.generate(
+                                          180, (index) => index / 179),
                                     ),
                                   ),
                                 ],
@@ -225,7 +271,8 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                     widget: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.wb_sunny, color: Colors.amber, size: 18),
+                                        Icon(Icons.wb_sunny,
+                                            color: Colors.amber, size: 18),
                                       ],
                                     ),
                                   ),
@@ -235,7 +282,8 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                     widget: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.star, color: Colors.cyan, size: 18),
+                                        Icon(Icons.star,
+                                            color: Colors.cyan, size: 18),
                                       ],
                                     ),
                                   ),
@@ -247,7 +295,10 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                       width: 16,
                                       height: 16,
                                       color: Colors.grey,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.king_bed, color: Colors.grey, size: 16),
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(Icons.king_bed,
+                                                  color: Colors.grey, size: 16),
                                     ),
                                   ),
                                   GaugeAnnotation(
@@ -258,7 +309,10 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                                       width: 16,
                                       height: 16,
                                       color: Colors.grey,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.alarm, color: Colors.grey, size: 16),
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(Icons.alarm,
+                                                  color: Colors.grey, size: 16),
                                     ),
                                   ),
                                 ],
@@ -271,12 +325,16 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
                         // --- Dynamic Bold Total Duration Readout ---
                         Text(
                           _calculateTotalSleep(),
-                          style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         const Text(
                           'This schedule meets your sleep goal.',
-                          style: TextStyle(color: Color(0xff8E8E93), fontSize: 14),
+                          style:
+                              TextStyle(color: Color(0xff8E8E93), fontSize: 14),
                         ),
                       ],
                     ),
@@ -291,7 +349,8 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
     );
   }
 
-  Widget _buildTimeHeader(IconData icon, String label, String value, Color themeColor) {
+  Widget _buildTimeHeader(
+      IconData icon, String label, String value, Color themeColor) {
     return Column(
       children: [
         Row(
@@ -301,7 +360,11 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
             const SizedBox(width: 5),
             Text(
               label,
-              style: const TextStyle(color: Color(0xff8E8E93), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.4),
+              style: const TextStyle(
+                  color: Color(0xff8E8E93),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.4),
             ),
           ],
         ),
@@ -309,7 +372,9 @@ class _SleepPickerBottomSheetState extends State<SleepPickerBottomSheet> {
         Text(
           value,
           style: TextStyle(
-            color: themeColor == const Color(0xffAEAEB2) ? const Color(0xffAEAEB2) : Colors.white,
+            color: themeColor == const Color(0xffAEAEB2)
+                ? const Color(0xffAEAEB2)
+                : Colors.white,
             fontSize: 26,
             fontWeight: FontWeight.bold,
           ),

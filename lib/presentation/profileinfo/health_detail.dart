@@ -12,6 +12,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'activity_factor.dart';
+
 enum HeightUnit { cm, ft }
 
 enum WeightUnit { kg, lbs }
@@ -48,13 +50,15 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   final TextEditingController heightTextEditingController =
       TextEditingController();
 
-      final TextEditingController nameTextEditingController = TextEditingController();
+  final TextEditingController nameTextEditingController =
+      TextEditingController();
   double initialHeightValue = 150.0;
   HeightUnit heightUnit = HeightUnit.cm;
 
   int age = 24;
 
   File? selectedImageFile;
+  ActivityLevel selectedActivityLevel = ActivityLevel.lightlyActive;
 
   @override
   void initState() {
@@ -67,26 +71,27 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   void dispose() {
     wightTextEditingController.dispose();
     heightTextEditingController.dispose();
-    nameTextEditingController.dispose(); 
+    nameTextEditingController.dispose();
     super.dispose();
   }
 
   Future<void> pickAndSaveProfileImage() async {
-  final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-  if (picked == null) return;
+    final picked = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (picked == null) return;
 
-  final appDir = await getApplicationDocumentsDirectory();
-  final ext = picked.path.split('.').last;
-  final savedPath = '${appDir.path}/profile_image.$ext';
-  final savedFile = await File(picked.path).copy(savedPath);
+    final appDir = await getApplicationDocumentsDirectory();
+    final ext = picked.path.split('.').last;
+    final savedPath = '${appDir.path}/profile_image.$ext';
+    final savedFile = await File(picked.path).copy(savedPath);
 
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('userProfileImagePathSharedPreferenceKey', savedFile.path);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PrefKeys.profileImagePath, savedFile.path);
 
-  setState(() {
-    selectedImageFile = savedFile;
-  });
-}
+    setState(() {
+      selectedImageFile = savedFile;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +140,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: (150 / 6) * step.toDouble(),
+                width: (150 / 7) * step.toDouble(),
                 height: 8,
                 decoration: BoxDecoration(
                   color: black,
@@ -169,7 +174,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                           ? healthGoalWidget(context)
                           : (step == 5)
                               ? ageWidget(context)
-                              : nameWidget(context),
+                              : (step == 6)
+                                  ? activityLevelWidget(context)
+                                  : nameWidget(context),
         ),
       ),
     );
@@ -408,7 +415,15 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onSubmitted: (value) {
               setState(() {
-                initialHeightValue = double.tryParse(value) ?? 0;
+                if (heightUnit == HeightUnit.ft) {
+                  final parts = value.split(RegExp(r"['.]"));
+                  final feet = int.tryParse(parts[0]) ?? 0;
+                  final inches =
+                      parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+                  initialHeightValue = (feet * 12 + inches) / 12;
+                } else {
+                  initialHeightValue = double.tryParse(value) ?? 0;
+                }
               });
             },
             decoration: InputDecoration(
@@ -817,71 +832,34 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
     );
   }
 
-  // nameWidget — add avatar picker above the name field
-Widget nameWidget(BuildContext context) {
+  Widget activityLevelWidget(BuildContext context) {
   return Column(
     children: [
-      const SizedBox(height: kToolbarHeight),
-      Text(
-        'What should we call you?',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 10),
-      Text(
-        'This helps us personalize your experience.',
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      const SizedBox(height: kToolbarHeight),
-      SpringButton(
-        SpringButtonType.onlyScale,
-        onTap: pickAndSaveProfileImage,
-        uiChild: CircleAvatar(
-          radius: 48,
-          backgroundColor: grey,
-          backgroundImage: selectedImageFile != null ? FileImage(selectedImageFile!) : null,
-          child: selectedImageFile == null
-              ? const Icon(Icons.add_a_photo_outlined, color: black)
-              : null,
+      const SizedBox(height: 20),
+      Text('What is your activity level?', style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 20),
+      Expanded(
+        child: ListView(
+          children: ActivityLevel.values.map((level) => activityLevelCard(level)).toList(),
         ),
       ),
-      const SizedBox(height: kToolbarHeight),
-      TextField(
-        controller: nameTextEditingController,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          hintText: 'Your name',
-        ),
-      ),
-      const Spacer(),
       SpringButton(
         SpringButtonType.onlyScale,
-        onTap: () async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userNameSharedPreferenceKey', nameTextEditingController.text.trim());
-          await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
-          if (context.mounted) {
-            context.go('/shell/home');
-          }
+        onTap: () {
+          setState(() {
+            step = 7;
+          });
         },
         uiChild: Container(
           width: double.infinity,
           height: 52,
           padding: const EdgeInsets.all(16),
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: primary,
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: primary),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "Continue",
-                style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white),
-              ),
+              Text("Continue", style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white)),
               const SizedBox(width: 16),
               const Icon(Icons.arrow_forward, color: white),
             ],
@@ -891,4 +869,129 @@ Widget nameWidget(BuildContext context) {
     ],
   );
 }
+
+Widget activityLevelCard(ActivityLevel level) {
+  final labels = {
+    ActivityLevel.sedentary: ('Sedentary', 'Little or no exercise'),
+    ActivityLevel.lightlyActive: ('Lightly active', 'Light exercise 1-3 days/week'),
+    ActivityLevel.moderatelyActive: ('Moderately active', 'Moderate exercise 3-5 days/week'),
+    ActivityLevel.veryActive: ('Very active', 'Hard exercise 6-7 days/week'),
+    ActivityLevel.extraActive: ('Extra active', 'Very hard exercise & physical job'),
+  };
+  final (title, subtitle) = labels[level]!;
+  return SpringButton(
+    SpringButtonType.onlyScale,
+    onTap: () => setState(() => selectedActivityLevel = level),
+    uiChild: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: selectedActivityLevel == level ? primary : Colors.white,
+        boxShadow: [
+          BoxShadow(blurRadius: 10, offset: const Offset(0, 1), color: selectedActivityLevel == level ? primary : grey),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: selectedActivityLevel == level ? Colors.white : black)),
+          const SizedBox(height: 4),
+          Text(subtitle, style: TextStyle(fontSize: 12, color: selectedActivityLevel == level ? Colors.white70 : Colors.grey)),
+        ],
+      ),
+    ),
+  );
+}
+  // nameWidget — add avatar picker above the name field
+  Widget nameWidget(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: kToolbarHeight),
+        Text(
+          'What should we call you?',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'This helps us personalize your experience.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: kToolbarHeight),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: pickAndSaveProfileImage,
+          uiChild: CircleAvatar(
+            radius: 48,
+            backgroundColor: grey,
+            backgroundImage: selectedImageFile != null
+                ? FileImage(selectedImageFile!)
+                : null,
+            child: selectedImageFile == null
+                ? const Icon(Icons.add_a_photo_outlined, color: black)
+                : null,
+          ),
+        ),
+        const SizedBox(height: kToolbarHeight),
+        TextField(
+          controller: nameTextEditingController,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            hintText: 'Your name',
+          ),
+        ),
+        const Spacer(),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+                PrefKeys.userName, nameTextEditingController.text.trim());
+            await prefs.setDouble(PrefKeys.weight, initialWeightValue);
+            await prefs.setString(PrefKeys.weightUnit, weightUnit.name);
+            final heightInCm = heightUnit == HeightUnit.ft
+                ? initialHeightValue * 30.48
+                : initialHeightValue;
+            await prefs.setDouble(PrefKeys.height, heightInCm);
+            await prefs.setString(PrefKeys.heightUnit, heightUnit.name);
+            await prefs.setString(PrefKeys.gender, selectedGender.name);
+            await prefs.setString(PrefKeys.healthGoal, selectedHealthGoal.name);
+            await prefs.setInt(PrefKeys.age, age);
+            await prefs.setString(PrefKeys.activityLevel, selectedActivityLevel.name);
+            await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+            if (context.mounted) {
+              context.go('/shell/home');
+            }
+          },
+          uiChild: Container(
+            width: double.infinity,
+            height: 52,
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: primary,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Continue",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(color: white),
+                ),
+                const SizedBox(width: 16),
+                const Icon(Icons.arrow_forward, color: white),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

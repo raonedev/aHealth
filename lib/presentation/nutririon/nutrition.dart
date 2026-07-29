@@ -16,14 +16,14 @@ import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../services/nutrition_service.dart';
+import '../common/camera_view.dart';
+import '../common/nutrition_calc.dart';
 import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/macro_card.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'widgets/nutrition_group_dialog.dart';
-
 
 // Light Theme Color Palette
 const Color _bg = Color(0xFFF6F6F9);
@@ -85,13 +85,10 @@ class _NutritionState extends State<Nutrition> {
           SpringButtonType.withOpacity,
           onTap: () async {
             try {
-              final picker = ImagePicker();
-              final picked =
-                  await picker.pickImage(source: ImageSource.gallery);
-              if (picked == null) return;
-
-              final prepared =
-                  await NutritionService.prepareImage(File(picked.path));
+              final result = await Navigator.push<File>(context,
+                  MaterialPageRoute(builder: (_) => const CameraScreen()));
+              if (result == null) return;
+              final prepared = await NutritionService.prepareImage(result);
 
               if (!context.mounted) return;
               showModalBottomSheet(
@@ -190,227 +187,242 @@ class _NutritionState extends State<Nutrition> {
               items.fold(0.0, (s, e) => s + (e.value?.carbs ?? 0));
           final totalFat = items.fold(0.0, (s, e) => s + (e.value?.fat ?? 0));
 
-          const double targetCalories = 2500;
-          const double targetProtein = 150;
-          const double targetCarbs = 300;
-          const double targetFat = 80;
+          return FutureBuilder<NutritionTargets>(
+              future: TargetCalorieCalculator.calculate(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
 
-          // Compute once, not inside builder
-          final groupedItems = _groupItems(items);
+                final targets = snapshot.data!;
 
-          return SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const SizedBox(width: 8),
-                            const Text('Nutrition',
-                                style: TextStyle(
-                                    color: _textPrimary,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold)),
-                            const Spacer(),
-                            IconButton(
-                                onPressed: () =>
-                                    context.push(AppRoutes.searchFoodScreen),
-                                icon: const Icon(CupertinoIcons.search)),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
+                final targetCalories = targets.target.toDouble();
+                final targetProtein = targets.protein;
+                final targetCarbs = targets.carbs;
+                final targetFat = targets.fat;
 
-                        // Calories Card
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: _card,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: Row(
+                // Compute once, not inside builder
+                final groupedItems = _groupItems(items);
+                return SafeArea(
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  Text(
-                                    '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
-                                    style: const TextStyle(
-                                        color: _textPrimary,
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const Text('Calories left',
+                                  const SizedBox(width: 8),
+                                  const Text('Nutrition',
                                       style: TextStyle(
-                                          color: _textSecondary, fontSize: 14)),
+                                          color: _textPrimary,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold)),
+                                  const Spacer(),
+                                  IconButton(
+                                      onPressed: () => context
+                                          .push(AppRoutes.searchFoodScreen),
+                                      icon: const Icon(CupertinoIcons.search)),
                                 ],
                               ),
-                              const Spacer(),
-                              CircularProgress(
-                                value: (totalCalories / targetCalories)
-                                    .clamp(0.0, 1.0),
-                                color: Colors.orange,
-                                size: 80,
-                                icon: Icons.local_fire_department,
-                                iconColor: Colors.orange,
+                              const SizedBox(height: 20),
+
+                              // Calories Card
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: _card,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.04),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
+                                          style: const TextStyle(
+                                              color: _textPrimary,
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const Text('Calories left',
+                                            style: TextStyle(
+                                                color: _textSecondary,
+                                                fontSize: 14)),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    CircularProgress(
+                                      value: (totalCalories / targetCalories)
+                                          .clamp(0.0, 1.0),
+                                      color: Colors.orange,
+                                      size: 80,
+                                      icon: Icons.local_fire_department,
+                                      iconColor: Colors.orange,
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 12),
+
+                              // Macros Row
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: MacroCard(
+                                      label: totalProtein > targetProtein
+                                          ? 'Protein over'
+                                          : 'Protein',
+                                      value: totalProtein > targetProtein
+                                          ? totalProtein - targetProtein
+                                          : targetProtein - totalProtein,
+                                      unit: 'g',
+                                      color: _proteinColor,
+                                      icon: Icons.bolt,
+                                      progress: (totalProtein / targetProtein)
+                                          .clamp(0.0, 1.0),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: MacroCard(
+                                      label: 'Carbs left',
+                                      value: (targetCarbs - totalCarbs)
+                                          .clamp(0, targetCarbs),
+                                      unit: 'g',
+                                      color: _carbsColor,
+                                      icon: Icons.grain,
+                                      progress: (totalCarbs / targetCarbs)
+                                          .clamp(0.0, 1.0),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: MacroCard(
+                                      label: 'Fats left',
+                                      value: (targetFat - totalFat)
+                                          .clamp(0, targetFat),
+                                      unit: 'g',
+                                      color: _fatColor,
+                                      icon: Icons.water_drop,
+                                      progress: (totalFat / targetFat)
+                                          .clamp(0.0, 1.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              const Text('Recently uploaded',
+                                  style: TextStyle(
+                                      color: _textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 12),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                      ),
 
-                        // Macros Row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: MacroCard(
-                                label: totalProtein > targetProtein
-                                    ? 'Protein over'
-                                    : 'Protein',
-                                value: totalProtein > targetProtein
-                                    ? totalProtein - targetProtein
-                                    : targetProtein - totalProtein,
-                                unit: 'g',
-                                color: _proteinColor,
-                                icon: Icons.bolt,
-                                progress: (totalProtein / targetProtein)
-                                    .clamp(0.0, 1.0),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: MacroCard(
-                                label: 'Carbs left',
-                                value: (targetCarbs - totalCarbs)
-                                    .clamp(0, targetCarbs),
-                                unit: 'g',
-                                color: _carbsColor,
-                                icon: Icons.grain,
-                                progress:
-                                    (totalCarbs / targetCarbs).clamp(0.0, 1.0),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: MacroCard(
-                                label: 'Fats left',
-                                value:
-                                    (targetFat - totalFat).clamp(0, targetFat),
-                                unit: 'g',
-                                color: _fatColor,
-                                icon: Icons.water_drop,
-                                progress:
-                                    (totalFat / targetFat).clamp(0.0, 1.0),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+                      // Food List
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final entry = groupedItems.entries.elementAt(index);
+                            final entryItems = entry.value;
+                            final first = entryItems.first;
+                            final isGroup = entryItems.length > 1;
+                            final heroTag = entry.key;
 
-                        const Text('Recently uploaded',
-                            style: TextStyle(
-                                color: _textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Food List
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final entry = groupedItems.entries.elementAt(index);
-                      final entryItems = entry.value;
-                      final first = entryItems.first;
-                      final isGroup = entryItems.length > 1;
-                      final heroTag = entry.key;
-
-                      return SpringButton(
-                        SpringButtonType.withOpacity,
-                        onTap: () async {
-                          HapticFeedback.mediumImpact();
-                          if (isGroup) {
-                            // ignore: use_build_context_synchronously
-                            // await _showGroupSheet(context, entryItems);
-                           context.push(GroupFoodDialog.name, extra: entryItems);
-                          } else {
-                            // ignore: use_build_context_synchronously
-                            context.push('/nutrition/detail', extra: first);
-                          }
-                        },
-                        uiChild: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                          child: SizedBox(
-                            height: 84 + (isGroup ? 16.0 : 10),
-                            child: Stack(
-                              children: [
-                                if (isGroup) ...[
-                                  Positioned(
-                                    left: 6,
-                                    right: 14,
-                                    bottom: 0,
-                                    top: 6,
-                                    child: CardShell(),
-                                  ),
-                                  if (entryItems.length > 2)
-                                    Positioned(
-                                      left: 12,
-                                      right: 10,
-                                      bottom: 0,
-                                      top: 12,
-                                      child: CardShell(),
-                                    ),
-                                ],
-                                Positioned(
-                                  left: 0,
-                                  right: isGroup ? 6 : 0,
-                                  top: 0,
-                                  bottom: isGroup ? 6 : 0,
-                                  // Wrap the main interactive card shell with Hero
-                                  child: Hero(
-                                    tag: heroTag,
-                                    // Material ensures text styling behaves during flight
-                                    child: Material(
-                                      type: MaterialType.transparency,
-                                      child: CardShell(
-                                        child: BuildCardContent(
-                                          item: first,
-                                          count: entryItems.length,
-                                          groupItems: entryItems,
+                            return SpringButton(
+                              SpringButtonType.withOpacity,
+                              onTap: () async {
+                                HapticFeedback.mediumImpact();
+                                if (isGroup) {
+                                  // ignore: use_build_context_synchronously
+                                  // await _showGroupSheet(context, entryItems);
+                                  context.push(GroupFoodDialog.name,
+                                      extra: entryItems);
+                                } else {
+                                  // ignore: use_build_context_synchronously
+                                  context.push('/nutrition/detail',
+                                      extra: first);
+                                }
+                              },
+                              uiChild: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                                child: SizedBox(
+                                  height: 84 + (isGroup ? 16.0 : 10),
+                                  child: Stack(
+                                    children: [
+                                      if (isGroup) ...[
+                                        Positioned(
+                                          left: 6,
+                                          right: 14,
+                                          bottom: 0,
+                                          top: 6,
+                                          child: CardShell(),
+                                        ),
+                                        if (entryItems.length > 2)
+                                          Positioned(
+                                            left: 12,
+                                            right: 10,
+                                            bottom: 0,
+                                            top: 12,
+                                            child: CardShell(),
+                                          ),
+                                      ],
+                                      Positioned(
+                                        left: 0,
+                                        right: isGroup ? 6 : 0,
+                                        top: 0,
+                                        bottom: isGroup ? 6 : 0,
+                                        // Wrap the main interactive card shell with Hero
+                                        child: Hero(
+                                          tag: heroTag,
+                                          // Material ensures text styling behaves during flight
+                                          child: Material(
+                                            type: MaterialType.transparency,
+                                            child: CardShell(
+                                              child: BuildCardContent(
+                                                item: first,
+                                                count: entryItems.length,
+                                                groupItems: entryItems,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
+                          childCount: groupedItems.length,
                         ),
-                      );
-                    },
-                    childCount: groupedItems.length,
-                  ),
-                ),
+                      ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
-              ],
-            ),
-          );
+                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                    ],
+                  ),
+                );
+              });
         },
       ),
     );

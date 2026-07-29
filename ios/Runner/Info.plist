@@ -89,6 +89,8 @@
 	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We need your location to track your activity</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan food photos</string>
 	
 </dict>
 </plist>

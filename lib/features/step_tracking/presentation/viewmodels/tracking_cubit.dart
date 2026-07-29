@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as dev;
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'dart:io';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/location_point.dart';
@@ -13,23 +14,6 @@ import '../../domain/repositories/tracking_repository.dart';
 import 'tracking_state.dart';
 
 
-@pragma('vm:entry-point')
-void _foregroundTaskCallback() {
-  FlutterForegroundTask.setTaskHandler(_TrackingTaskHandler());
-}
-
-class _TrackingTaskHandler extends TaskHandler {
-  @override
-  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {}
-
-  @override
-  void onRepeatEvent(DateTime timestamp) {}
-  
-  @override
-  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
-  }
-
-}
 class TrackingCubit extends Cubit<TrackingState> {
   final GetLocationStream getLocationStream;
   final CalculateDistance calculateDistance;
@@ -61,8 +45,6 @@ class TrackingCubit extends Cubit<TrackingState> {
       return;
     }
 
-    await _startForegroundService();
-
     _activityId = const Uuid().v4();
     _points.clear();
     _distance = 0;
@@ -79,14 +61,6 @@ class TrackingCubit extends Cubit<TrackingState> {
   });
 }
 
-Future<void> _startForegroundService() async {
-  FlutterForegroundTask.initCommunicationPort();
-  await FlutterForegroundTask.startService(
-    notificationTitle: 'aHealth is tracking your activity',
-    notificationText: 'Recording your route in the background',
-    callback: _foregroundTaskCallback,
-  );
-}
 
 
 
@@ -99,6 +73,12 @@ Future<bool> _ensureLocationPermission() async {
   if (permission == LocationPermission.whileInUse) {
     permission = await Geolocator.requestPermission(); // prompts for Always on supported OS versions
   }
+    if (Platform.isAndroid) {
+    final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
+    if (!batteryStatus.isGranted) {
+      await Permission.ignoreBatteryOptimizations.request();
+    }
+  }
   return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
 }
 
@@ -107,7 +87,7 @@ Future<List<Activity>> getHistory() => repository.getActivities();
   void _onPosition(Position pos) {
     if (pos.accuracy > _accuracyThreshold) return;
 
-    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude}");
+    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}");
     
 
     final point = LocationPoint(
@@ -157,7 +137,6 @@ Future<List<Activity>> getHistory() => repository.getActivities();
   Future<void> stop({required ActivityType type, required double calories}) async {
     _sub?.cancel();
     _timer?.cancel();
-    await FlutterForegroundTask.stopService();
 
     final remainder = _points.length % _batchSize;
     if (remainder != 0) {

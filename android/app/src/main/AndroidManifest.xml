@@ -69,6 +69,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
     <!-- Check whether Health Connect is installed or not -->
     <queries>
@@ -80,7 +82,9 @@
     <application
         android:label="DOCTO"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="${mapsApiKey}"/>
         <activity
@@ -112,9 +116,9 @@
 
         <!-- Warning: Do not change service name. -->
         <service
-            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-            android:foregroundServiceType="location"
-            android:exported="false"/>
+            android:name="com.baseflow.geolocator.GeolocatorLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <activity-alias
             android:name="ViewPermissionUsageActivity"
