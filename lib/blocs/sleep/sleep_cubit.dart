@@ -121,4 +121,58 @@ class SleepCubit extends Cubit<SleepState> {
     emit(SleepFailedState(errorMessage: e.toString()));
   }
 }
+
 }
+
+
+int calculateSleepScore(List<SleepModel> data) {
+  if (data.isEmpty) return 0;
+
+  if (Platform.isAndroid) {
+    final minutes = data[0].value?.numericValue ?? 0;
+    return _durationScore(minutes / 60).round();
+  }
+
+  double asleep = 0, deep = 0, rem = 0, awake = 0;
+  for (final d in data) {
+    final mins = (d.value?.numericValue ?? 0).toDouble();
+    switch (d.type) {
+      case 'SLEEP_ASLEEP':
+      case 'SLEEP_LIGHT':
+        asleep += mins;
+        break;
+      case 'SLEEP_DEEP':
+        deep += mins;
+        asleep += mins;
+        break;
+      case 'SLEEP_REM':
+        rem += mins;
+        asleep += mins;
+        break;
+      case 'SLEEP_AWAKE':
+        awake += mins;
+        break;
+    }
+  }
+
+  if (asleep <= 0) return 0;
+
+  final durationScore = _durationScore(asleep / 60);
+  final efficiencyScore = (100 - (awake / (asleep + awake) * 100)).clamp(0, 100);
+  final deepPct = deep / asleep;
+  final remPct = rem / asleep;
+  final stageScore = (100 -
+          (deepPct - 0.15).abs() * 200 -
+          (remPct - 0.20).abs() * 200)
+      .clamp(0, 100);
+
+  return (durationScore * 0.5 + efficiencyScore * 0.25 + stageScore * 0.25).round();
+}
+
+double _durationScore(double hours) {
+  if (hours >= 7 && hours <= 9) return 100;
+  if (hours < 7) return (hours / 7 * 100).clamp(0, 100);
+  return (100 - (hours - 9) * 15).clamp(0, 100);
+}
+
+

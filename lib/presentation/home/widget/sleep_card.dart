@@ -1,3 +1,6 @@
+import 'dart:developer' as dev;
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +15,42 @@ const _kSurfaceContainerLowest = Color(0xFFFFFFFF);
 
 class SleepCard extends StatelessWidget {
   const SleepCard({super.key});
+
+  DateTime? _bedTime(SleepState state) =>
+      state is SleepSuccessState && state.sleepModel.isNotEmpty
+          ? DateTime.tryParse(state.sleepModel[0].dateFrom ?? '')
+          : null;
+
+  DateTime? _wakeTime(SleepState state) =>
+      state is SleepSuccessState && state.sleepModel.isNotEmpty
+          ? DateTime.tryParse(state.sleepModel[0].dateTo ?? '')
+          : null;
+
+  String _formatClock(DateTime? dt) {
+    if (dt == null) return '--';
+    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $period';
+  }
+
+  String _remLabel(SleepState state) {
+  if (state is! SleepSuccessState || state.sleepModel.isEmpty) return '--';
+
+  if (Platform.isAndroid) {
+    final mins = state.sleepModel[0].value?.numericValue ?? 0;
+    final h = mins ~/ 60;
+    final m = (mins % 60).round();
+    return 'Time Asleep: ${h}h ${m}m';
+  }
+
+  final remEntry = state.sleepModel.where((m) => m.type == 'SLEEP_REM');
+  if (remEntry.isEmpty) return 'REM Sleep: --';
+  final mins = remEntry.fold<double>(0, (sum, m) => sum + (m.value?.numericValue ?? 0));
+  final h = mins ~/ 60;
+  final m = (mins % 60).round();
+  return 'REM Sleep: ${h}h ${m}m';
+}
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +88,9 @@ class SleepCard extends StatelessWidget {
               duration =
                   '${hours.floor()}h ${((hours - hours.floor()) * 60).round()}m';
             }
+            final score = state is SleepSuccessState
+                ? calculateSleepScore(state.sleepModel)
+                : 0;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +137,6 @@ class SleepCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // TODO: real sleep score isn't in SleepState — wire up if available
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
@@ -105,8 +146,8 @@ class SleepCard extends StatelessWidget {
                         border:
                             Border.all(color: _kPrimary.withValues(alpha: 0.2)),
                       ),
-                      child: const Text(
-                        'SCORE: 84',
+                      child: Text(
+                        'SCORE: $score',
                         style: TextStyle(
                             fontSize: 11, fontWeight: FontWeight.w700),
                       ),
@@ -141,16 +182,15 @@ class SleepCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('11:30 PM',
+                    Text(_formatClock(_bedTime(state)),
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: _kOnSurfaceVariant.withValues(alpha: 0.6))),
-                    // TODO: real REM duration isn't in SleepState — wire up if available
-                    const Text('REM Sleep: 1h 45m',
-                        style: TextStyle(
+                    Text(_remLabel(state),
+                        style: const TextStyle(
                             fontSize: 11, fontWeight: FontWeight.w700)),
-                    Text('06:50 AM',
+                    Text(_formatClock(_wakeTime(state)),
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
