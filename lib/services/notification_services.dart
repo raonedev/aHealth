@@ -11,6 +11,7 @@ import 'dart:math';
 @pragma('vm:entry-point')
 void notificationBackgroundHandler(NotificationResponse response) async {
   if (response.actionId == 'log_water_glass') {
+    WidgetsFlutterBinding.ensureInitialized();
     await Health().configure();
 
     final now = DateTime.now();
@@ -23,7 +24,8 @@ void notificationBackgroundHandler(NotificationResponse response) async {
       endTime: now,
     );
 
-    bool stepsPermission = await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+    bool stepsPermission =
+        await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
     if (!stepsPermission) {
       return;
     }
@@ -41,14 +43,13 @@ void notificationBackgroundHandler(NotificationResponse response) async {
 
     final midnight = DateTime(now.year, now.month, now.day);
     int? steps;
+    String? errorMsg;
     if (stepsPermission) {
-      final data = await Health().getHealthDataFromTypes(
-        types: [HealthDataType.STEPS],
-        startTime: midnight,
-        endTime: now,
-      );
-      steps = data.fold<int>(
-          0, (sum, e) => sum + (e.value as NumericHealthValue).numericValue.toInt());
+      try {
+        steps = await Health().getTotalStepsInInterval(midnight, now);
+      } catch (e) {
+        errorMsg = e.toString();
+      }
     }
 
     final randomMinutes = 5 + Random().nextInt(6); // 5,6,7,8,9,10
@@ -60,7 +61,7 @@ void notificationBackgroundHandler(NotificationResponse response) async {
       title: '🚶 Steps Update',
       body: steps != null
           ? 'You\'ve taken $steps steps so far today!'
-          : 'Couldn\'t read your step count right now.',
+          : errorMsg ?? "unknown",
       scheduledDate: scheduled,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -77,6 +78,7 @@ void notificationBackgroundHandler(NotificationResponse response) async {
     );
   }
 }
+
 class HealthNotificationService {
   static final HealthNotificationService _instance =
       HealthNotificationService._internal();
