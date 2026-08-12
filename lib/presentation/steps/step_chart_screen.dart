@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../blocs/charts/step_chart/step_chart_cubit.dart';
+import '../../features/step_tracking/presentation/views/tracking_view.dart';
 import '../common/widgets/custom_segment.dart';
 import 'monthly_tab.dart';
 import 'weekly_tab.dart';
@@ -80,6 +83,22 @@ class _StepChartScreenState extends State<StepChartScreen> {
           }
           return const SizedBox();
         },
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: kToolbarHeight+20),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: () {
+            context.push(StepsTrackingView.name);
+          },
+          child: const HugeIcon(
+            icon: HugeIcons.strokeRoundedWorkoutRun,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

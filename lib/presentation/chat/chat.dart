@@ -20,6 +20,8 @@ const Color _textSecondary = Color(0xFF757575);
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key});
 
+  static const String chats = "/chat";
+
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
 }
@@ -181,10 +183,10 @@ class _ChatWidgetState extends State<ChatWidget> {
               },
             ),
           ),
-          _buildInputBar(),
-          const SizedBox(height: kToolbarHeight + 20,)
+          
         ],
       ),
+      bottomSheet: _buildInputBar(),
     );
   }
 

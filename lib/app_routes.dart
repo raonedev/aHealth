@@ -166,9 +166,9 @@ class AppRoutes {
             ],
           ),
           GoRoute(
-    path: '/shell/progress',
-    pageBuilder: (c, s) =>
-        const NoTransitionPage(child: ProgressPhotosScreen())),
+              path: '/shell/progress',
+              pageBuilder: (c, s) =>
+                  const NoTransitionPage(child: ProgressPhotosScreen())),
         ],
       ),
       GoRoute(
@@ -215,6 +215,11 @@ class AppRoutes {
         path: StepsTrackingView.name,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepsTrackingView(),
+      ),
+      GoRoute(
+        path: ChatWidget.chats,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ChatWidget(),
       ),
     ],
   );

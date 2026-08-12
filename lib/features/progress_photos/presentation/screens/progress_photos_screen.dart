@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:screenshot/screenshot.dart';
 import '../bloc/progress_bloc.dart';
 import '../bloc/progress_event.dart';
@@ -75,6 +76,7 @@ class _ProgressPhotosScreenState extends State<ProgressPhotosScreen> {
           final entries = state.entries;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            physics: BouncingScrollPhysics(),
             children: [
               _card(child: WeightChart(entries: entries)),
               const SizedBox(height: 16),
@@ -111,7 +113,7 @@ class _ProgressPhotosScreenState extends State<ProgressPhotosScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit,
+                            icon: const HugeIcon(icon:HugeIcons.strokeRoundedPencilEdit02,
                                 color: Color(0xFF3B6D11)),
                             onPressed: () => Navigator.push(
                               context,
@@ -121,7 +123,7 @@ class _ProgressPhotosScreenState extends State<ProgressPhotosScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete,
+                            icon: const HugeIcon(icon:HugeIcons.strokeRoundedDelete02,
                                 color: Colors.redAccent),
                             onPressed: () => context
                                 .read<ProgressBloc>()
