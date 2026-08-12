@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
+import 'features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
 import 'helper/helper_func.dart';
 import 'helper/model_router.dart';
@@ -165,9 +166,9 @@ class AppRoutes {
             ],
           ),
           GoRoute(
-              path: '/shell/chat',
+              path: '/shell/progress',
               pageBuilder: (c, s) =>
-                  const NoTransitionPage(child: ChatWidget())),
+                  const NoTransitionPage(child: ProgressPhotosScreen())),
         ],
       ),
       GoRoute(
@@ -214,6 +215,11 @@ class AppRoutes {
         path: StepsTrackingView.name,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepsTrackingView(),
+      ),
+      GoRoute(
+        path: ChatWidget.chats,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ChatWidget(),
       ),
     ],
   );

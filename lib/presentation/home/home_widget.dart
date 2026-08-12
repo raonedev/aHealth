@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:ahealth/presentation/chat/chat.dart';
 import 'package:ahealth/presentation/home/widget/height_card.dart';
 import 'package:ahealth/presentation/home/widget/hydration_card.dart';
 import 'package:ahealth/presentation/home/widget/sleep_card.dart';
@@ -14,7 +15,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
-import '../../features/step_tracking/presentation/views/tracking_view.dart';
 import 'widget/nutrition_card.dart';
 import 'widget/step_card.dart';
 
@@ -99,10 +99,11 @@ class _HomeWidgetState extends State<HomeWidget> {
               borderRadius: BorderRadius.circular(16),
             ),
             onPressed: () {
-              context.push(StepsTrackingView.name);
+              // context.push(StepsTrackingView.name);
+              context.push(ChatWidget.chats);
             },
             child: const HugeIcon(
-              icon: HugeIcons.strokeRoundedWorkoutRun,
+              icon: HugeIcons.strokeRoundedAiChat02,
               color: Colors.white,
             ),
           ),

@@ -15,6 +15,8 @@ import 'blocs/charts/height_chart/height_chart_cubit.dart';
 import 'blocs/fooddetail/food_detail_cubit.dart';
 import 'blocs/nutrition/nutrition_cubit.dart';
 import 'core/di/service_locator.dart';
+import 'features/progress_photos/data/repositories/progress_repository.dart';
+import 'features/progress_photos/presentation/bloc/progress_bloc.dart';
 import 'features/step_tracking/presentation/viewmodels/tracking_cubit.dart';
 import 'models/chat/chat_message_model.dart';
 import 'models/chat/chat_session_model.dart';
@@ -141,6 +143,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => FoodScanCubit()),
 
         BlocProvider(create: (_) => sl<TrackingCubit>()),
+        BlocProvider(create: (_) => ProgressBloc(ProgressRepository())),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
