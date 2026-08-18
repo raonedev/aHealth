@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
+import 'package:ahealth/presentation/nutririon/calorie_chart_screen.dart';
 import 'package:ahealth/presentation/nutririon/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/home/home_widget.dart';
@@ -226,6 +227,11 @@ class AppRoutes {
         path: NutrientChartScreen.pageName,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NutrientChartScreen(),
+      ),
+      GoRoute(
+        path: CalorieChartScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CalorieChartScreen(),
       ),
     ],
   );

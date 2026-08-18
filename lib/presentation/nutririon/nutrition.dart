@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:ahealth/presentation/nutririon/calorie_chart_screen.dart';
 import 'package:ahealth/presentation/nutririon/nutrient_chart_screen.dart';
 import 'package:ahealth/presentation/nutririon/widgets/build_card_content.dart';
 import 'package:ahealth/presentation/nutririon/widgets/card_shell.dart';
@@ -232,50 +233,54 @@ class _NutritionState extends State<Nutrition> {
                               const SizedBox(height: 20),
 
                               // Calories Card
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: _card,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.04),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    )
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
-                                          style: const TextStyle(
-                                              color: _textPrimary,
-                                              fontSize: 40,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const Text('Calories left',
-                                            style: TextStyle(
-                                                color: _textSecondary,
-                                                fontSize: 14)),
-                                      ],
-                                    ),
-                                    const Spacer(),
-                                    CircularProgress(
-                                      value: (totalCalories / targetCalories)
-                                          .clamp(0.0, 1.0),
-                                      color: Colors.orange,
-                                      size: 80,
-                                      icon: Icons.local_fire_department,
-                                      iconColor: Colors.orange,
-                                    ),
-                                  ],
+                              SpringButton(
+                                SpringButtonType.onlyScale,
+                                onTap: () => context.push(CalorieChartScreen.pageName),
+                                uiChild: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: _card,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.04),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
+                                            style: const TextStyle(
+                                                color: _textPrimary,
+                                                fontSize: 40,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const Text('Calories left',
+                                              style: TextStyle(
+                                                  color: _textSecondary,
+                                                  fontSize: 14)),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      CircularProgress(
+                                        value: (totalCalories / targetCalories)
+                                            .clamp(0.0, 1.0),
+                                        color: Colors.orange,
+                                        size: 80,
+                                        icon: Icons.local_fire_department,
+                                        iconColor: Colors.orange,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 12),
