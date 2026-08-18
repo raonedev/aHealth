@@ -27,6 +27,7 @@ import 'helper/helper_func.dart';
 import 'helper/model_router.dart';
 import 'models/nutrition_model.dart';
 import 'presentation/nutririon/nitritiondetailscreen.dart';
+import 'presentation/nutririon/nutrient_chart_screen.dart';
 import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
@@ -220,6 +221,11 @@ class AppRoutes {
         path: ChatWidget.chats,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ChatWidget(),
+      ),
+      GoRoute(
+        path: NutrientChartScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NutrientChartScreen(),
       ),
     ],
   );

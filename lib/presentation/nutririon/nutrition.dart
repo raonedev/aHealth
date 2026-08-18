@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:ahealth/presentation/nutririon/nutrient_chart_screen.dart';
 import 'package:ahealth/presentation/nutririon/widgets/build_card_content.dart';
 import 'package:ahealth/presentation/nutririon/widgets/card_shell.dart';
 import 'package:flutter/cupertino.dart';
@@ -284,6 +285,8 @@ class _NutritionState extends State<Nutrition> {
                                 children: [
                                   Expanded(
                                     child: MacroCard(
+
+                                      onTap: () => context.push(NutrientChartScreen.pageName),
                                       label: totalProtein > targetProtein
                                           ? 'Protein over'
                                           : 'Protein',
@@ -300,6 +303,8 @@ class _NutritionState extends State<Nutrition> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: MacroCard(
+
+                                      onTap: () => context.push(NutrientChartScreen.pageName),
                                       label: 'Carbs left',
                                       value: (targetCarbs - totalCarbs)
                                           .clamp(0, targetCarbs),
@@ -313,6 +318,7 @@ class _NutritionState extends State<Nutrition> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: MacroCard(
+                                      onTap: () => context.push(NutrientChartScreen.pageName),
                                       label: 'Fats left',
                                       value: (targetFat - totalFat)
                                           .clamp(0, targetFat),

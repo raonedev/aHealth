@@ -47,6 +47,9 @@ void notificationBackgroundHandler(NotificationResponse response) async {
     if (stepsPermission) {
       try {
         steps = await Health().getTotalStepsInInterval(midnight, now);
+        if (steps == null) {
+          errorMsg = 'null steps returned';
+        }
       } catch (e) {
         errorMsg = e.toString();
       }

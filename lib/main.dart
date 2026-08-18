@@ -3,6 +3,7 @@ import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
 import 'package:ahealth/services/notification_services.dart';
 import 'package:ahealth/services/nutrition_service.dart';
+import 'blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'blocs/charts/water_chart/water_chart_cubit.dart';
@@ -141,6 +142,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => ChatCubit()),
         BlocProvider(create: (_) => FoodScanCubit()),
+        BlocProvider(create: (_) => NutrientChartCubit()),
 
         BlocProvider(create: (_) => sl<TrackingCubit>()),
         BlocProvider(create: (_) => ProgressBloc(ProgressRepository())),
