@@ -1,5 +1,8 @@
 import 'dart:developer' as dev;
 
+import '../../core/di/service_locator.dart';
+import '../../features/streak/domain/entities/streak_entity.dart';
+import '../../features/streak/presentation/cubit/streak_cubit.dart';
 import '../../models/weightmodel.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -59,6 +62,7 @@ class WeightCubit extends Cubit<WeightState> {
         endTime: now);
     if(success){
       getWeightData();
+      sl<StreakCubit>().logActivityAndRefresh(StreakActivityType.weight);
     }else{
       emit(const WeightFailed(errorMessage: "Failed to add weight"));
     }
