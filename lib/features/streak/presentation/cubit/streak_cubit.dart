@@ -8,7 +8,9 @@ class StreakCubit extends Cubit<StreakState> {
   final GetStreakUsecase getStreakUsecase;
   final LogActivityUsecase logActivityUsecase;
 
-  StreakCubit({required this.getStreakUsecase, required this.logActivityUsecase}) : super(StreakInitial());
+  StreakCubit(
+      {required this.getStreakUsecase, required this.logActivityUsecase})
+      : super(StreakInitial());
 
   Future<void> loadStreak() async {
     emit(StreakLoading());
@@ -20,10 +22,12 @@ class StreakCubit extends Cubit<StreakState> {
     }
   }
 
-  Future<void> logActivityAndRefresh(StreakActivityType type) async {
+  Future<void> logActivityAndRefresh(StreakActivityType type,
+      {DateTime? date}) async {
     try {
-      await logActivityUsecase(type);
+      final isFirstToday = await logActivityUsecase(type, date: date);
       await loadStreak();
+      if (isFirstToday) emit(StreakCelebration((state as StreakLoaded).streak));
     } catch (e) {
       emit(StreakError(e.toString()));
     }

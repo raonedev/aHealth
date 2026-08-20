@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 
+import '../../blocs/weight/weight_cubit.dart';
 import '../../features/step_tracking/data/datasources/tracking_local_datasource.dart';
 import '../../features/step_tracking/data/repositories/tracking_repository_impl.dart';
 import '../../features/step_tracking/domain/repositories/tracking_repository.dart';
@@ -18,6 +19,7 @@ final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
 
+  sl.registerLazySingleton(() => WeightCubit());
   final localDataSource = TrackingLocalDataSourceImpl();
   final repository = TrackingRepositoryImpl(localDataSource);
   sl.registerLazySingleton<TrackingRepository>(() => repository);
@@ -31,12 +33,12 @@ Future<void> setupLocator() async {
         repository: sl(),
       ));
   final streakLocalDataSource = StreakLocalDataSourceImpl();
-final streakRepository = StreakRepositoryImpl(streakLocalDataSource);
-sl.registerLazySingleton<StreakRepository>(() => streakRepository);
-sl.registerLazySingleton(() => GetStreakUsecase(sl()));
-sl.registerLazySingleton(() => LogActivityUsecase(sl()));
-sl.registerLazySingleton(() => StreakCubit(
-      getStreakUsecase: sl(),
-      logActivityUsecase: sl(),
-    ));
+  final streakRepository = StreakRepositoryImpl(streakLocalDataSource);
+  sl.registerLazySingleton<StreakRepository>(() => streakRepository);
+  sl.registerLazySingleton(() => GetStreakUsecase(sl()));
+  sl.registerLazySingleton(() => LogActivityUsecase(sl()));
+  sl.registerLazySingleton(() => StreakCubit(
+        getStreakUsecase: sl(),
+        logActivityUsecase: sl(),
+      ));
 }

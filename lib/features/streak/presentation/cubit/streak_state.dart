@@ -10,6 +10,9 @@ class StreakLoaded extends StreakState {
   final StreakEntity streak;
   StreakLoaded(this.streak);
 }
+class StreakCelebration extends StreakLoaded {
+  StreakCelebration(super.streak);
+}
 
 class StreakError extends StreakState {
   final String message;

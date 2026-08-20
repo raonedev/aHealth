@@ -4,7 +4,7 @@ import '../../../../core/database/app_database.dart';
 import '../../domain/entities/streak_entity.dart';
 
 abstract class StreakLocalDataSource {
-  Future<void> markActivity(StreakActivityType type);
+  Future<bool> markActivity(StreakActivityType type, {DateTime? date});
   Future<int> calculateCurrentStreak();
   Future<int> calculateLongestStreak();
 }
@@ -12,18 +12,21 @@ abstract class StreakLocalDataSource {
 class StreakLocalDataSourceImpl implements StreakLocalDataSource {
   Future<Database> get db => AppDatabase.instance.database;
 
-  String _today() => DateFormat('yyyy-MM-dd').format(DateTime.now());
-
   @override
-  Future<void> markActivity(StreakActivityType type) async {
+  Future<bool> markActivity(StreakActivityType type, {DateTime? date}) async {
     final database = await db;
-    final today = _today();
-    final existing = await database.query('streak_log', where: 'date = ?', whereArgs: [today]);
-    if (existing.isEmpty) {
-      await database.insert('streak_log', {'date': today, '${type.name}_logged': 1});
+    final targetDate = DateFormat('yyyy-MM-dd').format(date ?? DateTime.now());
+    final existing = await database
+        .query('streak_log', where: 'date = ?', whereArgs: [targetDate]);
+    final isFirstToday = existing.isEmpty;
+    if (isFirstToday) {
+      await database
+          .insert('streak_log', {'date': targetDate, '${type.name}_logged': 1});
     } else {
-      await database.update('streak_log', {'${type.name}_logged': 1}, where: 'date = ?', whereArgs: [today]);
+      await database.update('streak_log', {'${type.name}_logged': 1},
+          where: 'date = ?', whereArgs: [targetDate]);
     }
+    return isFirstToday;
   }
 
   @override
@@ -34,7 +37,9 @@ class StreakLocalDataSourceImpl implements StreakLocalDataSource {
     DateTime checkDate = DateTime.now();
     for (final row in rows) {
       final expected = DateFormat('yyyy-MM-dd').format(checkDate);
-      final isComplete = row['water_logged'] == 1 || row['food_logged'] == 1 || row['weight_logged'] == 1;
+      final isComplete = row['water_logged'] == 1 ||
+          row['food_logged'] == 1 ||
+          row['weight_logged'] == 1;
       if (row['date'] == expected && isComplete) {
         streak++;
         checkDate = checkDate.subtract(const Duration(days: 1));
@@ -52,7 +57,9 @@ class StreakLocalDataSourceImpl implements StreakLocalDataSource {
     int longest = 0, current = 0;
     DateTime? prevDate;
     for (final row in rows) {
-      final isComplete = row['water_logged'] == 1 || row['food_logged'] == 1 || row['weight_logged'] == 1;
+      final isComplete = row['water_logged'] == 1 ||
+          row['food_logged'] == 1 ||
+          row['weight_logged'] == 1;
       final date = DateFormat('yyyy-MM-dd').parse(row['date'] as String);
       if (!isComplete) {
         current = 0;

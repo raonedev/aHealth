@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../blocs/weight/weight_cubit.dart';
-import '../../../helper/helper_func.dart';
+
 const _kPrimary = Color(0xFF0D631B);
 const _kOnSurfaceVariant = Color(0xFF40493D);
 const _kSurfaceContainerLowest = Color(0xFFFFFFFF);
@@ -63,7 +65,12 @@ class WeightCard extends StatelessWidget {
           }
 
           return GestureDetector(
-            onTap: () => showWeightDialog(context),
+            onTap: () async {
+              HapticFeedback.mediumImpact();
+              await Future.delayed(Durations.medium1);
+              if (!context.mounted) return;
+              context.go('/shell/progress');
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

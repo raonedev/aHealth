@@ -3,6 +3,9 @@ import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
 
+import '../../core/di/service_locator.dart';
+import '../../features/streak/domain/entities/streak_entity.dart';
+import '../../features/streak/presentation/cubit/streak_cubit.dart';
 import '../../models/nutrition_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -98,6 +101,7 @@ class NutritionCubit extends Cubit<NutritionState> {
         recordingMethod: RecordingMethod.manual);
     if (success) {
       getNutritionData();
+      sl<StreakCubit>().logActivityAndRefresh(StreakActivityType.food);
     } else {
       emit(NutritionFailed(errorMessage: "failed to add Nutririons"));
     }

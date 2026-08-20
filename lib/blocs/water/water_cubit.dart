@@ -6,6 +6,10 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
 
+import '../../core/di/service_locator.dart';
+import '../../features/streak/domain/entities/streak_entity.dart';
+import '../../features/streak/presentation/cubit/streak_cubit.dart';
+
 part 'water_state.dart';
 
 class WaterCubit extends Cubit<WaterState> {
@@ -65,6 +69,8 @@ class WaterCubit extends Cubit<WaterState> {
     );
     if (success) {
       getWaterData();
+
+    sl<StreakCubit>().logActivityAndRefresh(StreakActivityType.water);
     } else {
       emit(const WaterFailed(errorMessage: "Failed to add water"));
     }
