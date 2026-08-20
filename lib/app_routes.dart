@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/initialized/init_app_cubit.dart';
 import 'features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
+import 'features/streak/presentation/screens/streak_screen.dart';
 import 'helper/helper_func.dart';
 import 'helper/model_router.dart';
 import 'models/nutrition_model.dart';
@@ -232,6 +233,11 @@ class AppRoutes {
         path: CalorieChartScreen.pageName,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const CalorieChartScreen(),
+      ),
+      GoRoute(
+        path: StreakScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const StreakScreen(),
       ),
     ],
   );

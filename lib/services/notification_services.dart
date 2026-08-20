@@ -13,6 +13,7 @@ void notificationBackgroundHandler(NotificationResponse response) async {
   if (response.actionId == 'log_water_glass') {
     WidgetsFlutterBinding.ensureInitialized();
     await Health().configure();
+    await Future.delayed(const Duration(milliseconds: 500));
 
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(seconds: 30));
