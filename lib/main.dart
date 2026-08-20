@@ -113,9 +113,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => WaterCubit(),
         ),
-        BlocProvider(
-          create: (context) => WeightCubit(),
-        ),
+        BlocProvider(create: (_) => sl<WeightCubit>()),
         BlocProvider(
           create: (context) => HeightCubit(),
         ),
@@ -148,7 +146,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => NutrientChartCubit()),
         BlocProvider(create: (_) => CalorieChartCubit()),
         BlocProvider(create: (_) => sl<TrackingCubit>()),
-        BlocProvider(create: (_) => sl<StreakCubit>()),
+        BlocProvider(
+          create: (context) => sl<StreakCubit>()..loadStreak(),
+          lazy: false,
+        ),
         BlocProvider(create: (_) => ProgressBloc(ProgressRepository())),
       ],
       child: MaterialApp.router(

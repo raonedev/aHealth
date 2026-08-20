@@ -50,6 +50,8 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         weight: event.weight,
         newPickedImage: event.newImage,
       );
+      await sl<WeightCubit>()
+        .addWeight(wrightInKg: event.weight, date: event.date);
       final entries = await repository.getEntries();
       emit(state.copyWith(status: ProgressStatus.loaded, entries: entries));
     } catch (e) {
