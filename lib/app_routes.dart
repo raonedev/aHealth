@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/chat/chat.dart';
+import 'package:ahealth/presentation/nutririon/calorie_chart_screen.dart';
 import 'package:ahealth/presentation/nutririon/fooddetailscreen.dart';
 import 'package:ahealth/presentation/home.dart';
 import 'package:ahealth/presentation/home/home_widget.dart';
@@ -23,10 +24,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/initialized/init_app_cubit.dart';
 import 'features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
+import 'features/streak/presentation/screens/streak_screen.dart';
 import 'helper/helper_func.dart';
 import 'helper/model_router.dart';
 import 'models/nutrition_model.dart';
 import 'presentation/nutririon/nitritiondetailscreen.dart';
+import 'presentation/nutririon/nutrient_chart_screen.dart';
 import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
@@ -220,6 +223,21 @@ class AppRoutes {
         path: ChatWidget.chats,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ChatWidget(),
+      ),
+      GoRoute(
+        path: NutrientChartScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NutrientChartScreen(),
+      ),
+      GoRoute(
+        path: CalorieChartScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CalorieChartScreen(),
+      ),
+      GoRoute(
+        path: StreakScreen.pageName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const StreakScreen(),
       ),
     ],
   );

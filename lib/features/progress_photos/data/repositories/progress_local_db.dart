@@ -1,36 +1,15 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../../../../core/database/app_database.dart';
 import '../../domain/entities/progress_entry.dart';
 
 class ProgressLocalDb {
   static final ProgressLocalDb instance = ProgressLocalDb._internal();
   ProgressLocalDb._internal();
 
-  Database? _db;
 
-  Future<Database> get database async {
-    _db ??= await _initDb();
-    return _db!;
-  }
+  Future<Database> get database => AppDatabase.instance.database;
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'progress_photos.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE progress_entries (
-            id TEXT PRIMARY KEY,
-            date TEXT NOT NULL,
-            weight REAL NOT NULL,
-            photoPath TEXT NOT NULL
-          )
-        ''');
-      },
-    );
-  }
 
   Future<void> insertEntry(ProgressEntry entry) async {
     final db = await database;

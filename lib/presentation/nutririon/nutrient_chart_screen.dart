@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
+import '../../models/nutrition_model.dart';
+import '../common/widgets/custom_segment.dart';
+import '../../blocs/nutrition/nutrition_cubit.dart';
+import 'widgets/build_card_content.dart';
+import 'widgets/card_shell.dart';
+import 'widgets/nutrient_line_chart.dart';
+import 'widgets/nutrient_point.dart';
+
+class _NutrientConf {
+  final String label;
+  final Color color;
+  final double Function(NutritionModel) getter;
+  const _NutrientConf(this.label, this.color, this.getter);
+}
+
+const _confs = [
+  _NutrientConf('Protein', Color(0xFFE05252), _protein),
+  _NutrientConf('Carbs', Color(0xFFE0A952), _carbs),
+  _NutrientConf('Fat', Color(0xFF5299E0), _fat),
+];
+
+double _protein(NutritionModel m) => m.value?.protein ?? 0;
+double _carbs(NutritionModel m) => m.value?.carbs ?? 0;
+double _fat(NutritionModel m) => m.value?.fat ?? 0;
+
+class NutrientChartScreen extends StatefulWidget {
+  const NutrientChartScreen({super.key});
+  static String pageName="/nutrition-chart";
+
+  @override
+  State<NutrientChartScreen> createState() => _NutrientChartScreenState();
+}
+
+class _NutrientChartScreenState extends State<NutrientChartScreen> {
+  int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<NutrientChartCubit>().getWeekData();
+    context.read<NutritionCubit>().getNutritionData();
+  }
+
+  List<NutrientPoint> _points(List<double> weekData, DateTime weekStart) {
+    return List.generate(weekData.length,
+        (i) => NutrientPoint(weekStart.add(Duration(days: i)), weekData[i]));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final conf = _confs[_tab];
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text('Nutrients'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: CustomSlidingSegmentedControl(
+              currentSelection: _tab,
+              children: const ['Protein', 'Carbs', 'Fat'],
+              onValueChanged: (i) => setState(() => _tab = i),
+              thumbColor: conf.color,
+            ),
+          ),
+          Expanded(
+            child: BlocBuilder<NutrientChartCubit, NutrientChartState>(
+              builder: (context, chartState) {
+                return BlocBuilder<NutritionCubit, NutritionState>(
+                  builder: (context, nutriState) {
+                    if (chartState is NutrientChartLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (chartState is NutrientChartFailed) {
+                      return Center(child: Text(chartState.errorMessage));
+                    }
+                    if (chartState is! NutrientChartSuccess) {
+                      return const SizedBox();
+                    }
+
+                    final nutrientType = NutrientType.values[_tab];
+                    final pts = _points(
+                        chartState.weekData[nutrientType]!,
+                        chartState.weekStartDate);
+
+                    final todayItems = nutriState is NutritionSuccess
+                        ? nutriState.nutritionModel
+                            .where((m) => conf.getter(m) > 0)
+                            .toList()
+                        : <NutritionModel>[];
+
+                    return ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: ClipRRect(
+                            borderRadius: BorderRadiusGeometry.circular(8),
+                            child: NutrientLineChart(
+                              points: pts,
+                              label: '${conf.label} - last 7 days',
+                              color: conf.color,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text("Today's items",
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700])),
+                        ),
+                        const SizedBox(height: 8),
+                        if (todayItems.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 20),
+                            child: Text('No items logged today',
+                                style: TextStyle(color: Colors.grey)),
+                          )
+                        else
+                          ...todayItems.map((item) => Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    16, 0, 16, 10),
+                                child: CardShell(
+                                  child: BuildCardContent(
+                                    item: item,
+                                    count: 1,
+                                    groupItems: [item],
+                                  ),
+                                ),
+                              )),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

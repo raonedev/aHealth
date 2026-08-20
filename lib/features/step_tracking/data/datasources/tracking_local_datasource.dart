@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../../../../core/database/app_database.dart';
 import '../models/location_point_model.dart';
 import '../models/activity_model.dart';
 
@@ -11,49 +12,7 @@ abstract class TrackingLocalDataSource {
 }
 
 class TrackingLocalDataSourceImpl implements TrackingLocalDataSource {
-  Database? _db;
-
-  Future<Database> get db async {
-    _db ??= await _init();
-    return _db!;
-  }
-
-  Future<Database> _init() async {
-    final path = join(await getDatabasesPath(), 'tracking.db');
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE activities(
-            id TEXT PRIMARY KEY,
-            type INTEGER,
-            startTime INTEGER,
-            endTime INTEGER,
-            distanceMeters REAL,
-            durationSeconds INTEGER,
-            avgPaceSecPerKm REAL,
-            calories REAL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE location_points(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            activityId TEXT,
-            lat REAL,
-            lng REAL,
-            altitude REAL,
-            speed REAL,
-            accuracy REAL,
-            timestamp INTEGER,
-            FOREIGN KEY(activityId) REFERENCES activities(id)
-          )
-        ''');
-        await db.execute('CREATE INDEX idx_points_activity ON location_points(activityId)');
-      },
-    );
-  }
-
+  Future<Database> get db => AppDatabase.instance.database;
   @override
   Future<void> insertPointsBatch(List<LocationPointModel> points) async {
     final database = await db;

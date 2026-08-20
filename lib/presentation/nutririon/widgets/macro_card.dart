@@ -1,3 +1,4 @@
+import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/material.dart';
 
 import 'circular_progress.dart';
@@ -13,6 +14,7 @@ class MacroCard extends StatelessWidget {
   final Color color;
   final IconData icon;
   final double progress;
+  final void Function()? onTap;
 
   const MacroCard({super.key,
     required this.label,
@@ -20,47 +22,51 @@ class MacroCard extends StatelessWidget {
     required this.unit,
     required this.color,
     required this.icon,
-    required this.progress,
+    required this.progress, this.onTap,
   });
 
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha:  0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${value.toInt()}$unit',
-              style: const TextStyle(
-                  color: _textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(color: _textSecondary, fontSize: 11)),
-          const SizedBox(height: 10),
-          Center(
-            child: CircularProgress(
-              value: progress,
-              color: color,
-              size: 52,
-              icon: icon,
-              iconColor: color,
+    return SpringButton(
+      SpringButtonType.onlyScale,
+      onTap: onTap,
+      uiChild: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha:  0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${value.toInt()}$unit',
+                style: const TextStyle(
+                    color: _textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 2),
+            Text(label,
+                style: const TextStyle(color: _textSecondary, fontSize: 11)),
+            const SizedBox(height: 10),
+            Center(
+              child: CircularProgress(
+                value: progress,
+                color: color,
+                size: 52,
+                icon: icon,
+                iconColor: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

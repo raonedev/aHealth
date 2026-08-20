@@ -9,12 +9,16 @@ import 'package:ahealth/presentation/home/widget/hydration_card.dart';
 import 'package:ahealth/presentation/home/widget/sleep_card.dart';
 import 'package:ahealth/presentation/home/widget/weight_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
+import '../../features/streak/presentation/cubit/streak_cubit.dart';
+import '../../features/streak/presentation/cubit/streak_state.dart';
+import '../../features/streak/presentation/screens/streak_screen.dart';
 import 'widget/nutrition_card.dart';
 import 'widget/step_card.dart';
 
@@ -149,6 +153,39 @@ class _HomeWidgetState extends State<HomeWidget> {
               ],
             ),
           ],
+        ),
+        BlocBuilder<StreakCubit, StreakState>(
+          builder: (context, state) {
+            final count =
+                state is StreakLoaded ? state.streak.longestStreak : 0;
+            return SpringButton(
+              SpringButtonType.withOpacity,
+              onTap: () => context.push(StreakScreen.pageName),
+              uiChild: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _kSurfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8)),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 4),
+                    Text('$count',
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
         SpringButton(
           SpringButtonType.withOpacity,
