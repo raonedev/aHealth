@@ -22,8 +22,9 @@ class StreakCubit extends Cubit<StreakState> {
 
   Future<void> logActivityAndRefresh(StreakActivityType type) async {
     try {
-      await logActivityUsecase(type);
-      await loadStreak();
+      final isFirstToday = await logActivityUsecase(type);
+  await loadStreak();
+  if (isFirstToday) emit(StreakCelebration((state as StreakLoaded).streak));
     } catch (e) {
       emit(StreakError(e.toString()));
     }

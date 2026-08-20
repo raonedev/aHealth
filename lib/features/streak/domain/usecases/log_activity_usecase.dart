@@ -5,5 +5,5 @@ class LogActivityUsecase {
   final StreakRepository repository;
   LogActivityUsecase(this.repository);
 
-  Future<void> call(StreakActivityType type) => repository.logActivity(type);
+  Future<bool> call(StreakActivityType type) => repository.logActivity(type);
 }

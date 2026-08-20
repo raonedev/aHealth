@@ -5,6 +5,7 @@ import 'package:ahealth/features/streak/presentation/cubit/streak_cubit.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
 import 'package:ahealth/services/notification_services.dart';
 import 'package:ahealth/services/nutrition_service.dart';
+import 'package:confetti/confetti.dart';
 import 'blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
@@ -21,6 +22,7 @@ import 'core/di/service_locator.dart';
 import 'features/progress_photos/data/repositories/progress_repository.dart';
 import 'features/progress_photos/presentation/bloc/progress_bloc.dart';
 import 'features/step_tracking/presentation/viewmodels/tracking_cubit.dart';
+import 'features/streak/presentation/cubit/streak_state.dart';
 import 'models/chat/chat_message_model.dart';
 import 'models/chat/chat_session_model.dart';
 import 'models/food_search_model.dart';
@@ -44,7 +46,7 @@ import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart
 /// adb shell dumpsys jobscheduler | grep ahealth
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
   //   await FlutterForegroundTask.requestNotificationPermission();
@@ -57,7 +59,7 @@ void main() async {
   Hive.registerAdapter(ServingAdapter());
   Hive.registerAdapter(ChatMessageAdapter());
   Hive.registerAdapter(ChatSessionAdapter());
-  await setupLocator(); 
+  await setupLocator();
   await ChatHiveService.instance.openBoxes();
   // init once in main.dart
   await HealthNotificationService().init();
@@ -97,7 +99,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-
       providers: [
         BlocProvider(
           create: (context) => InitAppCubit()..initializeHealthSdk(),
@@ -146,16 +147,65 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => FoodScanCubit()),
         BlocProvider(create: (_) => NutrientChartCubit()),
         BlocProvider(create: (_) => CalorieChartCubit()),
-
         BlocProvider(create: (_) => sl<TrackingCubit>()),
-         BlocProvider(create: (_) => sl<StreakCubit>()),
+        BlocProvider(create: (_) => sl<StreakCubit>()),
         BlocProvider(create: (_) => ProgressBloc(ProgressRepository())),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'A-HealthApp',
+        builder: (context, child) {
+          return _ConfettiOverlay(child: child!);
+        },
         theme: appTheme,
         routerConfig: AppRoutes.router,
+      ),
+    );
+  }
+}
+
+class _ConfettiOverlay extends StatefulWidget {
+  final Widget child;
+  const _ConfettiOverlay({required this.child});
+
+  @override
+  State<_ConfettiOverlay> createState() => _ConfettiOverlayState();
+}
+
+class _ConfettiOverlayState extends State<_ConfettiOverlay> {
+  late final ConfettiController _controller =
+      ConfettiController(duration: const Duration(seconds: 2));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<StreakCubit, StreakState>(
+      listener: (context, state) {
+        if (state is StreakCelebration) {
+          _controller.play();
+        }
+      },
+      child: Stack(
+        children: [
+          widget.child,
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _controller,
+              blastDirection: 1.5708, // downward
+              numberOfParticles: 30,
+              maxBlastForce: 20,
+              minBlastForce: 8,
+              gravity: 0.3,
+              shouldLoop: false,
+            ),
+          ),
+        ],
       ),
     );
   }

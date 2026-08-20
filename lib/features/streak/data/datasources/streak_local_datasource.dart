@@ -4,7 +4,7 @@ import '../../../../core/database/app_database.dart';
 import '../../domain/entities/streak_entity.dart';
 
 abstract class StreakLocalDataSource {
-  Future<void> markActivity(StreakActivityType type);
+  Future<bool> markActivity(StreakActivityType type);
   Future<int> calculateCurrentStreak();
   Future<int> calculateLongestStreak();
 }
@@ -15,16 +15,18 @@ class StreakLocalDataSourceImpl implements StreakLocalDataSource {
   String _today() => DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   @override
-  Future<void> markActivity(StreakActivityType type) async {
-    final database = await db;
-    final today = _today();
-    final existing = await database.query('streak_log', where: 'date = ?', whereArgs: [today]);
-    if (existing.isEmpty) {
-      await database.insert('streak_log', {'date': today, '${type.name}_logged': 1});
-    } else {
-      await database.update('streak_log', {'${type.name}_logged': 1}, where: 'date = ?', whereArgs: [today]);
-    }
+Future<bool> markActivity(StreakActivityType type) async {
+  final database = await db;
+  final today = _today();
+  final existing = await database.query('streak_log', where: 'date = ?', whereArgs: [today]);
+  final isFirstToday = existing.isEmpty;
+  if (isFirstToday) {
+    await database.insert('streak_log', {'date': today, '${type.name}_logged': 1});
+  } else {
+    await database.update('streak_log', {'${type.name}_logged': 1}, where: 'date = ?', whereArgs: [today]);
   }
+  return isFirstToday;
+}
 
   @override
   Future<int> calculateCurrentStreak() async {
