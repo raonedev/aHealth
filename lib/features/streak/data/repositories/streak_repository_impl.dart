@@ -7,7 +7,8 @@ class StreakRepositoryImpl implements StreakRepository {
   StreakRepositoryImpl(this.localDataSource);
 
   @override
-  Future<bool> logActivity(StreakActivityType type) => localDataSource.markActivity(type);
+  Future<bool> logActivity(StreakActivityType type, {DateTime? date}) =>
+      localDataSource.markActivity(type, date: date);
 
   @override
   Future<StreakEntity> getStreak() async {

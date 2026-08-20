@@ -16,43 +16,43 @@ class WeightCubit extends Cubit<WeightState> {
   Future<void> getWeightData() async {
     emit(WeightLoading());
 
-
     try {
-
-    final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day-30);
-    bool stepsPermission = await Health().hasPermissions([HealthDataType.WEIGHT]) ?? false;
-    if (!stepsPermission) {
-      stepsPermission = await Health().requestAuthorization(
-        [HealthDataType.WEIGHT],
-        permissions: [HealthDataAccess.READ_WRITE],
-      );
-    }
+      final now = DateTime.now();
+      final midnight = DateTime(now.year, now.month, now.day - 30);
+      bool stepsPermission =
+          await Health().hasPermissions([HealthDataType.WEIGHT]) ?? false;
+      if (!stepsPermission) {
+        stepsPermission = await Health().requestAuthorization(
+          [HealthDataType.WEIGHT],
+          permissions: [HealthDataAccess.READ_WRITE],
+        );
+      }
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.WEIGHT],
         startTime: midnight,
         endTime: now,
       );
-      if(healthData.isEmpty){
+      if (healthData.isEmpty) {
         emit(const WeightFailed(errorMessage: "NULL"));
-      }else{
+      } else {
         // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-        List<WeightModel> weightModel0=[];
-        for(HealthDataPoint healthDataPoint in healthData){
-          WeightModel stepModel = WeightModel.fromJson(healthDataPoint.toJson());
+        List<WeightModel> weightModel0 = [];
+        for (HealthDataPoint healthDataPoint in healthData) {
+          WeightModel stepModel =
+              WeightModel.fromJson(healthDataPoint.toJson());
           weightModel0.add(stepModel);
         }
         emit(WeightSuccess(weightModel: weightModel0));
       }
-    } catch (e,s) {
-      dev.log("Exception WeightFailed",error: e,stackTrace: s);
+    } catch (e, s) {
+      dev.log("Exception WeightFailed", error: e, stackTrace: s);
       emit(WeightFailed(errorMessage: e.toString()));
     }
   }
 
-  Future<bool> addWeight({required double wrightInKg})async{
-    final now = DateTime.now();
+  Future<bool> addWeight({required double wrightInKg, DateTime? date}) async {
+    final now = date ?? DateTime.now();
     final earlier = now.subtract(const Duration(minutes: 1));
     bool success = true;
     success &= await Health().writeHealthData(
@@ -60,13 +60,12 @@ class WeightCubit extends Cubit<WeightState> {
         type: HealthDataType.WEIGHT,
         startTime: earlier,
         endTime: now);
-    if(success){
+    if (success) {
       getWeightData();
       sl<StreakCubit>().logActivityAndRefresh(StreakActivityType.weight);
-    }else{
+    } else {
       emit(const WeightFailed(errorMessage: "Failed to add weight"));
     }
     return success;
   }
-
 }

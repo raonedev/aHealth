@@ -169,7 +169,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 24,
                         offset: const Offset(0, 8)),
                   ],
@@ -198,7 +198,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
