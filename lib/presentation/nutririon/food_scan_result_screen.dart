@@ -38,11 +38,13 @@ class FoodScanResultScreen extends StatefulWidget {
 class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
   late List<bool> _selected;
   bool _logging = false;
+  late List<double> _quantities;
 
   @override
   void initState() {
     super.initState();
     _selected = List.filled(widget.foods.length, true);
+    _quantities = List.filled(widget.foods.length, 1.0);
   }
 
   @override
@@ -58,11 +60,17 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
     for (int i = 0; i < widget.foods.length; i++) {
       if (_selected[i]) {
         final f = widget.foods[i];
-        selectedFoods.add(f);
-        totalCalories += f.calories ?? 0;
-        totalProtein += f.protein ?? 0;
-        totalCarbs += f.carbs ?? 0;
-        totalFat += f.fat ?? 0;
+        final qty = _quantities[i];
+        selectedFoods.add(f.copyWith(
+          calories: (f.calories ?? 0) * qty,
+          protein: (f.protein ?? 0) * qty,
+          carbs: (f.carbs ?? 0) * qty,
+          fat: (f.fat ?? 0) * qty,
+        )); // see note below about passing scaled values
+        totalCalories += (f.calories ?? 0) * qty;
+        totalProtein += (f.protein ?? 0) * qty;
+        totalCarbs += (f.carbs ?? 0) * qty;
+        totalFat += (f.fat ?? 0) * qty;
         selectedCount++;
       }
     }
@@ -232,7 +240,7 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${f.name ?? 'Unknown Item'} ${f.servingDescription}",
+                                    "${f.name ?? 'Unknown Item'} (${_quantities[i]}x) ${f.servingDescription}",
                                     style: TextStyle(
                                       color: isCurrentSelected
                                           ? _textPrimary
@@ -268,6 +276,28 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                                           'F',
                                           '${f.fat?.toStringAsFixed(0)}g',
                                           _fatColor),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      _qtyButton(Icons.remove, () {
+                                        setState(() {
+                                          if (_quantities[i] > 0.5)
+                                            _quantities[i] -= 0.5;
+                                        });
+                                      }),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Text('${_quantities[i]}x',
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600)),
+                                      ),
+                                      _qtyButton(Icons.add, () {
+                                        setState(() => _quantities[i] += 0.5);
+                                      }),
                                     ],
                                   ),
                                 ],
@@ -313,15 +343,15 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                       .addMultipleNutritionData(selectedFoods: selectedFoods);
 
                   try {
-  await NutritionService.saveScanGroup(
-    uuid: widget.groupUuid,
-    imagePath: widget.imagePath,
-    foods: selectedFoods,
-  );
-  dev.log('Group saved successfully');
-} catch (e, s) {
-  dev.log('saveScanGroup failed', error: e, stackTrace: s);
-}
+                    await NutritionService.saveScanGroup(
+                      uuid: widget.groupUuid,
+                      imagePath: widget.imagePath,
+                      foods: selectedFoods,
+                    );
+                    dev.log('Group saved successfully');
+                  } catch (e, s) {
+                    dev.log('saveScanGroup failed', error: e, stackTrace: s);
+                  }
                   if (context.mounted) {
                     Navigator.popUntil(context, (r) => r.isFirst);
                   }
@@ -350,6 +380,21 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                   ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _qtyButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(icon, size: 16, color: _textPrimary),
       ),
     );
   }

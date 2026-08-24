@@ -65,6 +65,7 @@ ThemeData appTheme = ThemeData(
         fontSize: 16,
         color: Colors.white,
       ),
+      foregroundColor: Colors.white,
       backgroundColor: primary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),

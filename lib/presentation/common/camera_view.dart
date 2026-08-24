@@ -24,8 +24,13 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _init() async {
-  final status = await Permission.camera.request();
-  if (!status.isGranted) {
+
+  final status = await Permission.camera.status;
+  debugPrint('Camera permission status BEFORE request: $status');
+
+  final result = await Permission.camera.request();
+  debugPrint('Camera permission status AFTER request: $result');
+  if (!result.isGranted) {
     if (mounted) Navigator.pop(context);
     return;
   }

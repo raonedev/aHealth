@@ -24,6 +24,7 @@ import '../common/nutrition_calc.dart';
 import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
+import 'widgets/food_voice_input_sheet.dart';
 import 'widgets/macro_card.dart';
 
 import 'widgets/nutrition_group_dialog.dart';
@@ -92,50 +93,80 @@ class _NutritionState extends State<Nutrition> {
       backgroundColor: _bg,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: kToolbarHeight + 28),
-        child: SpringButton(
-          SpringButtonType.withOpacity,
-          onTap: () async {
-            try {
-              final result = await Navigator.push<File>(context,
-                  MaterialPageRoute(builder: (_) => const CameraScreen()));
-              if (result == null) return;
-              final prepared = await NutritionService.prepareImage(result);
-
-              if (!context.mounted) return;
-              showModalBottomSheet(
-                context: context,
-                isDismissible: false,
-                enableDrag: false,
-                backgroundColor: Colors.transparent,
-                builder: (_) => BlocProvider.value(
-                  value: context.read<FoodScanCubit>(),
-                  child: const FoodScanLoadingSheet(),
-                ),
-              );
-
-              context.read<FoodScanCubit>().scanFoodImage(
-                    base64Image: prepared.base64,
-                    groupUuid: prepared.uuid,
-                    imagePath: prepared.imagePath,
-                  );
-            } catch (e, s) {
-              dev.log('Exception', error: e, stackTrace: s);
-            }
-          },
-          uiChild: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SpringButton(
+              SpringButtonType.withOpacity,
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<FoodScanCubit>(),
+                    child: const FoodVoiceInputSheet(),
+                  ),
+                );
+              },
+              uiChild: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: const [BoxShadow(color: Colors.grey)]),
-              child: Transform.scale(
-                scale: 0.6,
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedScanImage,
-                  color: Colors.white,
+                  boxShadow: const [BoxShadow(color: Colors.grey)],
                 ),
-              )),
+                child: const Icon(Icons.mic, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SpringButton(
+              SpringButtonType.withOpacity,
+              onTap: () async {
+                try {
+                  final result = await Navigator.push<File>(context,
+                      MaterialPageRoute(builder: (_) => const CameraScreen()));
+                  if (result == null) return;
+                  final prepared = await NutritionService.prepareImage(result);
+
+                  if (!context.mounted) return;
+                  showModalBottomSheet(
+                    context: context,
+                    isDismissible: false,
+                    enableDrag: false,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<FoodScanCubit>(),
+                      child: const FoodScanLoadingSheet(),
+                    ),
+                  );
+
+                  context.read<FoodScanCubit>().scanFoodImage(
+                        base64Image: prepared.base64,
+                        groupUuid: prepared.uuid,
+                        imagePath: prepared.imagePath,
+                      );
+                } catch (e, s) {
+                  dev.log('Exception', error: e, stackTrace: s);
+                }
+              },
+              uiChild: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [BoxShadow(color: Colors.grey)]),
+                  child: Transform.scale(
+                    scale: 0.6,
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedScanImage,
+                      color: Colors.white,
+                    ),
+                  )),
+            ),
+          ],
         ),
       ),
       body: BlocBuilder<NutritionCubit, NutritionState>(
@@ -160,31 +191,6 @@ class _NutritionState extends State<Nutrition> {
               ),
             );
           }
-
-          // if (state is NutritionEmpty) {
-          //   return Center(
-          //     child: GestureDetector(
-          //       onTap: () => context.push(AppRoutes.searchFoodScreen),
-          //       child: Column(
-          //         mainAxisSize: MainAxisSize.min,
-          //         children: [
-          //           Icon(CupertinoIcons.square_list,
-          //               size: 64, color: Colors.grey.shade300),
-          //           const SizedBox(height: 16),
-          //           const Text('No meals logged yet',
-          //               style: TextStyle(
-          //                   color: _textPrimary,
-          //                   fontSize: 16,
-          //                   fontWeight: FontWeight.w600)),
-          //           const SizedBox(height: 6),
-          //           const Text('Tap the scan button to add food',
-          //               style: TextStyle(color: _textSecondary, fontSize: 13)),
-          //           const SizedBox(height: 6),
-          //         ],
-          //       ),
-          //     ),
-          //   );
-          // }
 
           final items = state is NutritionSuccess
               ? state.nutritionModel

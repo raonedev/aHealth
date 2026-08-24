@@ -78,6 +78,7 @@ dependencies:
   gal: ^2.3.3
   screenshot: ^3.0.0
   confetti: ^0.8.0
+  speech_to_text: ^7.4.0
 
 dev_dependencies:
   flutter_test:
