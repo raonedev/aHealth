@@ -307,7 +307,7 @@ class _NutritionState extends State<Nutrition> {
                                   Expanded(
                                     child: MacroCard(
                                       onTap: () => context
-                                          .push(NutrientChartScreen.pageName),
+                                          .push(NutrientChartScreen.pageName,extra: 0,),
                                       label: totalProtein > targetProtein
                                           ? 'Protein over'
                                           : 'Protein',
@@ -325,7 +325,7 @@ class _NutritionState extends State<Nutrition> {
                                   Expanded(
                                     child: MacroCard(
                                       onTap: () => context
-                                          .push(NutrientChartScreen.pageName),
+                                          .push(NutrientChartScreen.pageName,extra: 1),
                                       label: 'Carbs left',
                                       value: (targetCarbs - totalCarbs)
                                           .clamp(0, targetCarbs),
@@ -340,7 +340,7 @@ class _NutritionState extends State<Nutrition> {
                                   Expanded(
                                     child: MacroCard(
                                       onTap: () => context
-                                          .push(NutrientChartScreen.pageName),
+                                          .push(NutrientChartScreen.pageName,extra: 2),
                                       label: 'Fats left',
                                       value: (targetFat - totalFat)
                                           .clamp(0, targetFat),

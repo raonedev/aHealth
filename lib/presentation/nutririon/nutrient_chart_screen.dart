@@ -1,5 +1,8 @@
+import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
 import '../../models/nutrition_model.dart';
@@ -28,8 +31,9 @@ double _carbs(NutritionModel m) => m.value?.carbs ?? 0;
 double _fat(NutritionModel m) => m.value?.fat ?? 0;
 
 class NutrientChartScreen extends StatefulWidget {
-  const NutrientChartScreen({super.key});
-  static String pageName="/nutrition-chart";
+  const NutrientChartScreen({super.key, this.currentTab = 0});
+  static String pageName = "/nutrition-chart";
+  final int currentTab;
 
   @override
   State<NutrientChartScreen> createState() => _NutrientChartScreenState();
@@ -41,6 +45,7 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
   @override
   void initState() {
     super.initState();
+    _tab = widget.currentTab;
     context.read<NutrientChartCubit>().getWeekData();
     context.read<NutritionCubit>().getNutritionData();
   }
@@ -68,6 +73,7 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
             child: CustomSlidingSegmentedControl(
               currentSelection: _tab,
               children: const ['Protein', 'Carbs', 'Fat'],
+              icons: const [Icons.bolt, Icons.grain, Icons.water_drop],
               onValueChanged: (i) => setState(() => _tab = i),
               thumbColor: conf.color,
             ),
@@ -88,14 +94,15 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                     }
 
                     final nutrientType = NutrientType.values[_tab];
-                    final pts = _points(
-                        chartState.weekData[nutrientType]!,
+                    final pts = _points(chartState.weekData[nutrientType]!,
                         chartState.weekStartDate);
 
                     final todayItems = nutriState is NutritionSuccess
-                        ? nutriState.nutritionModel
+                        ? (nutriState.nutritionModel
                             .where((m) => conf.getter(m) > 0)
                             .toList()
+                          ..sort((a, b) =>
+                              conf.getter(b).compareTo(conf.getter(a))))
                         : <NutritionModel>[];
 
                     return ListView(
@@ -131,14 +138,22 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                                 style: TextStyle(color: Colors.grey)),
                           )
                         else
-                          ...todayItems.map((item) => Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    16, 0, 16, 10),
-                                child: CardShell(
-                                  child: BuildCardContent(
-                                    item: item,
-                                    count: 1,
-                                    groupItems: [item],
+                          ...todayItems.map((item) => SpringButton(
+                                SpringButtonType.withOpacity,
+                                onTap: () async {
+                                  HapticFeedback.mediumImpact();
+                                  context.push('/nutrition/detail',
+                                      extra: item);
+                                },
+                                uiChild: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                                  child: CardShell(
+                                    child: BuildCardContent(
+                                      item: item,
+                                      count: 1,
+                                      groupItems: [item],
+                                    ),
                                   ),
                                 ),
                               )),
