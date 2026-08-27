@@ -345,7 +345,9 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                   try {
                     await NutritionService.saveScanGroup(
                       uuid: widget.groupUuid,
-                      imagePath: widget.imagePath,
+                      imagePath: (widget.imagePath.isEmpty)
+                          ? 'no_image_${widget.groupUuid}'
+                          : widget.imagePath,
                       foods: selectedFoods,
                     );
                     dev.log('Group saved successfully');
