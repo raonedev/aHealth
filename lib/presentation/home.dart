@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import 'package:flutter/material.dart';
 
+import '../blocs/nutrition/nutrition_cubit.dart';
 import '../features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'home/home_widget.dart';
 import 'nutririon/nutrition.dart' show Nutrition;
@@ -74,12 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     return Theme(
       data: Theme.of(context).copyWith(
-          bottomSheetTheme: const BottomSheetThemeData(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            modalBackgroundColor: Colors.transparent,
-          ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          modalBackgroundColor: Colors.transparent,
         ),
+      ),
       child: Scaffold(
         extendBody: true,
         bottomSheet: SafeArea(
@@ -129,7 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         label: 'Home',
                       ),
                       BottomNavigationBarItem(
-                        icon: HugeIcon(icon: HugeIcons.strokeRoundedSoftDrink01),
+                        icon:
+                            HugeIcon(icon: HugeIcons.strokeRoundedSoftDrink01),
                         label: 'Water',
                       ),
                       BottomNavigationBarItem(
@@ -152,7 +155,22 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             PageView(
               controller: _pageController,
-              onPageChanged: (index) => context.go(_tabs[index]),
+              onPageChanged: (index) {
+                final cubit = context.read<NutritionCubit>();
+                
+                
+                final today = DateTime(
+                  DateTime.now().year,
+                  DateTime.now().month,
+                  DateTime.now().day,
+                );
+
+                // If selected date is not today → force today
+                if (cubit.selectedDate != today) {
+                  cubit.getNutritionData(date: today);
+                }
+                context.go(_tabs[index]);
+              },
               children: const [
                 HomeWidget(),
                 WaterWidget(),

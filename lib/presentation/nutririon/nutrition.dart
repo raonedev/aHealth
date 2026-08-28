@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
+import '../../common/common_method.dart';
 import '../../services/nutrition_service.dart';
 import '../common/camera_view.dart';
 import '../common/nutrition_calc.dart';
@@ -53,13 +54,7 @@ class _NutritionState extends State<Nutrition> {
     context.read<NutritionCubit>().getNutritionData();
   }
 
-  String _dateLabel(DateTime d) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final that = DateTime(d.year, d.month, d.day);
-    if (that == today) return 'Today';
-    return DateFormat('dd MMM').format(d);
-  }
+  
 
   Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
     final groups = NutritionService.getAllGroups();
@@ -393,7 +388,7 @@ class _NutritionState extends State<Nutrition> {
                                       }
                                     },
                                     child: Text(
-                                        _dateLabel(context
+                                        dateLabel(context
                                             .read<NutritionCubit>()
                                             .selectedDate),
                                         style: const TextStyle(

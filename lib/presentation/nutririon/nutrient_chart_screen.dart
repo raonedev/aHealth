@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
+import '../../common/common_method.dart';
 import '../../models/nutrition_model.dart';
 import '../common/widgets/custom_segment.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
@@ -29,6 +31,9 @@ const _confs = [
 double _protein(NutritionModel m) => m.value?.protein ?? 0;
 double _carbs(NutritionModel m) => m.value?.carbs ?? 0;
 double _fat(NutritionModel m) => m.value?.fat ?? 0;
+
+// Light Theme Color Palette
+const Color _textPrimary = Color(0xFF1A1A1A);
 
 class NutrientChartScreen extends StatefulWidget {
   const NutrientChartScreen({super.key, this.currentTab = 0});
@@ -123,11 +128,68 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("Today's items",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[700])),
+                          child: Row(
+                            children: [
+                              Text("Nutrient items",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[700])),
+                              Spacer(),
+                              IconButton(
+                                icon: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedArrowLeft01),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  final cubit = context.read<NutritionCubit>();
+                                  cubit.getNutritionData(
+                                      date: cubit.selectedDate
+                                          .subtract(const Duration(days: 1)));
+                                },
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  final cubit = context.read<NutritionCubit>();
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: cubit.selectedDate,
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime.now(),
+                                  );
+                                  if (picked != null) {
+                                    cubit.getNutritionData(date: picked);
+                                  }
+                                },
+                                child: Text(
+                                    dateLabel(context
+                                        .read<NutritionCubit>()
+                                        .selectedDate),
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: _textPrimary)),
+                              ),
+                              IconButton(
+                                icon: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedArrowRight01),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  final cubit = context.read<NutritionCubit>();
+                                  final next = cubit.selectedDate
+                                      .add(const Duration(days: 1));
+                                  final today = DateTime.now();
+                                  if (!next.isAfter(DateTime(
+                                      today.year, today.month, today.day))) {
+                                    cubit.getNutritionData(date: next);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 8),
                         if (todayItems.isEmpty)
