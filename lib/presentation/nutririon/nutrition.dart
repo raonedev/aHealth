@@ -13,16 +13,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ahealth/models/nutrition_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:intl/intl.dart';
 
 import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
+import '../../common/common_method.dart';
 import '../../services/nutrition_service.dart';
 import '../common/camera_view.dart';
 import '../common/nutrition_calc.dart';
 import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
+import 'widgets/food_voice_input_sheet.dart';
 import 'widgets/macro_card.dart';
 
 import 'widgets/nutrition_group_dialog.dart';
@@ -50,6 +53,8 @@ class _NutritionState extends State<Nutrition> {
     super.initState();
     context.read<NutritionCubit>().getNutritionData();
   }
+
+  
 
   Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
     final groups = NutritionService.getAllGroups();
@@ -83,50 +88,80 @@ class _NutritionState extends State<Nutrition> {
       backgroundColor: _bg,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: kToolbarHeight + 28),
-        child: SpringButton(
-          SpringButtonType.withOpacity,
-          onTap: () async {
-            try {
-              final result = await Navigator.push<File>(context,
-                  MaterialPageRoute(builder: (_) => const CameraScreen()));
-              if (result == null) return;
-              final prepared = await NutritionService.prepareImage(result);
-
-              if (!context.mounted) return;
-              showModalBottomSheet(
-                context: context,
-                isDismissible: false,
-                enableDrag: false,
-                backgroundColor: Colors.transparent,
-                builder: (_) => BlocProvider.value(
-                  value: context.read<FoodScanCubit>(),
-                  child: const FoodScanLoadingSheet(),
-                ),
-              );
-
-              context.read<FoodScanCubit>().scanFoodImage(
-                    base64Image: prepared.base64,
-                    groupUuid: prepared.uuid,
-                    imagePath: prepared.imagePath,
-                  );
-            } catch (e, s) {
-              dev.log('Exception', error: e, stackTrace: s);
-            }
-          },
-          uiChild: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SpringButton(
+              SpringButtonType.withOpacity,
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<FoodScanCubit>(),
+                    child: const FoodVoiceInputSheet(),
+                  ),
+                );
+              },
+              uiChild: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: const [BoxShadow(color: Colors.grey)]),
-              child: Transform.scale(
-                scale: 0.6,
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedScanImage,
-                  color: Colors.white,
+                  boxShadow: const [BoxShadow(color: Colors.grey)],
                 ),
-              )),
+                child: const Icon(Icons.mic, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SpringButton(
+              SpringButtonType.withOpacity,
+              onTap: () async {
+                try {
+                  final result = await Navigator.push<File>(context,
+                      MaterialPageRoute(builder: (_) => const CameraScreen()));
+                  if (result == null) return;
+                  final prepared = await NutritionService.prepareImage(result);
+
+                  if (!context.mounted) return;
+                  showModalBottomSheet(
+                    context: context,
+                    isDismissible: false,
+                    enableDrag: false,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<FoodScanCubit>(),
+                      child: const FoodScanLoadingSheet(),
+                    ),
+                  );
+
+                  context.read<FoodScanCubit>().scanFoodImage(
+                        base64Image: prepared.base64,
+                        groupUuid: prepared.uuid,
+                        imagePath: prepared.imagePath,
+                      );
+                } catch (e, s) {
+                  dev.log('Exception', error: e, stackTrace: s);
+                }
+              },
+              uiChild: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [BoxShadow(color: Colors.grey)]),
+                  child: Transform.scale(
+                    scale: 0.6,
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedScanImage,
+                      color: Colors.white,
+                    ),
+                  )),
+            ),
+          ],
         ),
       ),
       body: BlocBuilder<NutritionCubit, NutritionState>(
@@ -148,31 +183,6 @@ class _NutritionState extends State<Nutrition> {
                     child: const Text('Retry'),
                   ),
                 ],
-              ),
-            );
-          }
-
-          if (state is NutritionEmpty) {
-            return Center(
-              child: GestureDetector(
-                onTap: () => context.push(AppRoutes.searchFoodScreen),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.square_list,
-                        size: 64, color: Colors.grey.shade300),
-                    const SizedBox(height: 16),
-                    const Text('No meals logged yet',
-                        style: TextStyle(
-                            color: _textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    const Text('Tap the scan button to add food',
-                        style: TextStyle(color: _textSecondary, fontSize: 13)),
-                    const SizedBox(height: 6),
-                  ],
-                ),
               ),
             );
           }
@@ -235,7 +245,8 @@ class _NutritionState extends State<Nutrition> {
                               // Calories Card
                               SpringButton(
                                 SpringButtonType.onlyScale,
-                                onTap: () => context.push(CalorieChartScreen.pageName),
+                                onTap: () =>
+                                    context.push(CalorieChartScreen.pageName),
                                 uiChild: Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(20),
@@ -244,8 +255,8 @@ class _NutritionState extends State<Nutrition> {
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.04),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.04),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       )
@@ -290,8 +301,8 @@ class _NutritionState extends State<Nutrition> {
                                 children: [
                                   Expanded(
                                     child: MacroCard(
-
-                                      onTap: () => context.push(NutrientChartScreen.pageName),
+                                      onTap: () => context
+                                          .push(NutrientChartScreen.pageName,extra: 0,),
                                       label: totalProtein > targetProtein
                                           ? 'Protein over'
                                           : 'Protein',
@@ -308,8 +319,8 @@ class _NutritionState extends State<Nutrition> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: MacroCard(
-
-                                      onTap: () => context.push(NutrientChartScreen.pageName),
+                                      onTap: () => context
+                                          .push(NutrientChartScreen.pageName,extra: 1),
                                       label: 'Carbs left',
                                       value: (targetCarbs - totalCarbs)
                                           .clamp(0, targetCarbs),
@@ -323,7 +334,8 @@ class _NutritionState extends State<Nutrition> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: MacroCard(
-                                      onTap: () => context.push(NutrientChartScreen.pageName),
+                                      onTap: () => context
+                                          .push(NutrientChartScreen.pageName,extra: 2),
                                       label: 'Fats left',
                                       value: (targetFat - totalFat)
                                           .clamp(0, targetFat),
@@ -338,11 +350,73 @@ class _NutritionState extends State<Nutrition> {
                               ),
                               const SizedBox(height: 24),
 
-                              const Text('Recently uploaded',
-                                  style: TextStyle(
-                                      color: _textPrimary,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
+                              Row(
+                                children: [
+                                  const Text('Recently uploaded',
+                                      style: TextStyle(
+                                          color: _textPrimary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold)),
+                                  Spacer(),
+                                  IconButton(
+                                    icon: HugeIcon(
+                                        icon:
+                                            HugeIcons.strokeRoundedArrowLeft01),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () {
+                                      final cubit =
+                                          context.read<NutritionCubit>();
+                                      cubit.getNutritionData(
+                                          date: cubit.selectedDate.subtract(
+                                              const Duration(days: 1)));
+                                    },
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final cubit =
+                                          context.read<NutritionCubit>();
+                                      final picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: cubit.selectedDate,
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (picked != null) {
+                                        cubit.getNutritionData(date: picked);
+                                      }
+                                    },
+                                    child: Text(
+                                        dateLabel(context
+                                            .read<NutritionCubit>()
+                                            .selectedDate),
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: _textPrimary)),
+                                  ),
+                                  IconButton(
+                                    icon: HugeIcon(
+                                        icon: HugeIcons
+                                            .strokeRoundedArrowRight01),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () {
+                                      final cubit =
+                                          context.read<NutritionCubit>();
+                                      final next = cubit.selectedDate
+                                          .add(const Duration(days: 1));
+                                      final today = DateTime.now();
+                                      if (!next.isAfter(DateTime(today.year,
+                                          today.month, today.day))) {
+                                        cubit.getNutritionData(date: next);
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 12),
                             ],
                           ),

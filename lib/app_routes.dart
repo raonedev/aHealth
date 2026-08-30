@@ -227,7 +227,9 @@ class AppRoutes {
       GoRoute(
         path: NutrientChartScreen.pageName,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const NutrientChartScreen(),
+        builder: (context, state) => NutrientChartScreen(
+          currentTab: (state.extra as int?) ?? 0,
+        ),
       ),
       GoRoute(
         path: CalorieChartScreen.pageName,

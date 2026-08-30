@@ -16,12 +16,33 @@ part 'nutrition_state.dart';
 class NutritionCubit extends Cubit<NutritionState> {
   NutritionCubit() : super(NutritionLoading());
 
-  Future<void> getNutritionData() async {
+  final Map<DateTime, List<NutritionModel>> _cache = {};
+  DateTime selectedDate = DateTime.now();
+
+  DateTime _dayKey(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  Future<void> getNutritionData(
+      {DateTime? date, bool forceRefresh = false}) async {
+    final targetDate = _dayKey(date ?? selectedDate);
+    selectedDate = targetDate;
     emit(NutritionLoading());
-    final now = DateTime.now();
+
+    if (!forceRefresh && _cache.containsKey(targetDate)) {
+      final cached = _cache[targetDate]!;
+      emit(cached.isEmpty
+          ? NutritionEmpty(date: targetDate)
+          : NutritionSuccess(nutritionModel: cached, date: targetDate));
+      return;
+    }
 
     try {
-      final midnight = DateTime(now.year, now.month, now.day);
+      final dayStart = targetDate;
+      final dayEnd = _dayKey(DateTime.now()) == targetDate
+          ? DateTime.now()
+          : targetDate
+              .add(const Duration(days: 1))
+              .subtract(const Duration(seconds: 1));
+
       bool stepsPermission =
           await Health().hasPermissions([HealthDataType.NUTRITION]) ?? false;
       if (!stepsPermission) {
@@ -32,29 +53,31 @@ class NutritionCubit extends Cubit<NutritionState> {
       }
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.NUTRITION],
-        startTime: midnight,
-        endTime: now,
+        startTime: dayStart,
+        endTime: dayEnd,
       );
 
       if (healthData.isEmpty) {
-        emit(NutritionEmpty());
+        _cache[targetDate] = [];
+        emit(NutritionEmpty(date: targetDate));
       } else {
-        // sort the data points by date
         healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
         List<NutritionModel> nutritionModel0 = [];
         for (HealthDataPoint healthDataPoint in healthData) {
-          NutritionModel nutritionModel =
-              NutritionModel.fromJson(healthDataPoint.toJson());
-          nutritionModel0.add(nutritionModel);
+          nutritionModel0
+              .add(NutritionModel.fromJson(healthDataPoint.toJson()));
         }
-        emit(NutritionSuccess(nutritionModel: nutritionModel0));
+        _cache[targetDate] = nutritionModel0;
+        emit(NutritionSuccess(
+            nutritionModel: nutritionModel0, date: targetDate));
       }
-    } catch (e,s) {
-      dev.log("Exception nutrition",error: e,stackTrace: s);
+    } catch (e, s) {
+      dev.log("Exception nutrition", error: e, stackTrace: s);
       emit(NutritionFailed(errorMessage: e.toString()));
     }
   }
 
+  void invalidateCache(DateTime date) => _cache.remove(_dayKey(date));
   // Helper function to determine meal type based on the hour of the day
   MealType _getMealType(int hour) {
     if (hour >= 5 && hour < 11) {
@@ -72,9 +95,15 @@ class NutritionCubit extends Cubit<NutritionState> {
     }
   }
 
+  DateTime _timeForSelectedDate() {
+    final n = DateTime.now();
+    return DateTime(selectedDate.year, selectedDate.month, selectedDate.day,
+        n.hour, n.minute, n.second);
+  }
+
   Future<bool> addNutritionData({required ValueFood valueFood}) async {
     emit(NutritionLoading());
-    final now = DateTime.now();
+    final now = _timeForSelectedDate();
     final earlier = now.subtract(const Duration(minutes: 20));
     dev.log("logging : ${valueFood.name}");
 
@@ -100,7 +129,8 @@ class NutritionCubit extends Cubit<NutritionState> {
         fatMonounsaturated: valueFood.monounsaturatedFat,
         recordingMethod: RecordingMethod.manual);
     if (success) {
-      getNutritionData();
+      invalidateCache(selectedDate);
+      getNutritionData(date: selectedDate, forceRefresh: true);
       sl<StreakCubit>().logActivityAndRefresh(StreakActivityType.food);
     } else {
       emit(NutritionFailed(errorMessage: "failed to add Nutririons"));
@@ -115,7 +145,7 @@ class NutritionCubit extends Cubit<NutritionState> {
     // 1. Emit loading once for the entire batch operation
     emit(NutritionLoading());
 
-    final now = DateTime.now();
+    final now = _timeForSelectedDate();
     bool allSuccess = true;
 
     dev.log("Starting batch logging for ${selectedFoods.length} items...");
@@ -159,8 +189,8 @@ class NutritionCubit extends Cubit<NutritionState> {
       }
 
       if (allSuccess) {
-        // Refresh your main landing data once everything is written successfully
-        await getNutritionData();
+        invalidateCache(selectedDate);
+        await getNutritionData(date: selectedDate, forceRefresh: true);
       } else {
         emit(NutritionFailed(
             errorMessage: "Failed to log some or all food items."));

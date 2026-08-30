@@ -10,6 +10,7 @@ class CustomSlidingSegmentedControl extends StatelessWidget {
   final List<String> children;
   final Function(int) onValueChanged;
   final Color thumbColor;
+  final List<IconData>? icons;
 
   const CustomSlidingSegmentedControl({
     super.key,
@@ -17,6 +18,7 @@ class CustomSlidingSegmentedControl extends StatelessWidget {
     required this.children,
     required this.onValueChanged,
     this.thumbColor = primary,
+    this.icons,
   });
 
   @override
@@ -87,14 +89,29 @@ class CustomSlidingSegmentedControl extends StatelessWidget {
                           SpringButtonType.withOpacity,
                           onTap: () => onValueChanged(index),
                           uiChild: Center(
-                            child: Text(
-                              children[index],
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isSelected
-                                    ? theme.colorScheme.onPrimary
-                                    : textColor.withValues(alpha: 0.7),
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (icons != null) ...[
+                                  Icon(
+                                    icons![index],
+                                    size: 16,
+                                    color: isSelected
+                                        ? theme.colorScheme.onPrimary
+                                        : textColor.withValues(alpha: 0.7),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Text(
+                                  children[index],
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? theme.colorScheme.onPrimary
+                                        : textColor.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

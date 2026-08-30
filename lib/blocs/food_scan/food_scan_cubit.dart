@@ -16,23 +16,23 @@ class FoodScanCubit extends Cubit<FoodScanState> {
   FoodScanCubit() : super(FoodScanInitial());
 
   static const _scanCountKey = 'foodScanCountSharedPreferenceKey';
-static const _scanDateKey = 'foodScanDateSharedPreferenceKey';
-static const _maxScansPerDay = 2;
+  static const _scanDateKey = 'foodScanDateSharedPreferenceKey';
+  static const _maxScansPerDay = 2;
 
   static const _apiKey = GEMINI_API_KEY;
   // static const _model = 'gemma-4-26b-a4b-it';
   // static const _streamUrl =
   //     'https://generativelanguage.googleapis.com/v1beta/models/$_model:streamGenerateContent?alt=sse&key=$_apiKey';
   static const _fallbackModels = [
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-3-flash',
-  'gemma-4-27b-it',
-  'gemma-4-31b-it',
-];
-static String _urlFor(String model) =>
-    'https://generativelanguage.googleapis.com/v1beta/models/$model:streamGenerateContent?alt=sse&key=$_apiKey';
+    'gemini-3.1-flash-lite',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-flash',
+    'gemini-3-flash',
+    'gemma-4-27b-it',
+    'gemma-4-31b-it',
+  ];
+  static String _urlFor(String model) =>
+      'https://generativelanguage.googleapis.com/v1beta/models/$model:streamGenerateContent?alt=sse&key=$_apiKey';
 
   static const _csvHeaders =
       'name,calories,protein,fat,carbs,calcium,cholesterol,fiber,iron,potassium,sodium,sugar,quantity,unit,servingDescription,metricServingAmount,metricServingUnit,numberOfUnits,measurementDescription,saturatedFat,polyunsaturatedFat,monounsaturatedFat,vitaminA,vitaminC';
@@ -57,127 +57,251 @@ Rules:
 ''';
 
   Future<bool> _canScanToday() async {
-  final prefs = await SharedPreferences.getInstance();
-  final today = DateTime.now().toIso8601String().substring(0, 10); // yyyy-MM-dd
-  final storedDate = prefs.getString(_scanDateKey);
-  int count = prefs.getInt(_scanCountKey) ?? 0;
+    final prefs = await SharedPreferences.getInstance();
+    final today =
+        DateTime.now().toIso8601String().substring(0, 10); // yyyy-MM-dd
+    final storedDate = prefs.getString(_scanDateKey);
+    int count = prefs.getInt(_scanCountKey) ?? 0;
 
-  if (storedDate != today) {
-    count = 0;
-    await prefs.setString(_scanDateKey, today);
-  }
-
-  if (count >= _maxScansPerDay) return false;
-
-  await prefs.setInt(_scanCountKey, count + 1);
-  return true;
-}
-
- Future<void> scanFoodImage({
-  required String base64Image,
-  required String groupUuid,
-  required String imagePath,
-}) async {
-  if (!await _canScanToday()) {
-    emit(FoodScanError(message: 'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.'));
-    return;
-  }
-  emit(FoodScanLoading());
-
-  try {
-    final body = jsonEncode({
-      'contents': [
-        {
-          'parts': [
-            {
-              'inline_data': {
-                'mime_type': 'image/jpeg',
-                'data': base64Image,
-              }
-            },
-            {'text': _prompt},
-          ]
-        }
-      ],
-      'generationConfig': {'temperature': 0.2},
-    });
-
-    http.StreamedResponse? streamedResponse;
-
-    for (final model in _fallbackModels) {
-      final request = http.Request('POST', Uri.parse(_urlFor(model)))
-        ..headers['Content-Type'] = 'application/json'
-        ..body = body;
-
-      try {
-        final res = await request.send();
-        if (res.statusCode == 200) {
-          streamedResponse = res;
-          break;
-        } else if (res.statusCode == 429 || res.statusCode >= 500) {
-          dev.log('Model $model returned ${res.statusCode}, trying next');
-          continue;
-        } else {
-          final err = await res.stream.bytesToString();
-          throw Exception('API error ${res.statusCode}: $err');
-        }
-      } catch (e) {
-        dev.log('Model $model failed: $e');
-        continue;
-      }
+    if (storedDate != today) {
+      count = 0;
+      await prefs.setString(_scanDateKey, today);
     }
 
-    if (streamedResponse == null) {
-      throw Exception('All models failed or rate-limited');
+    if (count >= _maxScansPerDay) return false;
+
+    await prefs.setInt(_scanCountKey, count + 1);
+    return true;
+  }
+
+  Future<void> scanFoodImage({
+    required String base64Image,
+    required String groupUuid,
+    required String imagePath,
+  }) async {
+    if (!await _canScanToday()) {
+      emit(FoodScanError(
+          message:
+              'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.'));
+      return;
     }
+    emit(FoodScanLoading());
 
-    String thinkingBuffer = '';
-    String csvBuffer = '';
-
-    await for (final line in streamedResponse.stream
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())) {
-      if (!line.startsWith('data: ')) continue;
-      final jsonStr = line.substring(6).trim();
-      if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
-
-      try {
-        final chunk = jsonDecode(jsonStr);
-        final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
-        if (parts == null) continue;
-
-        for (final part in parts) {
-          final text = part['text'] as String? ?? '';
-          if (part['thought'] == true) {
-            thinkingBuffer += text;
-            emit(FoodScanThinking(thinkingText: thinkingBuffer));
-          } else {
-            csvBuffer += text;
+    try {
+      final body = jsonEncode({
+        'contents': [
+          {
+            'parts': [
+              {
+                'inline_data': {
+                  'mime_type': 'image/jpeg',
+                  'data': base64Image,
+                }
+              },
+              {'text': _prompt},
+            ]
           }
+        ],
+        'generationConfig': {'temperature': 0.2},
+      });
+
+      http.StreamedResponse? streamedResponse;
+
+      for (final model in _fallbackModels) {
+        final request = http.Request('POST', Uri.parse(_urlFor(model)))
+          ..headers['Content-Type'] = 'application/json'
+          ..body = body;
+
+        try {
+          final res = await request.send();
+          if (res.statusCode == 200) {
+            streamedResponse = res;
+            break;
+          } else if (res.statusCode == 429 || res.statusCode >= 500) {
+            dev.log('Model $model returned ${res.statusCode}, trying next');
+            continue;
+          } else {
+            final err = await res.stream.bytesToString();
+            throw Exception('API error ${res.statusCode}: $err');
+          }
+        } catch (e) {
+          dev.log('Model $model failed: $e');
+          continue;
         }
-      } catch (e) {
-        dev.log('SSE chunk parse error: $e');
       }
-    }
-    dev.log('CSV:\n$csvBuffer');
 
-    final foods = _parseCsv(csvBuffer.trim());
+      if (streamedResponse == null) {
+        throw Exception('All models failed or rate-limited');
+      }
 
-    if (foods.isEmpty) {
-      emit(FoodScanNoItems());
-    } else {
-      emit(FoodScanSuccess(
-        foods: foods,
-        thinkingText: thinkingBuffer.trim(),
-        groupUuid: groupUuid,
-        imagePath: imagePath,
-      ));
+      String thinkingBuffer = '';
+      String csvBuffer = '';
+
+      await for (final line in streamedResponse.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (!line.startsWith('data: ')) continue;
+        final jsonStr = line.substring(6).trim();
+        if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
+
+        try {
+          final chunk = jsonDecode(jsonStr);
+          final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
+          if (parts == null) continue;
+
+          for (final part in parts) {
+            final text = part['text'] as String? ?? '';
+            if (part['thought'] == true) {
+              thinkingBuffer += text;
+              emit(FoodScanThinking(thinkingText: thinkingBuffer));
+            } else {
+              csvBuffer += text;
+            }
+          }
+        } catch (e) {
+          dev.log('SSE chunk parse error: $e');
+        }
+      }
+      dev.log('CSV:\n$csvBuffer');
+
+      final foods = _parseCsv(csvBuffer.trim());
+
+      if (foods.isEmpty) {
+        emit(FoodScanNoItems());
+      } else {
+        emit(FoodScanSuccess(
+          foods: foods,
+          thinkingText: thinkingBuffer.trim(),
+          groupUuid: groupUuid,
+          imagePath: imagePath,
+        ));
+      }
+    } catch (e, s) {
+      dev.log('FoodScanCubit error', error: e, stackTrace: s);
+      emit(FoodScanError(message: e.toString()));
     }
-  } catch (e, s) {
-    dev.log('FoodScanCubit error', error: e, stackTrace: s);
-    emit(FoodScanError(message: e.toString()));
   }
-}
+
+  static const _textPrompt = '''
+Analyze this food description text and identify ALL food items mentioned.
+Return ONLY a CSV with this exact header row followed by one data row per item:
+$_csvHeaders
+eg: Apple,95,0.5,0.3,25.1,11.0,0.0,4.4,0.2,195.0,2.0,18.9,1.0,item,"1 medium (3"" dia)",182.0,g,1.0,medium,0.1,0.1,0.0,5.0,8.4
+
+Rules:
+- All numeric fields: numbers only, no units, empty string if unknown
+- String fields: plain text, no commas inside values
+- quantity: estimated quantity based on description (e.g. "1 cup", "1 bowl")
+- unit: piece/g/ml/cup/bowl/slice etc
+- servingDescription: e.g. "1 cup" or "1 bowl"
+- metricServingAmount: numeric string e.g. "240"
+- metricServingUnit: g or ml
+- numberOfUnits: numeric string
+- measurementDescription: e.g. "cup" or "bowl"
+- Estimate nutrition values based on standard serving sizes for the described quantity
+- NO markdown, NO explanation, NO extra text — only the CSV
+''';
+  Future<void> scanFoodText({
+    required String textInput,
+    required String groupUuid,
+  }) async {
+    // if (!await _canScanToday()) {
+    //   emit(FoodScanError(
+    //       message:
+    //           'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.'));
+    //   return;
+    // }
+    emit(FoodScanLoading());
+
+    try {
+      final body = jsonEncode({
+        'contents': [
+          {
+            'parts': [
+              {'text': '$_textPrompt\n\nFood description: "$textInput"'},
+            ]
+          }
+        ],
+        'generationConfig': {'temperature': 0.2},
+      });
+
+      http.StreamedResponse? streamedResponse;
+
+      for (final model in _fallbackModels) {
+        final request = http.Request('POST', Uri.parse(_urlFor(model)))
+          ..headers['Content-Type'] = 'application/json'
+          ..body = body;
+
+        try {
+          final res = await request.send();
+          if (res.statusCode == 200) {
+            streamedResponse = res;
+            break;
+          } else if (res.statusCode == 429 || res.statusCode >= 500) {
+            dev.log('Model $model returned ${res.statusCode}, trying next');
+            continue;
+          } else {
+            final err = await res.stream.bytesToString();
+            throw Exception('API error ${res.statusCode}: $err');
+          }
+        } catch (e) {
+          dev.log('Model $model failed: $e');
+          continue;
+        }
+      }
+
+      if (streamedResponse == null) {
+        throw Exception('All models failed or rate-limited');
+      }
+
+      String thinkingBuffer = '';
+      String csvBuffer = '';
+
+      await for (final line in streamedResponse.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (!line.startsWith('data: ')) continue;
+        final jsonStr = line.substring(6).trim();
+        if (jsonStr == '[DONE]' || jsonStr.isEmpty) continue;
+
+        try {
+          final chunk = jsonDecode(jsonStr);
+          final parts = chunk['candidates']?[0]?['content']?['parts'] as List?;
+          if (parts == null) continue;
+
+          for (final part in parts) {
+            final text = part['text'] as String? ?? '';
+            if (part['thought'] == true) {
+              thinkingBuffer += text;
+              emit(FoodScanThinking(thinkingText: thinkingBuffer));
+            } else {
+              csvBuffer += text;
+            }
+          }
+        } catch (e) {
+          dev.log('SSE chunk parse error: $e');
+        }
+      }
+      dev.log('CSV:\n$csvBuffer');
+
+      final foods = _parseCsv(csvBuffer.trim());
+
+      if (foods.isEmpty) {
+        emit(FoodScanNoItems());
+      } else {
+        emit(FoodScanSuccess(
+          foods: foods,
+          thinkingText: thinkingBuffer.trim(),
+          groupUuid: groupUuid,
+          imagePath: '',
+        ));
+      }
+    } catch (e, s) {
+      dev.log('FoodScanCubit error', error: e, stackTrace: s);
+      emit(FoodScanError(message: e.toString()));
+    }
+  }
+
   List<ValueFood> _parseCsv(String csv) {
     final lines = csv
         .split('\n')
