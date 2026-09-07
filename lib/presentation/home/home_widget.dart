@@ -98,6 +98,7 @@ class _HomeWidgetState extends State<HomeWidget> {
           width: 56,
           height: 56,
           child: FloatingActionButton(
+            heroTag: null,
             backgroundColor: Colors.black,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),

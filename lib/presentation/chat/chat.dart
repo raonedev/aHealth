@@ -183,7 +183,7 @@ class _ChatWidgetState extends State<ChatWidget> {
               },
             ),
           ),
-          
+          SizedBox(height: kBottomNavigationBarHeight+20,),
         ],
       ),
       bottomSheet: _buildInputBar(),

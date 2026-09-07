@@ -431,7 +431,7 @@ class _NutritionState extends State<Nutrition> {
                             final entryItems = entry.value;
                             final first = entryItems.first;
                             final isGroup = entryItems.length > 1;
-                            final heroTag = entry.key;
+                            // final heroTag = entry.key;
 
                             return SpringButton(
                               SpringButtonType.withOpacity,
@@ -477,18 +477,13 @@ class _NutritionState extends State<Nutrition> {
                                         right: isGroup ? 6 : 0,
                                         top: 0,
                                         bottom: isGroup ? 6 : 0,
-                                        // Wrap the main interactive card shell with Hero
-                                        child: Hero(
-                                          tag: heroTag,
-                                          // Material ensures text styling behaves during flight
-                                          child: Material(
-                                            type: MaterialType.transparency,
-                                            child: CardShell(
-                                              child: BuildCardContent(
-                                                item: first,
-                                                count: entryItems.length,
-                                                groupItems: entryItems,
-                                              ),
+                                        child: Material(
+                                          type: MaterialType.transparency,
+                                          child: CardShell(
+                                            child: BuildCardContent(
+                                              item: first,
+                                              count: entryItems.length,
+                                              groupItems: entryItems,
                                             ),
                                           ),
                                         ),
