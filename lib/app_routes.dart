@@ -47,6 +47,8 @@ class AppRoutes {
 
   static final GlobalKey<NavigatorState> rootNavigatorKey =
       GlobalKey<NavigatorState>();
+      static final GlobalKey<NavigatorState> shellNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   static final GoRouter router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -146,32 +148,38 @@ class AppRoutes {
         builder: (context, state) => const HeathDetailScreen(),
       ),
       ShellRoute(
-        builder: (context, state, child) => HomeScreen(child: child),
+        navigatorKey: shellNavigatorKey,
+        builder: (context, state, child) =>
+            HomeScreen(child: child), // keep child
         routes: [
           GoRoute(
             path: '/shell/home',
             pageBuilder: (c, s) => const NoTransitionPage(child: HomeWidget()),
           ),
           GoRoute(
-              path: '/shell/water',
-              pageBuilder: (c, s) =>
-                  const NoTransitionPage(child: WaterWidget())),
+            path: '/shell/water',
+            pageBuilder: (c, s) => const NoTransitionPage(child: WaterWidget()),
+          ),
           GoRoute(
             path: '/shell/nutrition',
             pageBuilder: (c, s) => const NoTransitionPage(child: Nutrition()),
             routes: [
               GoRoute(
-                  path: 'search', builder: (c, s) => const SearchFoodScreen()),
+                path: 'search',
+                builder: (c, s) => const SearchFoodScreen(),
+              ),
               GoRoute(
-                  path: 'foodDetail/:foodId',
-                  builder: (c, s) =>
-                      FoodDetailScreen(foodId: s.pathParameters['foodId']!)),
+                path: 'foodDetail/:foodId',
+                builder: (c, s) =>
+                    FoodDetailScreen(foodId: s.pathParameters['foodId']!),
+              ),
             ],
           ),
           GoRoute(
-              path: '/shell/progress',
-              pageBuilder: (c, s) =>
-                  const NoTransitionPage(child: ProgressPhotosScreen())),
+            path: '/shell/progress',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: ProgressPhotosScreen()),
+          ),
         ],
       ),
       GoRoute(

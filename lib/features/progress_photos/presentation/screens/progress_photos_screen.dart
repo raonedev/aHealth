@@ -56,6 +56,7 @@ class _ProgressPhotosScreenState extends State<ProgressPhotosScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: kToolbarHeight+20),
         child: FloatingActionButton(
+          heroTag: null,
           backgroundColor: const Color(0xFF3B6D11),
           onPressed: () => Navigator.push(
             context,

@@ -85,8 +85,9 @@ class _StepChartScreenState extends State<StepChartScreen> {
         },
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: kToolbarHeight+20),
+        padding: const EdgeInsets.only(bottom: kToolbarHeight + 20),
         child: FloatingActionButton(
+          heroTag: null,
           backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
