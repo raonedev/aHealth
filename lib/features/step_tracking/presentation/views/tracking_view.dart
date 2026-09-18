@@ -39,8 +39,10 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   String _lastKm = '';
   String _lastTime = '';
   final double _currentZoom = 16;
+  List<LatLng> _shareLatLngs = [];
 
-  Future<void> _shareWithImage() async {
+  Future<void> _shareWithImage(List<LatLng> latLngs) async {
+    setState(() => _shareLatLngs = latLngs);
     await WidgetsBinding.instance.endOfFrame;
     final bytes = await captureCardAsPng(_shareCardKey);
     final dir = await getTemporaryDirectory();
@@ -273,55 +275,69 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
               ),
             ],
           ),
-          body: Column(
+          body: Stack(
             children: [
-              Expanded(
-                child: stillLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : PlatformMap(
-                        initialCameraPosition: CameraPosition(
-                          target: resolvedCenter,
-                          zoom: 16,
-                          bearing: 2,
-                          tilt: 45,
-                        ),
-                        onMapCreated: (c) => _mapController = c,
-                        polylines: latLngs.length >= 2
-                            ? {
-                                Polyline(
-                                  polylineId: PolylineId('route'),
-                                  points: latLngs,
-                                  width: 4,
-                                  color: Colors.blue,
-                                ),
-                              }
-                            : {},
-                        markers: {
-                          Marker(
-                            markerId: MarkerId('current'),
-                            position: latLngs.isNotEmpty
-                                ? latLngs.last
-                                : resolvedCenter,
-                            icon: _runnerIcon ?? BitmapDescriptor.defaultMarker,
+              Column(
+                children: [
+                  Expanded(
+                    child: stillLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : PlatformMap(
+                            initialCameraPosition: CameraPosition(
+                              target: resolvedCenter,
+                              zoom: 16,
+                              bearing: 2,
+                              tilt: 45,
+                            ),
+                            onMapCreated: (c) => _mapController = c,
+                            polylines: latLngs.length >= 2
+                                ? {
+                                    Polyline(
+                                      polylineId: PolylineId('route'),
+                                      points: latLngs,
+                                      width: 4,
+                                      color: Colors.blue,
+                                    ),
+                                  }
+                                : {},
+                            markers: {
+                              Marker(
+                                markerId: MarkerId('current'),
+                                position: latLngs.isNotEmpty
+                                    ? latLngs.last
+                                    : resolvedCenter,
+                                icon: _runnerIcon ??
+                                    BitmapDescriptor.defaultMarker,
+                              ),
+                            },
                           ),
-                        },
-                      ),
+                  ),
+                  _StatsBar(
+                    state: state,
+                    onShare: () {
+                      if (state is TrackingCompleted) {
+                        final a = (state).activity;
+                        _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
+                        _lastTime =
+                            '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
+                        setState(() {});
+                        Future.delayed(const Duration(milliseconds: 100),
+                            () => _shareWithImage(latLngs));
+                      }
+                    },
+                  ),
+                  _Controls(state: state),
+                ],
               ),
-              _StatsBar(
-                state: state,
-                onShare: () {
-                  if (state is TrackingCompleted) {
-                    final a = (state).activity;
-                    _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
-                    _lastTime =
-                        '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
-                    setState(() {});
-                    Future.delayed(
-                        const Duration(milliseconds: 100), _shareWithImage);
-                  }
-                },
+              Positioned(
+                left: -9999,
+                child: JourneyShareCard(
+                  repaintKey: _shareCardKey,
+                  points: _shareLatLngs,
+                  km: _lastKm,
+                  time: _lastTime,
+                ),
               ),
-              _Controls(state: state),
             ],
           ),
         );
@@ -340,12 +356,13 @@ class _StatsBar extends StatelessWidget {
     if (state is TrackingActive) {
       final s = state as TrackingActive;
       final km = s.distanceMeters / 1000;
-      
+
       // Format pace as min:sec
       final paceMinutes = s.paceSecPerKm ~/ 60;
       final paceSeconds = (s.paceSecPerKm % 60).toInt();
-      final paceFormatted = '$paceMinutes:${paceSeconds.toString().padLeft(2, '0')}';
-      
+      final paceFormatted =
+          '$paceMinutes:${paceSeconds.toString().padLeft(2, '0')}';
+
       return Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -354,7 +371,7 @@ class _StatsBar extends StatelessWidget {
             Text('${km.toStringAsFixed(2)} km'),
             Text(
                 '${s.elapsed.inMinutes}:${(s.elapsed.inSeconds % 60).toString().padLeft(2, '0')}'),
-            Text('$paceFormatted /km'), 
+            Text('$paceFormatted /km'),
           ],
         ),
       );

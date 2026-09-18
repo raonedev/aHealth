@@ -19,7 +19,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -36,7 +37,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   health: ^13.3.1
-  permission_handler: ^12.0.3
+  permission_handler: ^13.0.2
   shared_preferences: ^2.3.2
   equatable: ^2.0.5
   bloc: ^9.1.0
@@ -59,12 +60,12 @@ dependencies:
   sensors_plus: ^7.0.0
   flutter_markdown_plus: ^1.0.7
   uuid: ^4.5.3
-  syncfusion_flutter_charts: ^33.2.10
+  syncfusion_flutter_charts: ^34.2.6
   flutter_local_notifications: ^22.0.0
   timezone: ^0.11.0
   flutter_image_compress: ^2.4.0
   path_provider: ^2.1.5
-  syncfusion_flutter_gauges: ^33.2.12
+  syncfusion_flutter_gauges: ^34.2.6
   android_intent_plus: ^6.0.0
   geolocator: ^14.0.2
   sqflite: ^2.4.3
@@ -73,7 +74,7 @@ dependencies:
   latlong2: ^0.10.1
   get_it: ^9.2.1
   platform_maps_flutter: ^1.0.2
-  share_plus: ^12.0.2
+  share_plus: ^13.3.0
   camera: ^0.12.0+2
   gal: ^2.3.3
   screenshot: ^3.0.0
