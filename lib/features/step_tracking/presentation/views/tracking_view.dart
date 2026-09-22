@@ -33,6 +33,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   LatLng? _initialCenter;
   BitmapDescriptor? _runnerIcon;
   bool? _lastIsMoving;
+  double _lastCameraBearing = 0;
   double _lastHeading = 0;
 
   final GlobalKey _shareCardKey = GlobalKey();
@@ -53,9 +54,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: SingleChildScrollView(
-          child: Image.file(file),
-        ),
+        content: SingleChildScrollView(child: Image.file(file)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -70,11 +69,13 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     );
 
     if (confirmed == true) {
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
-        subject: 'My Activity on aHealth',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'I just tracked $_lastKm km in $_lastTime on aHealth! 🏃‍♂️',
+          subject: 'My Activity on aHealth',
+        ),
+      );
     }
   }
 
@@ -116,10 +117,11 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                 intervalDuration: const Duration(seconds: 3),
                 foregroundNotificationConfig:
                     const ForegroundNotificationConfig(
-                  notificationTitle: "OCTO is tracking",
-                  notificationText: "Recording your route in the background",
-                  enableWakeLock: true,
-                ),
+                      notificationTitle: "OCTO is tracking",
+                      notificationText:
+                          "Recording your route in the background",
+                      enableWakeLock: true,
+                    ),
               )
             : AppleSettings(
                 accuracy: LocationAccuracy.high,
@@ -169,11 +171,8 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     return byteData!.buffer.asUint8List();
   }
 
-  Future<BitmapDescriptor> _makeMarkerIcon(
-      {required bool isMoving, required double heading}) async {
-    final bytes = await _widgetToBytes(
-      RunnerMarker(isMoving: isMoving, heading: heading),
-    );
+  Future<BitmapDescriptor> _makeMarkerIcon({required bool isMoving}) async {
+    final bytes = await _widgetToBytes(RunnerMarker(isMoving: isMoving));
     return BitmapDescriptor.fromBytes(bytes);
   }
 
@@ -182,7 +181,8 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     final lat2 = to.lat * math.pi / 180;
     final dLng = (to.lng - from.lng) * math.pi / 180;
     final y = math.sin(dLng) * math.cos(lat2);
-    final x = math.cos(lat1) * math.sin(lat2) -
+    final x =
+        math.cos(lat1) * math.sin(lat2) -
         math.sin(lat1) * math.cos(lat2) * math.cos(dLng);
     return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
   }
@@ -197,6 +197,11 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
       cubit.resume();
     }
   }
+
+  // add this helper
+double _bearingDiff(double a, double b) {
+  return ((a - b + 540) % 360 - 180).abs();
+}
 
   @override
   void dispose() {
@@ -217,32 +222,66 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
             if (state.points.length >= 2) {
               final prev = state.points[state.points.length - 2];
               final distance = Geolocator.distanceBetween(
-                  prev.lat, prev.lng, last.lat, last.lng);
+                prev.lat,
+                prev.lng,
+                last.lat,
+                last.lng,
+              );
               final timeDelta =
                   last.timestamp.difference(prev.timestamp).inMilliseconds /
-                      1000;
+                  1000;
               final computedSpeed = timeDelta > 0 ? distance / timeDelta : 0.0;
               isMoving = computedSpeed > 0.15 || last.speed > 0.15;
             }
-            final heading = state.points.length >= 2
-                ? _calculateHeading(state.points[state.points.length - 2], last)
-                : 0.0; // adjust to your LocationPoint field
-            if (_lastIsMoving != isMoving ||
-                (heading - _lastHeading).abs() > 10) {
+
+            // --- UPDATED HEADING LOGIC ---
+            double heading = _lastHeading;
+            if (state.points.length >= 2) {
+              final prev = state.points[state.points.length - 2];
+              final dist = Geolocator.distanceBetween(
+                prev.lat,
+                prev.lng,
+                last.lat,
+                last.lng,
+              );
+              if (dist > 3) {
+                // filter jitter
+                heading = _calculateHeading(prev, last);
+                _lastHeading = heading;
+              }
+            }
+
+            if (_lastIsMoving != isMoving) {
               _lastIsMoving = isMoving;
-              _lastHeading = heading;
-              _runnerIcon =
-                  await _makeMarkerIcon(isMoving: isMoving, heading: heading);
+              _runnerIcon = await _makeMarkerIcon(isMoving: isMoving);
               if (mounted) setState(() {});
             }
-            _mapController?.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(
+
+            // --- UPDATED CAMERA LOGIC ---
+            if (isMoving && _bearingDiff(heading, _lastCameraBearing) > 15) {
+              _lastCameraBearing = heading;
+              _mapController?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
                     target: LatLng(last.lat, last.lng),
                     zoom: _currentZoom,
-                    tilt: 45),
-              ),
-            );
+                    bearing: heading,
+                    tilt: 45,
+                  ),
+                ),
+              );
+            } else {
+              _mapController?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(last.lat, last.lng),
+                    zoom: _currentZoom,
+                    bearing: _lastCameraBearing, // keep last bearing
+                    tilt: 45,
+                  ),
+                ),
+              );
+            }
           }
         } else {
           WakelockPlus.disable();
@@ -253,8 +292,8 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
         final points = state is TrackingActive
             ? state.points
             : state is TrackingCompleted
-                ? (state).points
-                : [];
+            ? (state).points
+            : [];
         final latLngs = points.map((p) => LatLng(p.lat, p.lng)).toList();
         final resolvedCenter = latLngs.isNotEmpty
             ? latLngs.last
@@ -270,7 +309,8 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const TrackingHistoryView()),
+                    builder: (_) => const TrackingHistoryView(),
+                  ),
                 ),
               ),
             ],
@@ -306,7 +346,8 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                                 position: latLngs.isNotEmpty
                                     ? latLngs.last
                                     : resolvedCenter,
-                                icon: _runnerIcon ??
+                                icon:
+                                    _runnerIcon ??
                                     BitmapDescriptor.defaultMarker,
                               ),
                             },
@@ -321,8 +362,10 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
                         _lastTime =
                             '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
                         setState(() {});
-                        Future.delayed(const Duration(milliseconds: 100),
-                            () => _shareWithImage(latLngs));
+                        Future.delayed(
+                          const Duration(milliseconds: 100),
+                          () => _shareWithImage(latLngs),
+                        );
                       }
                     },
                   ),
@@ -370,7 +413,8 @@ class _StatsBar extends StatelessWidget {
           children: [
             Text('${km.toStringAsFixed(2)} km'),
             Text(
-                '${s.elapsed.inMinutes}:${(s.elapsed.inSeconds % 60).toString().padLeft(2, '0')}'),
+              '${s.elapsed.inMinutes}:${(s.elapsed.inSeconds % 60).toString().padLeft(2, '0')}',
+            ),
             Text('$paceFormatted /km'),
           ],
         ),
@@ -424,7 +468,9 @@ class _Controls extends StatelessWidget {
             ElevatedButton(onPressed: cubit.pause, child: const Text('Pause')),
           if (state is TrackingPaused)
             ElevatedButton(
-                onPressed: cubit.resume, child: const Text('Resume')),
+              onPressed: cubit.resume,
+              child: const Text('Resume'),
+            ),
           if (state is TrackingActive)
             ElevatedButton(
               onPressed: () => cubit.stop(type: ActivityType.run, calories: 0),

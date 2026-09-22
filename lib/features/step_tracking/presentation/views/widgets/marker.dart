@@ -3,10 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class RunnerMarker extends StatelessWidget {
-  const RunnerMarker({super.key, required this.isMoving, required this.heading});
+  const RunnerMarker({super.key, required this.isMoving});
 
   final bool isMoving;
-  final double heading;
 
   @override
   Widget build(BuildContext context) {
@@ -22,14 +21,11 @@ class RunnerMarker extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(4),
       child: isMoving
-          ? Transform.rotate(
-               angle: (heading) * math.pi / 180,
-              child: const Icon(
-                Icons.navigation_rounded,
-                size: 13,
-                color: Colors.white,
-              ),
-            )
+          ? const Icon(
+            Icons.navigation_rounded,
+            size: 13,
+            color: Colors.white,
+          )
           : Container(
               width: 8,
               height: 8,
