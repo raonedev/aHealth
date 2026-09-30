@@ -47,6 +47,8 @@ app.*.map.json
 #secrets
 /lib/secrets/secrets.dart
 android/secrets.properties
+android/key.properties
+android/upload-keystore.jks
 
 # FVM Version Cache
 .fvm/
