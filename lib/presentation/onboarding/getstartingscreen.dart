@@ -41,6 +41,7 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Flexible(child: SvgPicture.asset('assets/svgs/getstarted.svg')),
+            Spacer(),
             ElevatedButton(
               onPressed: () => context.push(AppRoutes.onBoarding),
               child: Row(
@@ -61,22 +62,22 @@ class _GetStartingScreenState extends State<GetStartingScreen> {
                 ],
               ),
             ),
-            RichText(
-              text: TextSpan(
-                  text: 'Already have an account?',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  children: const [
-                    TextSpan(
-                      text: ' Sign In.',
-                      style: TextStyle(
-                        color: red,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                        decorationColor: red,
-                      ),
-                    ),
-                  ]),
-            ),
+            // RichText(
+            //   text: TextSpan(
+            //       text: 'Already have an account?',
+            //       style: Theme.of(context).textTheme.bodySmall,
+            //       children: const [
+            //         TextSpan(
+            //           text: ' Sign In.',
+            //           style: TextStyle(
+            //             color: red,
+            //             fontWeight: FontWeight.w700,
+            //             decoration: TextDecoration.underline,
+            //             decorationColor: red,
+            //           ),
+            //         ),
+            //       ]),
+            // ),
           ],
         ),
       ),
