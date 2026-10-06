@@ -199,6 +199,12 @@
       "skillPath": "skills/flutter-architecture/SKILL.md",
       "computedHash": "d8f1ff1d81d9827a280f569b991f680c6b045164f41118f8a48f00ec4eae0505"
     },
+    "flutter-bloc": {
+      "source": "dhruvanbhalara/skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter/flutter-bloc/SKILL.md",
+      "computedHash": "7cea7643482fbc58a908d6fcf107a4a0164d74b60688fd427f0ab117de5b85fe"
+    },
     "flutter-build-responsive-layout": {
       "source": "flutter/agent-plugins",
       "sourceType": "github",
