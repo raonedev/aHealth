@@ -13,7 +13,6 @@ import '../../domain/usecases/save_activity.dart';
 import '../../domain/repositories/tracking_repository.dart';
 import 'tracking_state.dart';
 
-
 class TrackingCubit extends Cubit<TrackingState> {
   final GetLocationStream getLocationStream;
   final CalculateDistance calculateDistance;
@@ -38,57 +37,54 @@ class TrackingCubit extends Cubit<TrackingState> {
   }) : super(TrackingIdle());
 
   void start() {
-  Future(() async {
-    final granted = await _ensureLocationPermission();
-    if (!granted) {
-      emit(TrackingPermissionDenied());
-      return;
-    }
+    Future(() async {
+      final granted = await _ensureLocationPermission();
+      if (!granted) {
+        emit(TrackingPermissionDenied());
+        return;
+      }
 
-    _activityId = const Uuid().v4();
-    _points.clear();
-    _distance = 0;
-    _elapsed = Duration.zero;
-    _startTime = DateTime.now();
+      _activityId = const Uuid().v4();
+      _points.clear();
+      _distance = 0;
+      _elapsed = Duration.zero;
+      _startTime = DateTime.now();
 
-    _sub = getLocationStream().listen(_onPosition, onError: (_) {});
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _elapsed = DateTime.now().difference(_startTime!);
-      _emitActive();
+      _sub = getLocationStream().listen(_onPosition, onError: (_) {});
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        _elapsed = DateTime.now().difference(_startTime!);
+        _emitActive();
+      });
+
+      emit(
+        TrackingActive(
+          points: const [],
+          distanceMeters: 0,
+          elapsed: Duration.zero,
+        ),
+      );
     });
-
-    emit(TrackingActive(points: const [], distanceMeters: 0, elapsed: Duration.zero));
-  });
-}
-
-
-
-
-Future<bool> _ensureLocationPermission() async {
-  if (!await Geolocator.isLocationServiceEnabled()) return false;
-  var permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
   }
-  if (permission == LocationPermission.whileInUse) {
-    permission = await Geolocator.requestPermission(); // prompts for Always on supported OS versions
-  }
-    if (Platform.isAndroid) {
-    final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
-    if (!batteryStatus.isGranted) {
-      await Permission.ignoreBatteryOptimizations.request();
+
+  Future<bool> _ensureLocationPermission() async {
+    if (Platform.isAndroid) await Permission.notification.request();
+    if (!await Geolocator.isLocationServiceEnabled()) return false;
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
     }
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
   }
-  return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
-}
 
-Future<List<Activity>> getHistory() => repository.getActivities();
+  Future<List<Activity>> getHistory() => repository.getActivities();
 
   void _onPosition(Position pos) {
     if (pos.accuracy > _accuracyThreshold) return;
 
-    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}");
-    
+    dev.log(
+      "lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}",
+    );
 
     final point = LocationPoint(
       activityId: _activityId,
@@ -114,13 +110,25 @@ Future<List<Activity>> getHistory() => repository.getActivities();
 
   void _emitActive() {
     if (state is TrackingPaused) return;
-    emit(TrackingActive(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    emit(
+      TrackingActive(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
   }
 
   void pause() {
     _sub?.pause();
     _timer?.cancel();
-    emit(TrackingPaused(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    emit(
+      TrackingPaused(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
   }
 
   void resume() {
@@ -131,16 +139,27 @@ Future<List<Activity>> getHistory() => repository.getActivities();
       _elapsed = DateTime.now().difference(resumedAt);
       _emitActive();
     });
-    emit(TrackingActive(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    emit(
+      TrackingActive(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
   }
 
-  Future<void> stop({required ActivityType type, required double calories}) async {
+  Future<void> stop({
+    required ActivityType type,
+    required double calories,
+  }) async {
     _sub?.cancel();
     _timer?.cancel();
 
     final remainder = _points.length % _batchSize;
     if (remainder != 0) {
-      await repository.savePointsBatch(_points.sublist(_points.length - remainder));
+      await repository.savePointsBatch(
+        _points.sublist(_points.length - remainder),
+      );
     }
 
     final activity = Activity(
@@ -150,12 +169,16 @@ Future<List<Activity>> getHistory() => repository.getActivities();
       endTime: DateTime.now(),
       distanceMeters: _distance,
       durationSeconds: _elapsed.inSeconds,
-      avgPaceSecPerKm: _distance <= 0 ? 0 : _elapsed.inSeconds / (_distance / 1000),
+      avgPaceSecPerKm: _distance <= 0
+          ? 0
+          : _elapsed.inSeconds / (_distance / 1000),
       calories: calories,
     );
     await saveActivity(activity);
 
-    emit(TrackingCompleted(activity: activity, points: List.unmodifiable(_points)));
+    emit(
+      TrackingCompleted(activity: activity, points: List.unmodifiable(_points)),
+    );
   }
 
   void reset() => emit(TrackingIdle());

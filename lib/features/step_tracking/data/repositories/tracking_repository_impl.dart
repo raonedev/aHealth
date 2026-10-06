@@ -12,30 +12,30 @@ class TrackingRepositoryImpl implements TrackingRepository {
   final TrackingLocalDataSource local;
   TrackingRepositoryImpl(this.local);
 
-  
-@override
-Stream<Position> get positionStream => Geolocator.getPositionStream(
-      locationSettings: Platform.isAndroid
-          ? AndroidSettings(
-              accuracy: LocationAccuracy.high,
-              distanceFilter: 5,
-              intervalDuration: const Duration(seconds: 3),
-              foregroundNotificationConfig: const ForegroundNotificationConfig(
-                notificationTitle: "aHealth is tracking",
-                notificationText: "Recording your route in the background",
-                enableWakeLock: true,
-              ),
-            )
-          : AppleSettings(
-              accuracy: LocationAccuracy.high,
-              distanceFilter: 5,
-              pauseLocationUpdatesAutomatically: false,
-              showBackgroundLocationIndicator: true,
+  @override
+  Stream<Position> get positionStream => Geolocator.getPositionStream(
+    locationSettings: Platform.isAndroid
+        ? AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 5,
+            intervalDuration: const Duration(seconds: 3),
+            foregroundNotificationConfig: const ForegroundNotificationConfig(
+              notificationTitle: "aHealth is tracking",
+              notificationText: "Recording your activity in the background",
+              enableWakeLock: true,
             ),
-    );
+          )
+        : AppleSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 5,
+            pauseLocationUpdatesAutomatically: false,
+            showBackgroundLocationIndicator: true,
+          ),
+  );
 
   @override
-  Future<void> savePointsBatch(List<LocationPoint> points) => local.insertPointsBatch(
+  Future<void> savePointsBatch(List<LocationPoint> points) =>
+      local.insertPointsBatch(
         points.map((p) => LocationPointModel.fromEntity(p)).toList(),
       );
 

@@ -26,8 +26,8 @@ class StepsTrackingView extends StatefulWidget {
   State<StepsTrackingView> createState() => _StepsTrackingViewState();
 }
 
-class _StepsTrackingViewState extends State<StepsTrackingView>
-    with WidgetsBindingObserver {
+class _StepsTrackingViewState extends State<StepsTrackingView> {
+  // with WidgetsBindingObserver {
   PlatformMapController? _mapController;
   static const LatLng _fallbackCenter = LatLng(30.7046, 76.7179);
   LatLng? _initialCenter;
@@ -82,7 +82,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    // WidgetsBinding.instance.addObserver(this);
     _loadCurrentLocation();
   }
 
@@ -187,16 +187,16 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
     return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final cubit = context.read<TrackingCubit>();
-    if (state == AppLifecycleState.paused && cubit.state is TrackingActive) {
-      cubit.pause();
-    } else if (state == AppLifecycleState.resumed &&
-        cubit.state is TrackingPaused) {
-      cubit.resume();
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   final cubit = context.read<TrackingCubit>();
+  //   if (state == AppLifecycleState.paused && cubit.state is TrackingActive) {
+  //     cubit.pause();
+  //   } else if (state == AppLifecycleState.resumed &&
+  //       cubit.state is TrackingPaused) {
+  //     cubit.resume();
+  //   }
+  // }
 
   // add this helper
   double _bearingDiff(double a, double b) {
@@ -205,7 +205,7 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    // WidgetsBinding.instance.removeObserver(this);
     WakelockPlus.disable();
     super.dispose();
   }
