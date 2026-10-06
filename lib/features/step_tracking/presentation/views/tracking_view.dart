@@ -199,9 +199,9 @@ class _StepsTrackingViewState extends State<StepsTrackingView>
   }
 
   // add this helper
-double _bearingDiff(double a, double b) {
-  return ((a - b + 540) % 360 - 180).abs();
-}
+  double _bearingDiff(double a, double b) {
+    return ((a - b + 540) % 360 - 180).abs();
+  }
 
   @override
   void dispose() {
@@ -475,6 +475,11 @@ class _Controls extends StatelessWidget {
             ElevatedButton(
               onPressed: () => cubit.stop(type: ActivityType.run, calories: 0),
               child: const Text('Stop'),
+            ),
+          if (state is TrackingCompleted)
+            ElevatedButton(
+              onPressed: cubit.reset,
+              child: const Text('New Tracking'),
             ),
         ],
       ),

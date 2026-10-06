@@ -158,6 +158,8 @@ Future<List<Activity>> getHistory() => repository.getActivities();
     emit(TrackingCompleted(activity: activity, points: List.unmodifiable(_points)));
   }
 
+  void reset() => emit(TrackingIdle());
+
   @override
   Future<void> close() {
     _sub?.cancel();
