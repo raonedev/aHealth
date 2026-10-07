@@ -30,10 +30,10 @@ class ActivityModel extends Activity {
         endTime: map['endTime'] != null
             ? DateTime.fromMillisecondsSinceEpoch(map['endTime'] as int)
             : null,
-        distanceMeters: map['distanceMeters'] as double,
+        distanceMeters: (map['distanceMeters'] as num).toDouble(),
         durationSeconds: map['durationSeconds'] as int,
-        avgPaceSecPerKm: map['avgPaceSecPerKm'] as double,
-        calories: map['calories'] as double,
+        avgPaceSecPerKm: (map['avgPaceSecPerKm'] as num).toDouble(),
+        calories: (map['calories'] as num).toDouble(),
       );
 
   Map<String, dynamic> toMap() => {

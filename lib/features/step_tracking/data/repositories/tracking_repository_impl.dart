@@ -34,6 +34,10 @@ class TrackingRepositoryImpl implements TrackingRepository {
   );
 
   @override
+  Future<void> savePoint(LocationPoint point) =>
+      local.insertPoint(LocationPointModel.fromEntity(point));
+
+  @override
   Future<void> savePointsBatch(List<LocationPoint> points) =>
       local.insertPointsBatch(
         points.map((p) => LocationPointModel.fromEntity(p)).toList(),

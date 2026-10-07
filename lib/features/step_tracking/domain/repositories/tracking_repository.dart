@@ -4,6 +4,7 @@ import '../entities/location_point.dart';
 
 abstract class TrackingRepository {
   Stream<Position> get positionStream;
+  Future<void> savePoint(LocationPoint point);
   Future<void> savePointsBatch(List<LocationPoint> points);
   Future<void> saveActivity(Activity activity);
   Future<List<Activity>> getActivities();

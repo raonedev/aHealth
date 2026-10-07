@@ -26,7 +26,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   Duration _elapsed = Duration.zero;
   DateTime? _startTime;
   String _activityId = '';
-  static const int _batchSize = 10;
+  ActivityType _currentType = ActivityType.run;
   static const double _accuracyThreshold = 20;
 
   TrackingCubit({
@@ -36,7 +36,7 @@ class TrackingCubit extends Cubit<TrackingState> {
     required this.repository,
   }) : super(TrackingIdle());
 
-  void start() {
+  void start({ActivityType type = ActivityType.run}) {
     Future(() async {
       final granted = await _ensureLocationPermission();
       if (!granted) {
@@ -45,10 +45,24 @@ class TrackingCubit extends Cubit<TrackingState> {
       }
 
       _activityId = const Uuid().v4();
+      _currentType = type;
       _points.clear();
       _distance = 0;
       _elapsed = Duration.zero;
       _startTime = DateTime.now();
+
+      // Create session in database immediately
+      final initialActivity = Activity(
+        id: _activityId,
+        type: _currentType,
+        startTime: _startTime!,
+        endTime: null,
+        distanceMeters: 0,
+        durationSeconds: 0,
+        avgPaceSecPerKm: 0,
+        calories: 0,
+      );
+      await saveActivity(initialActivity);
 
       _sub = getLocationStream().listen(_onPosition, onError: (_) {});
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -101,11 +115,40 @@ class TrackingCubit extends Cubit<TrackingState> {
     }
     _points.add(point);
 
-    if (_points.length % _batchSize == 0) {
-      repository.savePointsBatch(_points.sublist(_points.length - _batchSize));
-    }
+    // Save data for this session at each interval and update the ongoing session path
+    _saveIntervalData(point);
 
     _emitActive();
+  }
+
+  Future<void> _saveIntervalData(LocationPoint point) async {
+    try {
+      await repository.savePoint(point);
+      await _syncActiveSession();
+    } catch (e, st) {
+      dev.log("Error saving tracking interval data: $e", stackTrace: st);
+    }
+  }
+
+  Future<void> _syncActiveSession() async {
+    if (_startTime == null || _activityId.isEmpty) return;
+    final currentActivity = Activity(
+      id: _activityId,
+      type: _currentType,
+      startTime: _startTime!,
+      endTime: null, // Still active / not stopped
+      distanceMeters: _distance,
+      durationSeconds: _elapsed.inSeconds,
+      avgPaceSecPerKm: _distance <= 0
+          ? 0
+          : _elapsed.inSeconds / (_distance / 1000),
+      calories: _estimateCalories(_distance, _elapsed.inSeconds),
+    );
+    await saveActivity(currentActivity);
+  }
+
+  double _estimateCalories(double distanceMeters, int durationSeconds) {
+    return (distanceMeters / 1000) * 60;
   }
 
   void _emitActive() {
@@ -122,6 +165,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   void pause() {
     _sub?.pause();
     _timer?.cancel();
+    _syncActiveSession();
     emit(
       TrackingPaused(
         points: List.unmodifiable(_points),
@@ -155,24 +199,22 @@ class TrackingCubit extends Cubit<TrackingState> {
     _sub?.cancel();
     _timer?.cancel();
 
-    final remainder = _points.length % _batchSize;
-    if (remainder != 0) {
-      await repository.savePointsBatch(
-        _points.sublist(_points.length - remainder),
-      );
-    }
+    _currentType = type;
+    final finalCalories = calories > 0
+        ? calories
+        : _estimateCalories(_distance, _elapsed.inSeconds);
 
     final activity = Activity(
       id: _activityId,
-      type: type,
-      startTime: _startTime!,
+      type: _currentType,
+      startTime: _startTime ?? DateTime.now(),
       endTime: DateTime.now(),
       distanceMeters: _distance,
       durationSeconds: _elapsed.inSeconds,
       avgPaceSecPerKm: _distance <= 0
           ? 0
           : _elapsed.inSeconds / (_distance / 1000),
-      calories: calories,
+      calories: finalCalories,
     );
     await saveActivity(activity);
 

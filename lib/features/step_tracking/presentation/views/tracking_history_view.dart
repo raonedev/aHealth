@@ -57,11 +57,13 @@ class _TrackingHistoryViewState extends State<TrackingHistoryView> {
     );
 
     if (confirmed == true) {
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'I tracked $_shareKm km in $_shareTime on aHealth! 🏃‍♂️',
-        subject: 'My Activity on aHealth',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'I tracked $_shareKm km in $_shareTime on aHealth! 🏃‍♂️',
+          subject: 'My Activity on aHealth',
+        ),
+      );
     }
   }
 
@@ -88,12 +90,18 @@ class _TrackingHistoryViewState extends State<TrackingHistoryView> {
                   final item = items[i];
                   final km = (item.distanceMeters / 1000).toStringAsFixed(2);
                   final mins = item.durationSeconds ~/ 60;
-                  final secs =
-                      (item.durationSeconds % 60).toString().padLeft(2, '0');
+                  final secs = (item.durationSeconds % 60).toString().padLeft(
+                    2,
+                    '0',
+                  );
                   return ListTile(
                     leading: const Icon(Icons.directions_run),
                     title: Text('$km km'),
-                    subtitle: Text('$mins:$secs'),
+                    subtitle: Text(
+                      item.endTime == null
+                          ? '$mins:$secs (In progress)'
+                          : '$mins:$secs',
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.share),
                       onPressed: () => _shareItem(item),
