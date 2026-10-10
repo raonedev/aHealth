@@ -3,7 +3,6 @@ import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/blocs/charts/calorie_chart/calorie_chart_cubit.dart';
 import 'package:ahealth/features/streak/presentation/cubit/streak_cubit.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
-import 'package:ahealth/services/notification_services.dart';
 import 'package:ahealth/services/nutrition_service.dart';
 import 'package:confetti/confetti.dart';
 import 'blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
@@ -47,6 +46,11 @@ import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
   //   await FlutterForegroundTask.requestNotificationPermission();
