@@ -8,6 +8,7 @@ import 'package:ahealth/presentation/home/widget/height_card.dart';
 import 'package:ahealth/presentation/home/widget/hydration_card.dart';
 import 'package:ahealth/presentation/home/widget/sleep_card.dart';
 import 'package:ahealth/presentation/home/widget/weight_card.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
+import '../../blocs/height/height_cubit.dart';
+import '../../blocs/nutrition/nutrition_cubit.dart';
+import '../../blocs/sleep/sleep_cubit.dart';
+import '../../blocs/step/step_cubit.dart';
+import '../../blocs/water/water_cubit.dart';
+import '../../blocs/weight/weight_cubit.dart';
 import '../../features/streak/presentation/cubit/streak_cubit.dart';
 import '../../features/streak/presentation/cubit/streak_state.dart';
 import '../../features/streak/presentation/screens/streak_screen.dart';
@@ -64,31 +71,58 @@ class _HomeWidgetState extends State<HomeWidget> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    await Future.wait([
+      _loadUserName(),
+      _loadUserImage(),
+      if (mounted) context.read<StreakCubit>().loadStreak(),
+      if (mounted) context.read<StepsCubit>().getStepData(),
+      if (mounted) context.read<WaterCubit>().getWaterData(),
+      if (mounted) context.read<WeightCubit>().getWeightData(),
+      if (mounted) context.read<HeightCubit>().getHeight(),
+      if (mounted) context.read<SleepCubit>().getSleepData(),
+      if (mounted)
+        context.read<NutritionCubit>().getNutritionData(forceRefresh: true),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-          children: [
-            _buildTopBar(context),
-            const SizedBox(height: 8),
-            NutritionCard(),
-            const SizedBox(height: 16),
-            StepsCard(),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: HydrationCard()),
-                const SizedBox(width: 16),
-                Expanded(child: WeightCard()),
-              ],
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: _onRefresh,
             ),
-            const SizedBox(height: 16),
-            HeightCard(),
-            const SizedBox(height: 16),
-            SleepCard(),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildTopBar(context),
+                  const SizedBox(height: 8),
+                  NutritionCard(),
+                  const SizedBox(height: 16),
+                  StepsCard(),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: HydrationCard()),
+                      const SizedBox(width: 16),
+                      Expanded(child: WeightCard()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  HeightCard(),
+                  const SizedBox(height: 16),
+                  SleepCard(),
+                ]),
+              ),
+            ),
           ],
         ),
       ),

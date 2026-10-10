@@ -61,22 +61,6 @@ void main() async {
   Hive.registerAdapter(ChatSessionAdapter());
   await setupLocator();
   await ChatHiveService.instance.openBoxes();
-  // init once in main.dart
-  await HealthNotificationService().init();
-
-// Water reminders: 8 AM → 10 PM, every 2 hours
-  await HealthNotificationService().scheduleWaterReminders(
-    startTime: TimeOfDay(hour: 8, minute: 0),
-    endTime: TimeOfDay(hour: 22, minute: 0),
-    frequencyHours: 2, // customizable
-  );
-
-// Meal reminders (pass null to disable any meal)
-  await HealthNotificationService().scheduleMealReminders(
-    breakfastTime: TimeOfDay(hour: 8, minute: 0),
-    lunchTime: TimeOfDay(hour: 13, minute: 0),
-    dinnerTime: TimeOfDay(hour: 19, minute: 30),
-  );
 
   Hive.registerAdapter(FoodScanGroupAdapter());
   Hive.registerAdapter(ValueFoodHiveAdapter());

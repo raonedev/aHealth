@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../blocs/charts/step_chart/step_chart_cubit.dart';
 import 'step_chart_screen.dart';
 import 'widgets/day_list_tile.dart';
 import 'widgets/step_line_chart.dart';
@@ -28,28 +30,33 @@ class WeeklyTab extends StatelessWidget {
     final double avg = weekData.isEmpty ? 0 : weekData.reduce((a, b) => a + b) / weekData.length;
     final hit = weekData.where((s) => s >= kDailyTarget).length;
 
-    return ListView(
-      physics: BouncingScrollPhysics(),
-      children: [
-        SummaryCards(
-          items: [
-            ('Today', today != null ? _fmt(today.steps) : '-', true),
-            ('Avg/day', _fmt(avg), false),
-            ('Goal hit', '$hit/${weekData.length}', false),
-          ],
-        ),
-        StepLineChart(points: pts, label: 'Last 7 days'),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('Daily breakdown',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                  color: Colors.grey[600], letterSpacing: .5)),
-        ),
-        const SizedBox(height: 8),
-         ...pts.reversed.map((p) => DayListTile(point: p)),
-        const SizedBox(height: 16),
-      ],
+    return RefreshIndicator(
+      onRefresh: () async {
+        await context.read<StepChartCubit>().getDataFromNow(forceRefresh: true);
+      },
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        children: [
+          SummaryCards(
+            items: [
+              ('Today', today != null ? _fmt(today.steps) : '-', true),
+              ('Avg/day', _fmt(avg), false),
+              ('Goal hit', '$hit/${weekData.length}', false),
+            ],
+          ),
+          StepLineChart(points: pts, label: 'Last 7 days'),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text('Daily breakdown',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                    color: Colors.grey[600], letterSpacing: .5)),
+          ),
+          const SizedBox(height: 8),
+           ...pts.reversed.map((p) => DayListTile(point: p)),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 }

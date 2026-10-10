@@ -36,8 +36,8 @@ class WaterChartCubit extends Cubit<WaterChartState> {
     return result;
   }
 
-  Future<void> getChartData() async {
-    if (state is WaterChartSuccess) return;
+  Future<void> getChartData({bool forceRefresh = false}) async {
+    if (!forceRefresh && state is WaterChartSuccess) return;
     emit(WaterChartLoading());
 
     bool perm = await Health().hasPermissions([HealthDataType.WATER]) ?? false;

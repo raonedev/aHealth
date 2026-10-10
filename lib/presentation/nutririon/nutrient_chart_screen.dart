@@ -110,116 +110,127 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                               conf.getter(b).compareTo(conf.getter(a))))
                         : <NutritionModel>[];
 
-                    return ListView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 24),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ClipRRect(
-                            borderRadius: BorderRadiusGeometry.circular(8),
-                            child: NutrientLineChart(
-                              points: pts,
-                              label: '${conf.label} - last 7 days',
-                              color: conf.color,
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await Future.wait([
+                          context.read<NutrientChartCubit>().getWeekData(),
+                          context
+                              .read<NutritionCubit>()
+                              .getNutritionData(forceRefresh: true),
+                        ]);
+                      },
+                      child: ListView(
+                        physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics()),
+                        padding: const EdgeInsets.only(bottom: 24),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ClipRRect(
+                              borderRadius: BorderRadiusGeometry.circular(8),
+                              child: NutrientLineChart(
+                                points: pts,
+                                label: '${conf.label} - last 7 days',
+                                color: conf.color,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Text("Nutrient items",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey[700])),
-                              Spacer(),
-                              IconButton(
-                                icon: HugeIcon(
-                                    icon: HugeIcons.strokeRoundedArrowLeft01),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  final cubit = context.read<NutritionCubit>();
-                                  cubit.getNutritionData(
-                                      date: cubit.selectedDate
-                                          .subtract(const Duration(days: 1)));
-                                },
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  final cubit = context.read<NutritionCubit>();
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: cubit.selectedDate,
-                                    firstDate: DateTime(2020),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (picked != null) {
-                                    cubit.getNutritionData(date: picked);
-                                  }
-                                },
-                                child: Text(
-                                    dateLabel(context
-                                        .read<NutritionCubit>()
-                                        .selectedDate),
-                                    style: const TextStyle(
-                                        fontSize: 12,
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                Text("Nutrient items",
+                                    style: TextStyle(
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: _textPrimary)),
-                              ),
-                              IconButton(
-                                icon: HugeIcon(
-                                    icon: HugeIcons.strokeRoundedArrowRight01),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  final cubit = context.read<NutritionCubit>();
-                                  final next = cubit.selectedDate
-                                      .add(const Duration(days: 1));
-                                  final today = DateTime.now();
-                                  if (!next.isAfter(DateTime(
-                                      today.year, today.month, today.day))) {
-                                    cubit.getNutritionData(date: next);
-                                  }
-                                },
-                              ),
-                            ],
+                                        color: Colors.grey[700])),
+                                Spacer(),
+                                IconButton(
+                                  icon: HugeIcon(
+                                      icon: HugeIcons.strokeRoundedArrowLeft01),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () {
+                                    final cubit = context.read<NutritionCubit>();
+                                    cubit.getNutritionData(
+                                        date: cubit.selectedDate
+                                            .subtract(const Duration(days: 1)));
+                                  },
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final cubit = context.read<NutritionCubit>();
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: cubit.selectedDate,
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      cubit.getNutritionData(date: picked);
+                                    }
+                                  },
+                                  child: Text(
+                                      dateLabel(context
+                                          .read<NutritionCubit>()
+                                          .selectedDate),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: _textPrimary)),
+                                ),
+                                IconButton(
+                                  icon: HugeIcon(
+                                      icon: HugeIcons.strokeRoundedArrowRight01),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () {
+                                    final cubit = context.read<NutritionCubit>();
+                                    final next = cubit.selectedDate
+                                        .add(const Duration(days: 1));
+                                    final today = DateTime.now();
+                                    if (!next.isAfter(DateTime(
+                                        today.year, today.month, today.day))) {
+                                      cubit.getNutritionData(date: next);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (todayItems.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 20),
-                            child: Text('No items logged today',
-                                style: TextStyle(color: Colors.grey)),
-                          )
-                        else
-                          ...todayItems.map((item) => SpringButton(
-                                SpringButtonType.withOpacity,
-                                onTap: () async {
-                                  HapticFeedback.mediumImpact();
-                                  context.push('/nutrition/detail',
-                                      extra: item);
-                                },
-                                uiChild: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                                  child: CardShell(
-                                    child: BuildCardContent(
-                                      item: item,
-                                      count: 1,
-                                      groupItems: [item],
+                          const SizedBox(height: 8),
+                          if (todayItems.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 20),
+                              child: Text('No items logged today',
+                                  style: TextStyle(color: Colors.grey)),
+                            )
+                          else
+                            ...todayItems.map((item) => SpringButton(
+                                  SpringButtonType.withOpacity,
+                                  onTap: () async {
+                                    HapticFeedback.mediumImpact();
+                                    context.push('/nutrition/detail',
+                                        extra: item);
+                                  },
+                                  uiChild: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                                    child: CardShell(
+                                      child: BuildCardContent(
+                                        item: item,
+                                        count: 1,
+                                        groupItems: [item],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )),
-                      ],
+                                )),
+                        ],
+                      ),
                     );
                   },
                 );

@@ -11,8 +11,8 @@ part 'step_chart_state.dart';
 class StepChartCubit extends Cubit<StepChartState> {
   StepChartCubit() : super(StepChartsLoading());
 
-  Future<void> getDataFromNow() async {
-    if (state is StepChartsSuccess) {
+  Future<void> getDataFromNow({bool forceRefresh = false}) async {
+    if (!forceRefresh && state is StepChartsSuccess) {
       log('Week data is already loaded. Skipping execution.');
       return;
     }

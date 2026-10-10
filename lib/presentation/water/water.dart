@@ -1,11 +1,14 @@
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../app_routes.dart';
 import '../../blocs/water/water_cubit.dart';
+import '../../models/water_model.dart';
 
 const Color background = Color(0xFFF1F5F9);
 const Color grey = Color(0xFFCBD5E1);
@@ -65,36 +68,78 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
     _fillController.animateTo(level, curve: Curves.easeInOutCubic);
   }
 
+  void _showDeleteConfirmationDialog(BuildContext context, WaterModel waterLog) {
+    final amountMl = ((waterLog.value?.numericValue ?? 0) * 1000).toInt();
+    final timeStr = _formatLogTime(waterLog.dateTo ?? waterLog.dateFrom);
+
+    showCupertinoDialog(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('Delete Water Log'),
+        content: Text(
+          'Are you sure you want to delete $amountMl ml logged at $timeStr?',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.read<WaterCubit>().deleteWaterData(waterLog);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatLogTime(String? dateStr) {
+    if (dateStr == null) return '';
+    try {
+      final dateTime = DateTime.parse(dateStr).toLocal();
+      return DateFormat('h:mm a').format(dateTime);
+    } catch (_) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<WaterCubit, WaterState>(
-      listener: (context, state) {if (state is WaterSuccessState) {
-        final total = state.waterModel.fold(0.0, (sum, e) => sum + (e.value?.numericValue ?? 0.0));
-        _syncFillLevel(total, 4.0);
-      }
+      listener: (context, state) {
+        if (state is WaterSuccessState) {
+          final total = state.waterModel.fold(0.0, (sum, e) => sum + (e.value?.numericValue ?? 0.0));
+          _syncFillLevel(total, 4.0);
+        }
       },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: background,
           appBar: AppBar(
-            title: Padding(
-              padding: const EdgeInsets.only(left: 12),
-              child: Text('Today\' water'),
+            title: const Padding(
+              padding: EdgeInsets.only(left: 12),
+              child: Text('Today\'s Water'),
             ),
             actions: [
-              IconButton(onPressed: () {
-                
+              IconButton(
+                onPressed: () {
                   context.push(AppRoutes.waterChartScreen);
-              }, icon: Icon(Icons.history))
+                },
+                icon: const Icon(Icons.history),
+              )
             ],
-
           ),
-          body: SizedBox(
-            width: double.infinity,
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: kToolbarHeight),
+                const SizedBox(height: 20),
                 Container(
                   width: 150,
                   height: 70,
@@ -121,7 +166,9 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                   ),
                 ),
                 Container(width: 100, height: 8, color: Colors.blueAccent.withValues(alpha: 0.4)),
-                Expanded(
+                SizedBox(
+                  height: 320,
+                  width: 280,
                   child: AnimatedBuilder(
                     animation: Listenable.merge([_waveController, _fillController]),
                     builder: (context, _) {
@@ -205,8 +252,8 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                               Text(
                                 "Log Water here",
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: (value < 0.2) ? textDarkGrey : Colors.white,
-                                ),
+                                      color: (value < 0.2) ? textDarkGrey : Colors.white,
+                                    ),
                               ),
                               const SizedBox(height: 40),
                             ],
@@ -216,12 +263,153 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                     },
                   ),
                 ),
-                const SizedBox(height: kToolbarHeight * 2),
+                const SizedBox(height: 24),
+                _buildWaterLogsList(context, state),
+                const SizedBox(height: 40),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWaterLogsList(BuildContext context, WaterState state) {
+    if (state is! WaterSuccessState || state.waterModel.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.water_drop_outlined, size: 36, color: Colors.blue.withValues(alpha: 0.5)),
+              const SizedBox(height: 8),
+              const Text(
+                "No water logs for today",
+                style: TextStyle(
+                  color: textDarkGrey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final logs = state.waterModel;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Today's Logs",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: textDarkGrey,
+                    ),
+              ),
+              Text(
+                "${logs.length} ${logs.length == 1 ? 'entry' : 'entries'}",
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: textDarkGrey,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: logs.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final item = logs[index];
+              final amountInMl = ((item.value?.numericValue ?? 0) * 1000).toInt();
+              final timeStr = _formatLogTime(item.dateTo ?? item.dateFrom);
+
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.water_drop_rounded,
+                        color: Colors.blue,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "$amountInMl ml",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            timeStr,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: textDarkGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _showDeleteConfirmationDialog(context, item),
+                      icon: const Icon(
+                        CupertinoIcons.trash,
+                        color: Colors.redAccent,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

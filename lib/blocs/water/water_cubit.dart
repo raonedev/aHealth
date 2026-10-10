@@ -120,4 +120,32 @@ class WaterCubit extends Cubit<WaterState> {
       emit(WaterFailed(errorMessage: e.toString()));
     }
   }
+
+  Future<void> deleteWaterData(WaterModel waterModel) async {
+    emit(WaterLoadingState());
+
+    if (waterModel.dateFrom == null || waterModel.dateTo == null) {
+      emit(const WaterFailed(errorMessage: "Invalid water log data"));
+      return;
+    }
+
+    try {
+      final startTime = DateTime.parse(waterModel.dateFrom!);
+      final endTime = DateTime.parse(waterModel.dateTo!);
+
+      bool success = await Health().delete(
+        type: HealthDataType.WATER,
+        startTime: startTime,
+        endTime: endTime,
+      );
+
+      if (success) {
+        await getWaterData();
+      } else {
+        emit(const WaterFailed(errorMessage: "Failed to delete water log"));
+      }
+    } catch (e) {
+      emit(WaterFailed(errorMessage: e.toString()));
+    }
+  }
 }

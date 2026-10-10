@@ -4,10 +4,12 @@ import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:ahealth/constants.dart';
 import 'package:ahealth/presentation/profileinfo/rularslider.dart';
+import 'package:ahealth/services/notification_services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:health/health.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -59,6 +61,54 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
 
   File? selectedImageFile;
   ActivityLevel selectedActivityLevel = ActivityLevel.lightlyActive;
+
+  Future<void> _logHealthConnectData() async {
+    try {
+      final now = DateTime.now();
+      final earlier = now.subtract(const Duration(minutes: 1));
+
+      final weightInKg = weightUnit == WeightUnit.lbs
+          ? initialWeightValue * 0.45359237
+          : initialWeightValue;
+
+      final heightInCm = heightUnit == HeightUnit.ft
+          ? initialHeightValue * 30.48
+          : initialHeightValue;
+      final heightInMeters = heightInCm / 100.0;
+
+      bool hasPermissions = await Health().hasPermissions([
+            HealthDataType.WEIGHT,
+            HealthDataType.HEIGHT,
+          ]) ??
+          false;
+
+      if (!hasPermissions) {
+        hasPermissions = await Health().requestAuthorization(
+          [HealthDataType.WEIGHT, HealthDataType.HEIGHT],
+          permissions: [
+            HealthDataAccess.READ_WRITE,
+            HealthDataAccess.READ_WRITE,
+          ],
+        );
+      }
+
+      await Health().writeHealthData(
+        value: weightInKg,
+        type: HealthDataType.WEIGHT,
+        startTime: earlier,
+        endTime: now,
+      );
+
+      await Health().writeHealthData(
+        value: heightInMeters,
+        type: HealthDataType.HEIGHT,
+        startTime: earlier,
+        endTime: now,
+      );
+    } catch (e) {
+      debugPrint('Error logging weight/height to Health Connect: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -140,7 +190,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: (150 / 7) * step.toDouble(),
+                width: (150 / 8) * step.toDouble(),
                 height: 8,
                 decoration: BoxDecoration(
                   color: black,
@@ -149,13 +199,29 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               ),
             ],
           ),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: Text(
-                "Skip",
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
+          actions: [
+            GestureDetector(
+              onTap: () async {
+                if (step < 8) {
+                  await _logHealthConnectData();
+                  setState(() {
+                    step = 8;
+                  });
+                } else {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+                  if (context.mounted) {
+                    context.go('/shell/home');
+                  }
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: Text(
+                  "Skip",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -176,7 +242,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                               ? ageWidget(context)
                               : (step == 6)
                                   ? activityLevelWidget(context)
-                                  : nameWidget(context),
+                                  : (step == 7)
+                                      ? nameWidget(context)
+                                      : notificationWidget(context),
         ),
       ),
     );
@@ -962,9 +1030,12 @@ Widget activityLevelCard(ActivityLevel level) {
             await prefs.setInt(PrefKeys.age, age);
             await prefs.setString(PrefKeys.activityLevel, selectedActivityLevel.name);
             await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
-            if (context.mounted) {
-              context.go('/shell/home');
-            }
+
+            await _logHealthConnectData();
+
+            setState(() {
+              step = 8;
+            });
           },
           uiChild: Container(
             width: double.infinity,
@@ -988,6 +1059,181 @@ Widget activityLevelCard(ActivityLevel level) {
                 const SizedBox(width: 16),
                 const Icon(Icons.arrow_forward, color: white),
               ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Notification Section => step 8
+  Widget notificationWidget(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            color: primary.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.notifications_active_rounded,
+            size: 44,
+            color: primary,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Stay on Track with Reminders',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Allow notifications to receive personalized water and meal reminders throughout your day.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+        const SizedBox(height: 32),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.water_drop_rounded, color: primary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Hydration Reminders',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Every 2 hours from 8 AM to 10 PM',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(height: 1),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.restaurant_rounded, color: primary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Meal Reminders',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Breakfast, Lunch & Dinner time prompts',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () async {
+            await HealthNotificationService().init();
+            await HealthNotificationService().scheduleWaterReminders(
+              startTime: const TimeOfDay(hour: 8, minute: 0),
+              endTime: const TimeOfDay(hour: 22, minute: 0),
+              frequencyHours: 2,
+            );
+            await HealthNotificationService().scheduleMealReminders(
+              breakfastTime: const TimeOfDay(hour: 8, minute: 0),
+              lunchTime: const TimeOfDay(hour: 13, minute: 0),
+              dinnerTime: const TimeOfDay(hour: 19, minute: 30),
+            );
+            if (context.mounted) {
+              context.go('/shell/home');
+            }
+          },
+          uiChild: Container(
+            width: double.infinity,
+            height: 52,
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: primary,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Enable Notifications",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(color: white),
+                ),
+                const SizedBox(width: 16),
+                const Icon(
+                  Icons.notifications_active_rounded,
+                  color: white,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () {
+            if (context.mounted) {
+              context.go('/shell/home');
+            }
+          },
+          uiChild: Container(
+            width: double.infinity,
+            height: 48,
+            alignment: Alignment.center,
+            child: Text(
+              "Maybe Later",
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    color: Colors.grey[600],
+                  ),
             ),
           ),
         ),
