@@ -61,13 +61,16 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
       ),
       body: (isTextEmpty)
           ? (searchFoodBox != null)
-              ? ListView.builder(
-                  itemCount: searchFoodBox!.length,
-                  itemBuilder: (context, index) {
-                    return searchFoodCard(searchFoodBox!.getAt(index), context);
-                  },
-                )
-              : const Center(child: Text("Seach Food Here"))
+                ? ListView.builder(
+                    itemCount: searchFoodBox!.length,
+                    itemBuilder: (context, index) {
+                      return searchFoodCard(
+                        searchFoodBox!.getAt(index),
+                        context,
+                      );
+                    },
+                  )
+                : const Center(child: Text("Seach Food Here"))
           : BlocBuilder<FoodSearchCubit, FoodSearchState>(
               builder: (context, state) {
                 if (state is FoodSearchInitailize) {
@@ -76,7 +79,9 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
                       itemCount: searchFoodBox!.length,
                       itemBuilder: (context, index) {
                         return searchFoodCard(
-                            searchFoodBox!.getAt(index), context);
+                          searchFoodBox!.getAt(index),
+                          context,
+                        );
                       },
                     );
                   } else {
@@ -90,7 +95,8 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
                   if (state.foodSearchModel.foods == null ||
                       state.foodSearchModel.foods!.isEmpty) {
                     return const Center(
-                        child: Text('no food found with these keyword'));
+                      child: Text('no food found with these keyword'),
+                    );
                   } else {
                     return ListView.builder(
                       itemCount: state.foodSearchModel.foods!.length,
@@ -101,9 +107,7 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
                     );
                   }
                 } else {
-                  return Center(
-                    child: Text(state.toString()),
-                  );
+                  return Center(child: Text(state.toString()));
                 }
               },
             ),
@@ -126,11 +130,12 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
               dev.log("food is put in local");
             }
             dev.log(food.foodId.toString());
+            final foodDetailCubit = context.read<FoodDetailCubit>();
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
-                  value: context.read<FoodDetailCubit>(),
+                  value: foodDetailCubit,
                   child: FoodDetailScreen(foodId: food.foodId!),
                 ),
               ),
@@ -145,9 +150,7 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
         ),
         subtitle: Text(
           food.foodDescription ?? 'null',
-          style: const TextStyle(
-            fontSize: 11.0,
-          ),
+          style: const TextStyle(fontSize: 11.0),
           maxLines: null, // Allows the text to expand to multiple lines
           overflow: TextOverflow.visible, // Prevents text clipping
         ),
