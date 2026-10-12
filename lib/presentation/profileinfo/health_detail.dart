@@ -27,7 +27,7 @@ enum HealthGoal {
   gainWeight,
   maintainWeight,
   gainMuscle,
-  lifeStyleImprove
+  lifeStyleImprove,
 }
 
 class HeathDetailScreen extends StatefulWidget {
@@ -76,7 +76,8 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           : initialHeightValue;
       final heightInMeters = heightInCm / 100.0;
 
-      bool hasPermissions = await Health().hasPermissions([
+      bool hasPermissions =
+          await Health().hasPermissions([
             HealthDataType.WEIGHT,
             HealthDataType.HEIGHT,
           ]) ??
@@ -126,8 +127,10 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   }
 
   Future<void> pickAndSaveProfileImage() async {
-    final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (picked == null) return;
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -171,9 +174,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             },
             child: Padding(
               padding: const EdgeInsets.only(left: 16.0, bottom: 16, top: 16),
-              child: SvgPicture.asset(
-                'assets/icons/back.svg',
-              ),
+              child: SvgPicture.asset('assets/icons/back.svg'),
             ),
           ),
           automaticallyImplyLeading: false,
@@ -219,9 +220,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                 padding: EdgeInsets.only(right: 16.0),
                 child: Text(
                   "Skip",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -233,18 +232,18 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           child: (step == 1)
               ? weight(context)
               : (step == 2)
-                  ? height(context)
-                  : (step == 3)
-                      ? genderWidget(context)
-                      : (step == 4)
-                          ? healthGoalWidget(context)
-                          : (step == 5)
-                              ? ageWidget(context)
-                              : (step == 6)
-                                  ? activityLevelWidget(context)
-                                  : (step == 7)
-                                      ? nameWidget(context)
-                                      : notificationWidget(context),
+              ? height(context)
+              : (step == 3)
+              ? genderWidget(context)
+              : (step == 4)
+              ? healthGoalWidget(context)
+              : (step == 5)
+              ? ageWidget(context)
+              : (step == 6)
+              ? activityLevelWidget(context)
+              : (step == 7)
+              ? nameWidget(context)
+              : notificationWidget(context),
         ),
       ),
     );
@@ -276,14 +275,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: (weightUnit == WeightUnit.kg) ? black : white,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0, 5),
-                          blurRadius: 2)
-                    ]),
+                  borderRadius: BorderRadius.circular(12),
+                  color: (weightUnit == WeightUnit.kg) ? black : white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0, 5),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
                 child: Text(
                   "kg",
                   style: TextStyle(
@@ -306,14 +307,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: (weightUnit == WeightUnit.lbs) ? black : white,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0, 5),
-                          blurRadius: 2)
-                    ]),
+                  borderRadius: BorderRadius.circular(12),
+                  color: (weightUnit == WeightUnit.lbs) ? black : white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0, 5),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
                 child: Text(
                   "lbs",
                   style: TextStyle(
@@ -328,9 +331,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         IntrinsicWidth(
           child: TextField(
             controller: wightTextEditingController,
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  fontSize: 60,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge!.copyWith(fontSize: 60),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onSubmitted: (value) {
               setState(() {
@@ -343,9 +346,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               suffix: Text(
                 (weightUnit == WeightUnit.lbs) ? 'lbs' : 'kg',
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -381,16 +384,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: white,
-                ),
+                const Icon(Icons.arrow_forward, color: white),
               ],
             ),
           ),
@@ -425,14 +424,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: (heightUnit == HeightUnit.cm) ? black : white,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0, 5),
-                          blurRadius: 2)
-                    ]),
+                  borderRadius: BorderRadius.circular(12),
+                  color: (heightUnit == HeightUnit.cm) ? black : white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0, 5),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
                 child: Text(
                   "cm",
                   style: TextStyle(
@@ -455,14 +456,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: (heightUnit == HeightUnit.ft) ? black : white,
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0, 5),
-                          blurRadius: 2)
-                    ]),
+                  borderRadius: BorderRadius.circular(12),
+                  color: (heightUnit == HeightUnit.ft) ? black : white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0, 5),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
                 child: Text(
                   "ft",
                   style: TextStyle(
@@ -477,17 +480,18 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         IntrinsicWidth(
           child: TextField(
             controller: heightTextEditingController,
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  fontSize: 60,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge!.copyWith(fontSize: 60),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onSubmitted: (value) {
               setState(() {
                 if (heightUnit == HeightUnit.ft) {
                   final parts = value.split(RegExp(r"['.]"));
                   final feet = int.tryParse(parts[0]) ?? 0;
-                  final inches =
-                      parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+                  final inches = parts.length > 1
+                      ? (int.tryParse(parts[1]) ?? 0)
+                      : 0;
                   initialHeightValue = (feet * 12 + inches) / 12;
                 } else {
                   initialHeightValue = double.tryParse(value) ?? 0;
@@ -500,9 +504,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               suffix: Text(
                 (heightUnit == HeightUnit.ft) ? 'ft' : 'cm',
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -514,8 +518,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
           initialValue: (heightUnit == HeightUnit.ft)
               ? (initialHeightValue * 12).clamp(12, 96)
               : initialHeightValue,
-          labelBuilder:
-              (heightUnit == HeightUnit.ft) ? (v) => '${(v ~/ 12)}\'' : null,
+          labelBuilder: (heightUnit == HeightUnit.ft)
+              ? (v) => '${(v ~/ 12)}\''
+              : null,
           onValueChanged: (value) {
             if (heightUnit == HeightUnit.ft) {
               final totalInches = value.round();
@@ -562,16 +567,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: white,
-                ),
+                const Icon(Icons.arrow_forward, color: white),
               ],
             ),
           ),
@@ -596,21 +597,22 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         ),
         const SizedBox(height: 20),
         Expanded(
-            child: GridView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16, // Horizontal spacing
-            mainAxisSpacing: 16, // Vertical spacing
+          child: GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16, // Horizontal spacing
+              mainAxisSpacing: 16, // Vertical spacing
+            ),
+            children: [
+              genderCard(gender: Gender.male),
+              genderCard(gender: Gender.female),
+              genderCard(gender: Gender.other),
+              genderCard(gender: Gender.preferNotToSay),
+            ],
           ),
-          children: [
-            genderCard(gender: Gender.male),
-            genderCard(gender: Gender.female),
-            genderCard(gender: Gender.other),
-            genderCard(gender: Gender.preferNotToSay),
-          ],
-        )),
+        ),
         SpringButton(
           SpringButtonType.onlyScale,
           onTap: () {
@@ -632,16 +634,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: white,
-                ),
+                const Icon(Icons.arrow_forward, color: white),
               ],
             ),
           ),
@@ -687,16 +685,16 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               (gender == Gender.male)
                   ? "Male"
                   : (gender == Gender.female)
-                      ? "Female"
-                      : (gender == Gender.other)
-                          ? "Other"
-                          : (gender == Gender.preferNotToSay)
-                              ? "Prefer Not to say"
-                              : "",
+                  ? "Female"
+                  : (gender == Gender.other)
+                  ? "Other"
+                  : (gender == Gender.preferNotToSay)
+                  ? "Prefer Not to say"
+                  : "",
               style: TextStyle(
                 color: (selectedGender == gender) ? Colors.white : black,
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -714,22 +712,24 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         ),
         const SizedBox(height: 20),
         Expanded(
-            child: GridView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          child: GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 16, // Horizontal spacing
               mainAxisSpacing: 16, // Vertical spacing
-              childAspectRatio: 2 / 1.5),
-          children: [
-            healthGoalCard(healthGoal: HealthGoal.lossWeight),
-            healthGoalCard(healthGoal: HealthGoal.gainWeight),
-            healthGoalCard(healthGoal: HealthGoal.maintainWeight),
-            healthGoalCard(healthGoal: HealthGoal.gainMuscle),
-            healthGoalCard(healthGoal: HealthGoal.lifeStyleImprove),
-          ],
-        )),
+              childAspectRatio: 2 / 1.5,
+            ),
+            children: [
+              healthGoalCard(healthGoal: HealthGoal.lossWeight),
+              healthGoalCard(healthGoal: HealthGoal.gainWeight),
+              healthGoalCard(healthGoal: HealthGoal.maintainWeight),
+              healthGoalCard(healthGoal: HealthGoal.gainMuscle),
+              healthGoalCard(healthGoal: HealthGoal.lifeStyleImprove),
+            ],
+          ),
+        ),
         SpringButton(
           SpringButtonType.onlyScale,
           onTap: () {
@@ -751,16 +751,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: white,
-                ),
+                const Icon(Icons.arrow_forward, color: white),
               ],
             ),
           ),
@@ -798,8 +794,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               alignment: Alignment.topRight,
               child: Icon(
                 CupertinoIcons.battery_25_percent,
-                color:
-                    (selectedHealthGoal == healthGoal) ? Colors.white : black,
+                color: (selectedHealthGoal == healthGoal)
+                    ? Colors.white
+                    : black,
               ),
             ),
             const Spacer(),
@@ -807,17 +804,18 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               (healthGoal == HealthGoal.lossWeight)
                   ? "Loss weight"
                   : (healthGoal == HealthGoal.gainWeight)
-                      ? "Gain weight"
-                      : (healthGoal == HealthGoal.maintainWeight)
-                          ? "Maintain current weight"
-                          : (healthGoal == HealthGoal.gainMuscle)
-                              ? "Loss weight and Gain muscle"
-                              : "Lifestyle improvements",
+                  ? "Gain weight"
+                  : (healthGoal == HealthGoal.maintainWeight)
+                  ? "Maintain current weight"
+                  : (healthGoal == HealthGoal.gainMuscle)
+                  ? "Loss weight and Gain muscle"
+                  : "Lifestyle improvements",
               style: TextStyle(
-                color:
-                    (selectedHealthGoal == healthGoal) ? Colors.white : black,
+                color: (selectedHealthGoal == healthGoal)
+                    ? Colors.white
+                    : black,
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -856,9 +854,9 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         ),
         Text(
           'I am $age years old.',
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 20),
         SpringButton(
@@ -882,16 +880,12 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: white,
-                ),
+                const Icon(Icons.arrow_forward, color: white),
               ],
             ),
           ),
@@ -901,76 +895,117 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   }
 
   Widget activityLevelWidget(BuildContext context) {
-  return Column(
-    children: [
-      const SizedBox(height: 20),
-      Text('What is your activity level?', style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 20),
-      Expanded(
-        child: ListView(
-          children: ActivityLevel.values.map((level) => activityLevelCard(level)).toList(),
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'What is your activity level?',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-      ),
-      SpringButton(
-        SpringButtonType.onlyScale,
-        onTap: () {
-          setState(() {
-            step = 7;
-          });
-        },
-        uiChild: Container(
-          width: double.infinity,
-          height: 52,
-          padding: const EdgeInsets.all(16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: primary),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Continue", style: Theme.of(context).textTheme.titleSmall!.copyWith(color: white)),
-              const SizedBox(width: 16),
-              const Icon(Icons.arrow_forward, color: white),
-            ],
+        const SizedBox(height: 20),
+        Expanded(
+          child: ListView(
+            children: ActivityLevel.values
+                .map((level) => activityLevelCard(level))
+                .toList(),
           ),
         ),
-      ),
-    ],
-  );
-}
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () {
+            setState(() {
+              step = 7;
+            });
+          },
+          uiChild: Container(
+            width: double.infinity,
+            height: 52,
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: primary,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Continue",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
+                ),
+                const SizedBox(width: 16),
+                const Icon(Icons.arrow_forward, color: white),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-Widget activityLevelCard(ActivityLevel level) {
-  final labels = {
-    ActivityLevel.sedentary: ('Sedentary', 'Little or no exercise'),
-    ActivityLevel.lightlyActive: ('Lightly active', 'Light exercise 1-3 days/week'),
-    ActivityLevel.moderatelyActive: ('Moderately active', 'Moderate exercise 3-5 days/week'),
-    ActivityLevel.veryActive: ('Very active', 'Hard exercise 6-7 days/week'),
-    ActivityLevel.extraActive: ('Extra active', 'Very hard exercise & physical job'),
-  };
-  final (title, subtitle) = labels[level]!;
-  return SpringButton(
-    SpringButtonType.onlyScale,
-    onTap: () => setState(() => selectedActivityLevel = level),
-    uiChild: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: selectedActivityLevel == level ? primary : Colors.white,
-        boxShadow: [
-          BoxShadow(blurRadius: 10, offset: const Offset(0, 1), color: selectedActivityLevel == level ? primary : grey),
-        ],
+  Widget activityLevelCard(ActivityLevel level) {
+    final labels = {
+      ActivityLevel.sedentary: ('Sedentary', 'Little or no exercise'),
+      ActivityLevel.lightlyActive: (
+        'Lightly active',
+        'Light exercise 1-3 days/week',
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: selectedActivityLevel == level ? Colors.white : black)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(fontSize: 12, color: selectedActivityLevel == level ? Colors.white70 : Colors.grey)),
-        ],
+      ActivityLevel.moderatelyActive: (
+        'Moderately active',
+        'Moderate exercise 3-5 days/week',
       ),
-    ),
-  );
-}
+      ActivityLevel.veryActive: ('Very active', 'Hard exercise 6-7 days/week'),
+      ActivityLevel.extraActive: (
+        'Extra active',
+        'Very hard exercise & physical job',
+      ),
+    };
+    final (title, subtitle) = labels[level]!;
+    return SpringButton(
+      SpringButtonType.onlyScale,
+      onTap: () => setState(() => selectedActivityLevel = level),
+      uiChild: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: selectedActivityLevel == level ? primary : Colors.white,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 10,
+              offset: const Offset(0, 1),
+              color: selectedActivityLevel == level ? primary : grey,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: selectedActivityLevel == level ? Colors.white : black,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: selectedActivityLevel == level
+                    ? Colors.white70
+                    : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // nameWidget — add avatar picker above the name field
   Widget nameWidget(BuildContext context) {
     return Column(
@@ -1017,7 +1052,9 @@ Widget activityLevelCard(ActivityLevel level) {
           onTap: () async {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString(
-                PrefKeys.userName, nameTextEditingController.text.trim());
+              PrefKeys.userName,
+              nameTextEditingController.text.trim(),
+            );
             await prefs.setDouble(PrefKeys.weight, initialWeightValue);
             await prefs.setString(PrefKeys.weightUnit, weightUnit.name);
             final heightInCm = heightUnit == HeightUnit.ft
@@ -1028,7 +1065,10 @@ Widget activityLevelCard(ActivityLevel level) {
             await prefs.setString(PrefKeys.gender, selectedGender.name);
             await prefs.setString(PrefKeys.healthGoal, selectedHealthGoal.name);
             await prefs.setInt(PrefKeys.age, age);
-            await prefs.setString(PrefKeys.activityLevel, selectedActivityLevel.name);
+            await prefs.setString(
+              PrefKeys.activityLevel,
+              selectedActivityLevel.name,
+            );
             await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
 
             await _logHealthConnectData();
@@ -1051,10 +1091,9 @@ Widget activityLevelCard(ActivityLevel level) {
               children: [
                 Text(
                   "Continue",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
                 const Icon(Icons.arrow_forward, color: white),
@@ -1094,9 +1133,9 @@ Widget activityLevelCard(ActivityLevel level) {
         Text(
           'Allow notifications to receive personalized water and meal reminders throughout your day.',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[700],
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
         ),
         const SizedBox(height: 32),
         Container(
@@ -1203,16 +1242,12 @@ Widget activityLevelCard(ActivityLevel level) {
               children: [
                 Text(
                   "Enable Notifications",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .copyWith(color: white),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: white),
                 ),
                 const SizedBox(width: 16),
-                const Icon(
-                  Icons.notifications_active_rounded,
-                  color: white,
-                ),
+                const Icon(Icons.notifications_active_rounded, color: white),
               ],
             ),
           ),
@@ -1231,9 +1266,9 @@ Widget activityLevelCard(ActivityLevel level) {
             alignment: Alignment.center,
             child: Text(
               "Maybe Later",
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall!.copyWith(color: Colors.grey[600]),
             ),
           ),
         ),

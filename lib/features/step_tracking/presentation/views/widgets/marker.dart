@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 class RunnerMarker extends StatelessWidget {
@@ -21,11 +19,7 @@ class RunnerMarker extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(4),
       child: isMoving
-          ? const Icon(
-            Icons.navigation_rounded,
-            size: 13,
-            color: Colors.white,
-          )
+          ? const Icon(Icons.navigation_rounded, size: 13, color: Colors.white)
           : Container(
               width: 8,
               height: 8,

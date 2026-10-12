@@ -13,7 +13,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ahealth/models/nutrition_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:intl/intl.dart';
 
 import '../../app_routes.dart';
 import '../../blocs/food_scan/food_scan_cubit.dart';
@@ -54,8 +53,6 @@ class _NutritionState extends State<Nutrition> {
     context.read<NutritionCubit>().getNutritionData();
   }
 
-  
-
   Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
     final groups = NutritionService.getAllGroups();
     final Map<String, List<NutritionModel>> grouped = {};
@@ -63,12 +60,14 @@ class _NutritionState extends State<Nutrition> {
 
     for (final item in items) {
       final group = groups.cast<FoodScanGroup?>().firstWhere(
-            (g) => g!.foods.any((f) =>
-                item.value?.name != null &&
-                f.name != null &&
-                item.value!.name!.startsWith(f.name!)),
-            orElse: () => null,
-          );
+        (g) => g!.foods.any(
+          (f) =>
+              item.value?.name != null &&
+              f.name != null &&
+              item.value!.name!.startsWith(f.name!),
+        ),
+        orElse: () => null,
+      );
       if (group != null) {
         grouped.putIfAbsent(group.imagePath, () => []).add(item);
       } else {
@@ -78,7 +77,7 @@ class _NutritionState extends State<Nutrition> {
 
     return {
       ...grouped,
-      for (final i in ungrouped) i.value?.name ?? '': [i]
+      for (final i in ungrouped) i.value?.name ?? '': [i],
     };
   }
 
@@ -120,8 +119,10 @@ class _NutritionState extends State<Nutrition> {
               SpringButtonType.withOpacity,
               onTap: () async {
                 try {
-                  final result = await Navigator.push<File>(context,
-                      MaterialPageRoute(builder: (_) => const CameraScreen()));
+                  final result = await Navigator.push<File>(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CameraScreen()),
+                  );
                   if (result == null) return;
                   final prepared = await NutritionService.prepareImage(result);
 
@@ -138,28 +139,30 @@ class _NutritionState extends State<Nutrition> {
                   );
 
                   context.read<FoodScanCubit>().scanFoodImage(
-                        base64Image: prepared.base64,
-                        groupUuid: prepared.uuid,
-                        imagePath: prepared.imagePath,
-                      );
+                    base64Image: prepared.base64,
+                    groupUuid: prepared.uuid,
+                    imagePath: prepared.imagePath,
+                  );
                 } catch (e, s) {
                   dev.log('Exception', error: e, stackTrace: s);
                 }
               },
               uiChild: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: const [BoxShadow(color: Colors.grey)]),
-                  child: Transform.scale(
-                    scale: 0.6,
-                    child: HugeIcon(
-                      icon: HugeIcons.strokeRoundedScanImage,
-                      color: Colors.white,
-                    ),
-                  )),
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [BoxShadow(color: Colors.grey)],
+                ),
+                child: Transform.scale(
+                  scale: 0.6,
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedScanImage,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -174,8 +177,10 @@ class _NutritionState extends State<Nutrition> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(state.errorMessage,
-                      style: const TextStyle(color: _textSecondary)),
+                  Text(
+                    state.errorMessage,
+                    style: const TextStyle(color: _textSecondary),
+                  ),
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () =>
@@ -191,318 +196,360 @@ class _NutritionState extends State<Nutrition> {
               ? state.nutritionModel
               : <NutritionModel>[];
 
-          final totalCalories =
-              items.fold(0.0, (s, e) => s + (e.value?.calories ?? 0));
-          final totalProtein =
-              items.fold(0.0, (s, e) => s + (e.value?.protein ?? 0));
-          final totalCarbs =
-              items.fold(0.0, (s, e) => s + (e.value?.carbs ?? 0));
+          final totalCalories = items.fold(
+            0.0,
+            (s, e) => s + (e.value?.calories ?? 0),
+          );
+          final totalProtein = items.fold(
+            0.0,
+            (s, e) => s + (e.value?.protein ?? 0),
+          );
+          final totalCarbs = items.fold(
+            0.0,
+            (s, e) => s + (e.value?.carbs ?? 0),
+          );
           final totalFat = items.fold(0.0, (s, e) => s + (e.value?.fat ?? 0));
 
           return FutureBuilder<NutritionTargets>(
-              future: TargetCalorieCalculator.calculate(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
+            future: TargetCalorieCalculator.calculate(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const CircularProgressIndicator();
+              }
 
-                final targets = snapshot.data!;
+              final targets = snapshot.data!;
 
-                final targetCalories = targets.target.toDouble();
-                final targetProtein = targets.protein;
-                final targetCarbs = targets.carbs;
-                final targetFat = targets.fat;
+              final targetCalories = targets.target.toDouble();
+              final targetProtein = targets.protein;
+              final targetCarbs = targets.carbs;
+              final targetFat = targets.fat;
 
-                // Compute once, not inside builder
-                final groupedItems = _groupItems(items);
-                return SafeArea(
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const SizedBox(width: 8),
-                                  const Text('Nutrition',
-                                      style: TextStyle(
-                                          color: _textPrimary,
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                      onPressed: () => context
-                                          .push(AppRoutes.searchFoodScreen),
-                                      icon: const Icon(CupertinoIcons.search)),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Calories Card
-                              SpringButton(
-                                SpringButtonType.onlyScale,
-                                onTap: () =>
-                                    context.push(CalorieChartScreen.pageName),
-                                uiChild: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: _card,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.04),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
-                                            style: const TextStyle(
-                                                color: _textPrimary,
-                                                fontSize: 40,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          const Text('Calories left',
-                                              style: TextStyle(
-                                                  color: _textSecondary,
-                                                  fontSize: 14)),
-                                        ],
-                                      ),
-                                      const Spacer(),
-                                      CircularProgress(
-                                        value: (totalCalories / targetCalories)
-                                            .clamp(0.0, 1.0),
-                                        color: Colors.orange,
-                                        size: 80,
-                                        icon: Icons.local_fire_department,
-                                        iconColor: Colors.orange,
-                                      ),
-                                    ],
+              // Compute once, not inside builder
+              final groupedItems = _groupItems(items);
+              return SafeArea(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Nutrition',
+                                  style: TextStyle(
+                                    color: _textPrimary,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
+                                const Spacer(),
+                                IconButton(
+                                  onPressed: () =>
+                                      context.push(AppRoutes.searchFoodScreen),
+                                  icon: const Icon(CupertinoIcons.search),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
 
-                              // Macros Row
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: MacroCard(
-                                      onTap: () => context
-                                          .push(NutrientChartScreen.pageName,extra: 0,),
-                                      label: totalProtein > targetProtein
-                                          ? 'Protein over'
-                                          : 'Protein',
-                                      value: totalProtein > targetProtein
-                                          ? totalProtein - targetProtein
-                                          : targetProtein - totalProtein,
-                                      unit: 'g',
-                                      color: _proteinColor,
-                                      icon: Icons.bolt,
-                                      progress: (totalProtein / targetProtein)
-                                          .clamp(0.0, 1.0),
+                            // Calories Card
+                            SpringButton(
+                              SpringButtonType.onlyScale,
+                              onTap: () =>
+                                  context.push(CalorieChartScreen.pageName),
+                              uiChild: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: _card,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.04,
+                                      ),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: MacroCard(
-                                      onTap: () => context
-                                          .push(NutrientChartScreen.pageName,extra: 1),
-                                      label: 'Carbs left',
-                                      value: (targetCarbs - totalCarbs)
-                                          .clamp(0, targetCarbs),
-                                      unit: 'g',
-                                      color: _carbsColor,
-                                      icon: Icons.grain,
-                                      progress: (totalCarbs / targetCarbs)
-                                          .clamp(0.0, 1.0),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: MacroCard(
-                                      onTap: () => context
-                                          .push(NutrientChartScreen.pageName,extra: 2),
-                                      label: 'Fats left',
-                                      value: (targetFat - totalFat)
-                                          .clamp(0, targetFat),
-                                      unit: 'g',
-                                      color: _fatColor,
-                                      icon: Icons.water_drop,
-                                      progress: (totalFat / targetFat)
-                                          .clamp(0.0, 1.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-
-                              Row(
-                                children: [
-                                  const Text('Recently uploaded',
-                                      style: TextStyle(
-                                          color: _textPrimary,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold)),
-                                  Spacer(),
-                                  IconButton(
-                                    icon: HugeIcon(
-                                        icon:
-                                            HugeIcons.strokeRoundedArrowLeft01),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    visualDensity: VisualDensity.compact,
-                                    onPressed: () {
-                                      final cubit =
-                                          context.read<NutritionCubit>();
-                                      cubit.getNutritionData(
-                                          date: cubit.selectedDate.subtract(
-                                              const Duration(days: 1)));
-                                    },
-                                  ),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      final cubit =
-                                          context.read<NutritionCubit>();
-                                      final picked = await showDatePicker(
-                                        context: context,
-                                        initialDate: cubit.selectedDate,
-                                        firstDate: DateTime(2020),
-                                        lastDate: DateTime.now(),
-                                      );
-                                      if (picked != null) {
-                                        cubit.getNutritionData(date: picked);
-                                      }
-                                    },
-                                    child: Text(
-                                        dateLabel(context
-                                            .read<NutritionCubit>()
-                                            .selectedDate),
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: _textPrimary)),
-                                  ),
-                                  IconButton(
-                                    icon: HugeIcon(
-                                        icon: HugeIcons
-                                            .strokeRoundedArrowRight01),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    visualDensity: VisualDensity.compact,
-                                    onPressed: () {
-                                      final cubit =
-                                          context.read<NutritionCubit>();
-                                      final next = cubit.selectedDate
-                                          .add(const Duration(days: 1));
-                                      final today = DateTime.now();
-                                      if (!next.isAfter(DateTime(today.year,
-                                          today.month, today.day))) {
-                                        cubit.getNutritionData(date: next);
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Food List
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final entry = groupedItems.entries.elementAt(index);
-                            final entryItems = entry.value;
-                            final first = entryItems.first;
-                            final isGroup = entryItems.length > 1;
-                            // final heroTag = entry.key;
-
-                            return SpringButton(
-                              SpringButtonType.withOpacity,
-                              onTap: () async {
-                                HapticFeedback.mediumImpact();
-                                if (isGroup) {
-                                  // ignore: use_build_context_synchronously
-                                  // await _showGroupSheet(context, entryItems);
-                                  context.push(GroupFoodDialog.name,
-                                      extra: entryItems);
-                                } else {
-                                  // ignore: use_build_context_synchronously
-                                  context.push('/nutrition/detail',
-                                      extra: first);
-                                }
-                              },
-                              uiChild: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                                child: SizedBox(
-                                  height: 84 + (isGroup ? 16.0 : 10),
-                                  child: Stack(
-                                    children: [
-                                      if (isGroup) ...[
-                                        Positioned(
-                                          left: 6,
-                                          right: 14,
-                                          bottom: 0,
-                                          top: 6,
-                                          child: CardShell(),
-                                        ),
-                                        if (entryItems.length > 2)
-                                          Positioned(
-                                            left: 12,
-                                            right: 10,
-                                            bottom: 0,
-                                            top: 12,
-                                            child: CardShell(),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${(targetCalories - totalCalories).clamp(0, targetCalories).toInt()}',
+                                          style: const TextStyle(
+                                            color: _textPrimary,
+                                            fontSize: 40,
+                                            fontWeight: FontWeight.bold,
                                           ),
+                                        ),
+                                        const Text(
+                                          'Calories left',
+                                          style: TextStyle(
+                                            color: _textSecondary,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ],
-                                      Positioned(
-                                        left: 0,
-                                        right: isGroup ? 6 : 0,
-                                        top: 0,
-                                        bottom: isGroup ? 6 : 0,
-                                        child: Material(
-                                          type: MaterialType.transparency,
-                                          child: CardShell(
-                                            child: BuildCardContent(
-                                              item: first,
-                                              count: entryItems.length,
-                                              groupItems: entryItems,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Spacer(),
+                                    CircularProgress(
+                                      value: (totalCalories / targetCalories)
+                                          .clamp(0.0, 1.0),
+                                      color: Colors.orange,
+                                      size: 80,
+                                      icon: Icons.local_fire_department,
+                                      iconColor: Colors.orange,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                          childCount: groupedItems.length,
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Macros Row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: MacroCard(
+                                    onTap: () => context.push(
+                                      NutrientChartScreen.pageName,
+                                      extra: 0,
+                                    ),
+                                    label: totalProtein > targetProtein
+                                        ? 'Protein over'
+                                        : 'Protein',
+                                    value: totalProtein > targetProtein
+                                        ? totalProtein - targetProtein
+                                        : targetProtein - totalProtein,
+                                    unit: 'g',
+                                    color: _proteinColor,
+                                    icon: Icons.bolt,
+                                    progress: (totalProtein / targetProtein)
+                                        .clamp(0.0, 1.0),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: MacroCard(
+                                    onTap: () => context.push(
+                                      NutrientChartScreen.pageName,
+                                      extra: 1,
+                                    ),
+                                    label: 'Carbs left',
+                                    value: (targetCarbs - totalCarbs).clamp(
+                                      0,
+                                      targetCarbs,
+                                    ),
+                                    unit: 'g',
+                                    color: _carbsColor,
+                                    icon: Icons.grain,
+                                    progress: (totalCarbs / targetCarbs).clamp(
+                                      0.0,
+                                      1.0,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: MacroCard(
+                                    onTap: () => context.push(
+                                      NutrientChartScreen.pageName,
+                                      extra: 2,
+                                    ),
+                                    label: 'Fats left',
+                                    value: (targetFat - totalFat).clamp(
+                                      0,
+                                      targetFat,
+                                    ),
+                                    unit: 'g',
+                                    color: _fatColor,
+                                    icon: Icons.water_drop,
+                                    progress: (totalFat / targetFat).clamp(
+                                      0.0,
+                                      1.0,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            Row(
+                              children: [
+                                const Text(
+                                  'Recently uploaded',
+                                  style: TextStyle(
+                                    color: _textPrimary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Spacer(),
+                                IconButton(
+                                  icon: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedArrowLeft01,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () {
+                                    final cubit = context
+                                        .read<NutritionCubit>();
+                                    cubit.getNutritionData(
+                                      date: cubit.selectedDate.subtract(
+                                        const Duration(days: 1),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final cubit = context
+                                        .read<NutritionCubit>();
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: cubit.selectedDate,
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (picked != null) {
+                                      cubit.getNutritionData(date: picked);
+                                    }
+                                  },
+                                  child: Text(
+                                    dateLabel(
+                                      context
+                                          .read<NutritionCubit>()
+                                          .selectedDate,
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: _textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedArrowRight01,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () {
+                                    final cubit = context
+                                        .read<NutritionCubit>();
+                                    final next = cubit.selectedDate.add(
+                                      const Duration(days: 1),
+                                    );
+                                    final today = DateTime.now();
+                                    if (!next.isAfter(
+                                      DateTime(
+                                        today.year,
+                                        today.month,
+                                        today.day,
+                                      ),
+                                    )) {
+                                      cubit.getNutritionData(date: next);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                         ),
                       ),
+                    ),
 
-                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                    ],
-                  ),
-                );
-              });
+                    // Food List
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final entry = groupedItems.entries.elementAt(index);
+                        final entryItems = entry.value;
+                        final first = entryItems.first;
+                        final isGroup = entryItems.length > 1;
+                        // final heroTag = entry.key;
+
+                        return SpringButton(
+                          SpringButtonType.withOpacity,
+                          onTap: () async {
+                            HapticFeedback.mediumImpact();
+                            if (isGroup) {
+                              // ignore: use_build_context_synchronously
+                              // await _showGroupSheet(context, entryItems);
+                              context.push(
+                                GroupFoodDialog.name,
+                                extra: entryItems,
+                              );
+                            } else {
+                              // ignore: use_build_context_synchronously
+                              context.push('/nutrition/detail', extra: first);
+                            }
+                          },
+                          uiChild: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                            child: SizedBox(
+                              height: 84 + (isGroup ? 16.0 : 10),
+                              child: Stack(
+                                children: [
+                                  if (isGroup) ...[
+                                    Positioned(
+                                      left: 6,
+                                      right: 14,
+                                      bottom: 0,
+                                      top: 6,
+                                      child: CardShell(),
+                                    ),
+                                    if (entryItems.length > 2)
+                                      Positioned(
+                                        left: 12,
+                                        right: 10,
+                                        bottom: 0,
+                                        top: 12,
+                                        child: CardShell(),
+                                      ),
+                                  ],
+                                  Positioned(
+                                    left: 0,
+                                    right: isGroup ? 6 : 0,
+                                    top: 0,
+                                    bottom: isGroup ? 6 : 0,
+                                    child: Material(
+                                      type: MaterialType.transparency,
+                                      child: CardShell(
+                                        child: BuildCardContent(
+                                          item: first,
+                                          count: entryItems.length,
+                                          groupItems: entryItems,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }, childCount: groupedItems.length),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  ],
+                ),
+              );
+            },
+          );
         },
       ),
     );

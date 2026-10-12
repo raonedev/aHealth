@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../constants.dart';
 import '../../blocs/water/water_cubit.dart';
 import '../../models/water_model.dart';
 
@@ -21,16 +23,20 @@ class WaterWidget extends StatefulWidget {
   State<WaterWidget> createState() => _WaterWidgetState();
 }
 
-class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin {
+class _WaterWidgetState extends State<WaterWidget>
+    with TickerProviderStateMixin {
   late AnimationController _waveController;
   late AnimationController _fillController;
 
   double _currentAngle = 0.0;
   double _targetAngle = 0.0;
+  double _targetWaterLiters = kDefaultTargetWaterLiters;
+  int _waterLogAmountMl = kDefaultWaterLogAmountMl;
 
   @override
   void initState() {
     super.initState();
+    _loadPreferences();
 
     _waveController = AnimationController(
       vsync: this,
@@ -68,7 +74,10 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
     _fillController.animateTo(level, curve: Curves.easeInOutCubic);
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, WaterModel waterLog) {
+  void _showDeleteConfirmationDialog(
+    BuildContext context,
+    WaterModel waterLog,
+  ) {
     final amountMl = ((waterLog.value?.numericValue ?? 0) * 1000).toInt();
     final timeStr = _formatLogTime(waterLog.dateTo ?? waterLog.dateFrom);
 
@@ -108,13 +117,37 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
     }
   }
 
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _targetWaterLiters =
+            prefs.getDouble(PrefKeys.targetWaterLiters) ??
+            kDefaultTargetWaterLiters;
+        _waterLogAmountMl =
+            prefs.getInt(PrefKeys.waterLogAmountMl) ?? kDefaultWaterLogAmountMl;
+      });
+      final cubitState = context.read<WaterCubit>().state;
+      if (cubitState is WaterSuccessState) {
+        final total = cubitState.waterModel.fold(
+          0.0,
+          (sum, e) => sum + (e.value?.numericValue ?? 0.0),
+        );
+        _syncFillLevel(total, _targetWaterLiters);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<WaterCubit, WaterState>(
       listener: (context, state) {
         if (state is WaterSuccessState) {
-          final total = state.waterModel.fold(0.0, (sum, e) => sum + (e.value?.numericValue ?? 0.0));
-          _syncFillLevel(total, 4.0);
+          final total = state.waterModel.fold(
+            0.0,
+            (sum, e) => sum + (e.value?.numericValue ?? 0.0),
+          );
+          _syncFillLevel(total, _targetWaterLiters);
         }
       },
       builder: (context, state) {
@@ -127,11 +160,12 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
             ),
             actions: [
               IconButton(
-                onPressed: () {
-                  context.push(AppRoutes.waterChartScreen);
+                onPressed: () async {
+                  await context.push(AppRoutes.waterChartScreen);
+                  _loadPreferences();
                 },
                 icon: const Icon(Icons.history),
-              )
+              ),
             ],
           ),
           body: SingleChildScrollView(
@@ -156,7 +190,11 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-                Container(width: 100, height: 10, color: Colors.blue.withValues(alpha: 0.4)),
+                Container(
+                  width: 100,
+                  height: 10,
+                  color: Colors.blue.withValues(alpha: 0.4),
+                ),
                 Container(
                   width: 120,
                   height: 10,
@@ -165,19 +203,31 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                     borderRadius: BorderRadius.circular(50),
                   ),
                 ),
-                Container(width: 100, height: 8, color: Colors.blueAccent.withValues(alpha: 0.4)),
+                Container(
+                  width: 100,
+                  height: 8,
+                  color: Colors.blueAccent.withValues(alpha: 0.4),
+                ),
                 SizedBox(
                   height: 320,
                   width: 280,
                   child: AnimatedBuilder(
-                    animation: Listenable.merge([_waveController, _fillController]),
+                    animation: Listenable.merge([
+                      _waveController,
+                      _fillController,
+                    ]),
                     builder: (context, _) {
                       final value = _fillController.value;
                       final total = state is WaterSuccessState
-                          ? state.waterModel.fold(0.0, (sum, e) => sum + (e.value?.numericValue ?? 0.0))
+                          ? state.waterModel.fold(
+                              0.0,
+                              (sum, e) => sum + (e.value?.numericValue ?? 0.0),
+                            )
                           : 0.0;
                       final totalMl = (total * 1000).toStringAsFixed(0);
-                      final remainingL = (4.0 - total).clamp(0.0, 4.0).toStringAsFixed(2);
+                      final remainingL = (_targetWaterLiters - total)
+                          .clamp(0.0, _targetWaterLiters)
+                          .toStringAsFixed(2);
 
                       return Container(
                         width: 280,
@@ -201,7 +251,9 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                             children: [
                               const SizedBox(height: 30),
                               if (state is WaterLoadingState)
-                                const CircularProgressIndicator(color: Colors.white)
+                                const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                               else
                                 Text(
                                   "$totalMl ml",
@@ -213,29 +265,36 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                               const SizedBox(height: 20),
                               Text(
                                 "Remaining $remainingL L",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
+                                style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(color: textDarkGrey),
                               ),
                               const Spacer(),
                               GestureDetector(
                                 onTap: state is WaterLoadingState
                                     ? null
-                                    : () => context.read<WaterCubit>().addWater(waterInLiter: 0.25),
+                                    : () => context.read<WaterCubit>().addWater(
+                                        waterInLiter:
+                                            _waterLogAmountMl / 1000.0,
+                                      ),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
                                   width: 60,
                                   height: 60,
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                      color: Colors.blueAccent.withValues(alpha: 0.2),
+                                      color: Colors.blueAccent.withValues(
+                                        alpha: 0.2,
+                                      ),
                                     ),
-                                    color: (value < 0.3) ? Colors.blue : Colors.white,
+                                    color: (value < 0.3)
+                                        ? Colors.blue
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
                                         blurRadius: 10,
                                         spreadRadius: 2,
                                       ),
@@ -243,16 +302,21 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                                   ),
                                   child: Icon(
                                     Icons.add,
-                                    color: (value > 0.3) ? Colors.blue : Colors.white,
+                                    color: (value > 0.3)
+                                        ? Colors.blue
+                                        : Colors.white,
                                     size: 30,
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                "Log Water here",
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: (value < 0.2) ? textDarkGrey : Colors.white,
+                                "Log ${_waterLogAmountMl}ml",
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: (value < 0.2)
+                                          ? textDarkGrey
+                                          : Colors.white,
                                     ),
                               ),
                               const SizedBox(height: 40),
@@ -294,7 +358,11 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
           ),
           child: Column(
             children: [
-              Icon(Icons.water_drop_outlined, size: 36, color: Colors.blue.withValues(alpha: 0.5)),
+              Icon(
+                Icons.water_drop_outlined,
+                size: 36,
+                color: Colors.blue.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 8),
               const Text(
                 "No water logs for today",
@@ -322,15 +390,15 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
               Text(
                 "Today's Logs",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: textDarkGrey,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: textDarkGrey,
+                ),
               ),
               Text(
                 "${logs.length} ${logs.length == 1 ? 'entry' : 'entries'}",
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: textDarkGrey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: textDarkGrey),
               ),
             ],
           ),
@@ -342,11 +410,15 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
             separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = logs[index];
-              final amountInMl = ((item.value?.numericValue ?? 0) * 1000).toInt();
+              final amountInMl = ((item.value?.numericValue ?? 0) * 1000)
+                  .toInt();
               final timeStr = _formatLogTime(item.dateTo ?? item.dateFrom);
 
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -396,7 +468,8 @@ class _WaterWidgetState extends State<WaterWidget> with TickerProviderStateMixin
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _showDeleteConfirmationDialog(context, item),
+                      onPressed: () =>
+                          _showDeleteConfirmationDialog(context, item),
                       icon: const Icon(
                         CupertinoIcons.trash,
                         color: Colors.redAccent,
@@ -442,9 +515,12 @@ class _WaterPainter extends CustomPainter {
 
     for (double x = 0; x <= size.width; x++) {
       final surfaceY = getSurfaceY(x);
-      final y = surfaceY +
+      final y =
+          surfaceY +
           waveHeight * sin((x / size.width * 2 * pi) + (animValue * 2 * pi)) +
-          waveHeight * 0.5 * sin((x / size.width * 3 * pi) + (animValue * 2 * pi * 1.3));
+          waveHeight *
+              0.5 *
+              sin((x / size.width * 3 * pi) + (animValue * 2 * pi * 1.3));
       path.lineTo(x, y);
     }
 
@@ -456,10 +532,7 @@ class _WaterPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Colors.blue.withValues(alpha: 0.5),
-          Colors.blueAccent,
-        ],
+        colors: [Colors.blue.withValues(alpha: 0.5), Colors.blueAccent],
       ).createShader(Rect.fromLTWH(0, waterTop, size.width, size.height));
 
     canvas.drawPath(path, paint);
@@ -467,5 +540,7 @@ class _WaterPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_WaterPainter old) =>
-      old.fillLevel != fillLevel || old.animValue != animValue || old.angle != angle;
+      old.fillLevel != fillLevel ||
+      old.animValue != animValue ||
+      old.angle != angle;
 }

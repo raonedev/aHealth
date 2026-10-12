@@ -8,24 +8,66 @@ import '../../../app_routes.dart';
 import '../../../blocs/water/water_cubit.dart';
 import '../../../common/spring_button_widget.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../constants.dart';
+
 const _kSurfaceContainerLowest = Color(0xFFFFFFFF);
 
 const _kTertiary = Color(0xFF00569F);
 const _kOnSurfaceVariant = Color(0xFF40493D);
 
-class HydrationCard extends StatelessWidget {
-  const HydrationCard({super.key});
+class HydrationCard extends StatefulWidget {
+  final double? targetWaterLiters;
+  const HydrationCard({super.key, this.targetWaterLiters});
+
+  @override
+  State<HydrationCard> createState() => _HydrationCardState();
+}
+
+class _HydrationCardState extends State<HydrationCard> {
+  double _targetWater = kDefaultTargetWaterLiters;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.targetWaterLiters != null) {
+      _targetWater = widget.targetWaterLiters!;
+    } else {
+      _loadTarget();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant HydrationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.targetWaterLiters != null) {
+      _targetWater = widget.targetWaterLiters!;
+    } else {
+      _loadTarget();
+    }
+  }
+
+  Future<void> _loadTarget() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _targetWater = prefs.getDouble(PrefKeys.targetWaterLiters) ?? kDefaultTargetWaterLiters;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    const target = 3.0;
+    final target = _targetWater;
 
     return SpringButton(
       SpringButtonType.withOpacity,
       onTap: () async {
         HapticFeedback.mediumImpact();
         await Future.delayed(Durations.medium1);
-        context.push(AppRoutes.waterChartScreen);
+        if (!context.mounted) return;
+        await context.push(AppRoutes.waterChartScreen);
+        _loadTarget();
       },
       uiChild: Container(
         padding: const EdgeInsets.all(20),

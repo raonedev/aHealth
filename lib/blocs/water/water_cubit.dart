@@ -1,10 +1,12 @@
 import 'dart:developer';
 import 'dart:developer' as dev;
 
+import 'package:ahealth/constants.dart';
 import 'package:ahealth/models/water_model.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/di/service_locator.dart';
 import '../../features/streak/domain/entities/streak_entity.dart';
@@ -57,12 +59,20 @@ class WaterCubit extends Cubit<WaterState> {
     }
   }
 
-  Future<void> addWater({required double waterInLiter}) async {
+  Future<void> addWater({double? waterInLiter}) async {
+    final double amount;
+    if (waterInLiter != null) {
+      amount = waterInLiter;
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final ml = prefs.getInt(PrefKeys.waterLogAmountMl) ?? kDefaultWaterLogAmountMl;
+      amount = ml / 1000.0;
+    }
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(seconds: 30));
     bool success = true;
     success &= await Health().writeHealthData(
-      value: waterInLiter,
+      value: amount,
       type: HealthDataType.WATER,
       startTime: earlier,
       endTime: now,

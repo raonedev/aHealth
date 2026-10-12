@@ -11,13 +11,14 @@ import 'widgets/summary_cards.dart';
 
 class WeeklyTab extends StatelessWidget {
   final List<double> weekData;
-  const WeeklyTab({super.key, required this.weekData});
+  final double targetSteps;
+  const WeeklyTab({super.key, required this.weekData, this.targetSteps = kDailyTarget});
 
   List<StepPoint> get _points {
     final now = DateTime.now();
     return List.generate(weekData.length, (i) {
       final date = now.subtract(Duration(days: 6 - i));
-      return StepPoint(date, weekData[i], kDailyTarget);
+      return StepPoint(date, weekData[i], targetSteps);
     });
   }
   
@@ -28,7 +29,7 @@ class WeeklyTab extends StatelessWidget {
     final pts = _points;
     final today = pts.isNotEmpty ? pts.last : null;
     final double avg = weekData.isEmpty ? 0 : weekData.reduce((a, b) => a + b) / weekData.length;
-    final hit = weekData.where((s) => s >= kDailyTarget).length;
+    final hit = weekData.where((s) => s >= targetSteps).length;
 
     return RefreshIndicator(
       onRefresh: () async {

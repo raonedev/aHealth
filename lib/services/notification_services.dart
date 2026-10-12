@@ -8,6 +8,9 @@ import 'package:health/health.dart';
 // Add this OUTSIDE the class, at the bottom of the file (or top, either works)
 import 'dart:math';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ahealth/constants.dart';
+
 @pragma('vm:entry-point')
 void notificationBackgroundHandler(NotificationResponse response) async {
   if (response.actionId == 'log_water_glass') {
@@ -15,11 +18,15 @@ void notificationBackgroundHandler(NotificationResponse response) async {
     await Health().configure();
     await Future.delayed(const Duration(milliseconds: 500));
 
+    final prefs = await SharedPreferences.getInstance();
+    final waterMl = prefs.getInt(PrefKeys.waterLogAmountMl) ?? kDefaultWaterLogAmountMl;
+    final waterLiters = waterMl / 1000.0;
+
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(seconds: 30));
 
     await Health().writeHealthData(
-      value: 0.25,
+      value: waterLiters,
       type: HealthDataType.WATER,
       startTime: earlier,
       endTime: now,
@@ -95,7 +102,6 @@ class HealthNotificationService {
 
   static const String _logWaterActionId = 'log_water_glass';
   static const String _logMealActionId = 'log_meal';
-  static const double _glassSizeLiters = 0.25;
 
   Future<void> init() async {
     tz.initializeTimeZones();
@@ -163,18 +169,22 @@ class HealthNotificationService {
   }
 
   Future<void> _logGlassToHealth() async {
+    final prefs = await SharedPreferences.getInstance();
+    final waterMl = prefs.getInt(PrefKeys.waterLogAmountMl) ?? kDefaultWaterLogAmountMl;
+    final glassSizeLiters = waterMl / 1000.0;
+
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(seconds: 30));
 
     final success = await Health().writeHealthData(
-      value: _glassSizeLiters,
+      value: glassSizeLiters,
       type: HealthDataType.WATER,
       startTime: earlier,
       endTime: now,
     );
 
     debugPrint(success
-        ? '[HealthNotif] Logged $_glassSizeLiters L to Health Connect'
+        ? '[HealthNotif] Logged $glassSizeLiters L to Health Connect'
         : '[HealthNotif] Failed to log water to Health Connect');
   }
 

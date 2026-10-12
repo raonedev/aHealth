@@ -12,4 +12,11 @@ class PrefKeys {
   static const String healthGoal = 'userHealthGoalSharedPreferenceKey';
   static const String age = 'userAgeSharedPreferenceKey';
   static const String activityLevel = 'userActivityLevelSharedPreferenceKey';
+  static const String waterLogAmountMl = 'userWaterLogAmountMlSharedPreferenceKey';
+  static const String targetSteps = 'userTargetStepsSharedPreferenceKey';
+  static const String targetWaterLiters = 'userTargetWaterLitersSharedPreferenceKey';
 }
+
+const int kDefaultWaterLogAmountMl = 250;
+const int kDefaultTargetSteps = 8000;
+const double kDefaultTargetWaterLiters = 3.0;

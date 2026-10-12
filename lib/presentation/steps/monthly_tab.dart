@@ -12,13 +12,19 @@ import 'widgets/week_list_tile.dart';
 class MonthlyTab extends StatelessWidget {
   final List<double> monthData;
   final bool loaded;
-  const MonthlyTab({super.key, required this.monthData, required this.loaded});
+  final double targetSteps;
+  const MonthlyTab({
+    super.key,
+    required this.monthData,
+    required this.loaded,
+    this.targetSteps = kDailyTarget,
+  });
 
   List<StepPoint> get _points {
     final now = DateTime.now();
     return List.generate(monthData.length, (i) {
       final date = now.subtract(Duration(days: 29 - i));
-      return StepPoint(date, monthData[i], kDailyTarget);
+      return StepPoint(date, monthData[i], targetSteps);
     });
   }
 
@@ -34,6 +40,7 @@ class MonthlyTab extends StatelessWidget {
         end: slice.last.date,
         total: total,
         avg: total / slice.length,
+        targetSteps: targetSteps,
       ));
     }
     return weeks;
@@ -49,7 +56,7 @@ class MonthlyTab extends StatelessWidget {
     final pts = _points;
     final total = monthData.isEmpty ? 0.0 : monthData.reduce((a, b) => a + b);
     final best = monthData.isEmpty ? 0.0 : monthData.reduce((a, b) => a > b ? a : b);
-    final hit = monthData.where((s) => s >= kDailyTarget).length;
+    final hit = monthData.where((s) => s >= targetSteps).length;
 
     return RefreshIndicator(
       onRefresh: () async {
