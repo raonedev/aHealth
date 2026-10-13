@@ -26,14 +26,15 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
     FoodWithServingsModel? isFoodFound = foodDetailBox.get(foodId);
     if (isFoodFound != null) {
       dev.log("foodDetail from cache");
-      final cachedValue= FoodDetailSuccess(foodWithServingsModel: isFoodFound);
+      final cachedValue = FoodDetailSuccess(foodWithServingsModel: isFoodFound);
       emit(cachedValue);
       return;
     }
 
     try {
-      final uri = Uri.parse('https://8ggapbx887.execute-api.ap-south-1.amazonaws.com/foods/details')
-          .replace(queryParameters: {'foodId': foodId});
+      final uri = Uri.parse(
+        'https://8ggapbx887.execute-api.ap-south-1.amazonaws.com/foods/details',
+      ).replace(queryParameters: {'foodId': foodId});
 
       final response = await http.get(uri);
       dev.log('Status: ${response.statusCode}');
@@ -41,12 +42,18 @@ class FoodDetailCubit extends Cubit<FoodDetailState> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        FoodWithServingsModel foodServingModel = FoodWithServingsModel.fromJson(data);
+        FoodWithServingsModel foodServingModel = FoodWithServingsModel.fromJson(
+          data,
+        );
         foodDetailBox.put(foodId, foodServingModel);
         dev.log("foodDetail added of id $foodId");
         emit(FoodDetailSuccess(foodWithServingsModel: foodServingModel));
       } else {
-        emit(FoodDetailFailed(errorMessage: 'Error: ${response.statusCode} - ${response.body}'));
+        emit(
+          FoodDetailFailed(
+            errorMessage: 'Error: ${response.statusCode} - ${response.body}',
+          ),
+        );
       }
     } catch (e) {
       dev.log('Exception: $e');

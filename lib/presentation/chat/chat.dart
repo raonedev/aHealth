@@ -1,7 +1,9 @@
+import 'package:ahealth/blocs/food_scan/food_scan_cubit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:lottie/lottie.dart';
 import '../../blocs/chat/chat_cubit.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../blocs/sleep/sleep_cubit.dart';
@@ -10,7 +12,7 @@ import '../../blocs/water/water_cubit.dart';
 import '../../blocs/weight/weight_cubit.dart';
 import '../../models/chat/chat_message_model.dart';
 import '../../services/chat_hive_service.dart';
-
+import '../nutririon/food_scan_result_screen.dart';
 
 const Color _bg = Color(0xFFF6F6F9);
 const Color _card = Color(0xFFFFFFFF);
@@ -30,55 +32,65 @@ class _ChatWidgetState extends State<ChatWidget> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _loggingFromChat = false;
 
   Map<String, dynamic> get _healthContext {
     // Steps
-    final stepsState = context
-        .read<StepsCubit>()
-        .state;
+    final stepsState = context.read<StepsCubit>().state;
     final steps = stepsState is StepSuccessState
-        ? stepsState.stepModel.fold<double>(
-        0, (s, e) => s + (e.value?.numericValue ?? 0)).toInt()
+        ? stepsState.stepModel
+              .fold<double>(0, (s, e) => s + (e.value?.numericValue ?? 0))
+              .toInt()
         : 0;
 
     // Water (liters → ml)
-    final waterState = context
-        .read<WaterCubit>()
-        .state;
+    final waterState = context.read<WaterCubit>().state;
     final water = waterState is WaterSuccessState
         ? (waterState.waterModel.fold<double>(
-        0, (s, e) => s + (e.value?.numericValue ?? 0)) * 1000).toInt()
+                    0,
+                    (s, e) => s + (e.value?.numericValue ?? 0),
+                  ) *
+                  1000)
+              .toInt()
         : 0;
 
     // Nutrition
-    final nutritionState = context
-        .read<NutritionCubit>()
-        .state;
-    final nutritionItems = nutritionState is NutritionSuccess ? nutritionState
-        .nutritionModel : [];
+    final nutritionState = context.read<NutritionCubit>().state;
+    final nutritionItems = nutritionState is NutritionSuccess
+        ? nutritionState.nutritionModel
+        : [];
     final calories = nutritionItems.fold<double>(
-        0, (s, e) => s + (e.value?.calories ?? 0));
+      0,
+      (s, e) => s + (e.value?.calories ?? 0),
+    );
     final protein = nutritionItems.fold<double>(
-        0, (s, e) => s + (e.value?.protein ?? 0));
+      0,
+      (s, e) => s + (e.value?.protein ?? 0),
+    );
     final carbs = nutritionItems.fold<double>(
-        0, (s, e) => s + (e.value?.carbs ?? 0));
+      0,
+      (s, e) => s + (e.value?.carbs ?? 0),
+    );
     final fat = nutritionItems.fold<double>(
-        0, (s, e) => s + (e.value?.fat ?? 0));
+      0,
+      (s, e) => s + (e.value?.fat ?? 0),
+    );
 
     // Sleep (minutes → hours)
-    final sleepState = context
-        .read<SleepCubit>()
-        .state;
+    final sleepState = context.read<SleepCubit>().state;
     final sleep = sleepState is SleepSuccessState
-        ? double.parse(((sleepState.sleepModel.fold<double>(
-        0, (s, e) => s + (e.value?.numericValue ?? 0))) / 60).toStringAsFixed(
-        1))
+        ? double.parse(
+            ((sleepState.sleepModel.fold<double>(
+                      0,
+                      (s, e) => s + (e.value?.numericValue ?? 0),
+                    )) /
+                    60)
+                .toStringAsFixed(1),
+          )
         : 0.0;
 
     // Weight
-    final weightState = context
-        .read<WeightCubit>()
-        .state;
+    final weightState = context.read<WeightCubit>().state;
     final weight = weightState is WeightSuccess
         ? weightState.weightModel.first.value?.numericValue?.toStringAsFixed(1)
         : 'N/A';
@@ -92,7 +104,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       'fat': fat.toStringAsFixed(1),
       'sleep': sleep,
       'weight': weight,
-      'currentTime': DateTime.now()
+      'currentTime': DateTime.now(),
     };
   }
 
@@ -117,6 +129,34 @@ class _ChatWidgetState extends State<ChatWidget> {
     }
   }
 
+  void _showLogDialog(String foodText) {
+    final foodCubit = context.read<FoodScanCubit>();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log this food?'),
+        content: Text(foodText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _loggingFromChat = true;
+              foodCubit.scanFoodText(
+                textInput: foodText,
+                groupUuid: DateTime.now().millisecondsSinceEpoch.toString(),
+              );
+            },
+            child: const Text('Log'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -135,56 +175,128 @@ class _ChatWidgetState extends State<ChatWidget> {
         title: const Text(
           'AI Health Chat',
           style: TextStyle(
-              color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+            color: _textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         actions: [
           IconButton(
             icon: const Icon(
-                CupertinoIcons.clock, color: _textSecondary, size: 20),
+              CupertinoIcons.clock,
+              color: _textSecondary,
+              size: 20,
+            ),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           IconButton(
             icon: const Icon(
-                CupertinoIcons.square_pencil, color: _textSecondary, size: 20),
+              CupertinoIcons.square_pencil,
+              color: _textSecondary,
+              size: 20,
+            ),
             onPressed: () => context.read<ChatCubit>().startNewSession(),
           ),
         ],
       ),
       drawer: _buildDrawer(),
-      body: Column(
-        children: [
-          Expanded(
-            child: BlocConsumer<ChatCubit, ChatState>(
-              listener: (context, state) {
-                if (state is ChatUpdated) {
-                  Future.delayed(
-                      const Duration(milliseconds: 100), _scrollToBottom);
-                }
-              },
-              builder: (context, state) {
-                if (state is ChatInitial) return _buildEmptyState();
-                if (state is ChatUpdated) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    itemCount: state.messages.length + (state.isLoading &&
-                        state.messages.lastOrNull?.text.isEmpty == true
-                        ? 1
-                        : 0),
-                    itemBuilder: (context, index) {
-                      if (index == state.messages.length) {
-                        return _buildTypingIndicator();
-                      }
-                      return _buildBubble(state.messages[index]);
-                    },
-                  );
-                }
-                return const SizedBox();
-              },
+      body: BlocListener<FoodScanCubit, FoodScanState>(
+        listener: (context, state) {
+          if (!_loggingFromChat) return;
+          final sm = ScaffoldMessenger.of(context);
+          if (state is FoodScanLoading) {
+            sm.showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: Lottie.asset(
+                        'assets/lottieanimations/voice_input.json',
+                        animate: true,
+                        repeat: true,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    Text('Logging food...'),
+                  ],
+                ),
+                duration: Duration(minutes: 1),
+              ),
+            );
+          } else if (state is FoodScanSuccess) {
+            _loggingFromChat = false;
+            sm.hideCurrentSnackBar();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: context.read<FoodScanCubit>(),
+                  child: FoodScanResultScreen(
+                    foods: state.foods,
+                    imagePath: state.imagePath,
+                    groupUuid: state.groupUuid,
+                  ),
+                ),
+              ),
+            );
+          } else if (state is FoodScanError || state is FoodScanNoItems) {
+            _loggingFromChat = false;
+            sm.hideCurrentSnackBar();
+            sm.showSnackBar(
+              SnackBar(
+                content: Text(
+                  state is FoodScanError
+                      ? state.message
+                      : 'No food items detected.',
+                ),
+              ),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: BlocConsumer<ChatCubit, ChatState>(
+                listener: (context, state) {
+                  if (state is ChatUpdated) {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                      _scrollToBottom,
+                    );
+                    if (state.logFoodText != null)
+                      _showLogDialog(state.logFoodText!);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is ChatInitial) return _buildEmptyState();
+                  if (state is ChatUpdated) {
+                    return ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      itemCount:
+                          state.messages.length +
+                          (state.isLoading &&
+                                  state.messages.lastOrNull?.text.isEmpty ==
+                                      true
+                              ? 1
+                              : 0),
+                      itemBuilder: (context, index) {
+                        if (index == state.messages.length) {
+                          return _buildTypingIndicator();
+                        }
+                        return _buildBubble(state.messages[index]);
+                      },
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
             ),
-          ),
-          SizedBox(height: kBottomNavigationBarHeight+20,),
-        ],
+            SizedBox(height: kBottomNavigationBarHeight + 20),
+          ],
+        ),
       ),
       bottomSheet: _buildInputBar(),
     );
@@ -195,16 +307,25 @@ class _ChatWidgetState extends State<ChatWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CupertinoIcons.chat_bubble_2, size: 64,
-              color: Colors.grey.shade300),
+          Icon(
+            CupertinoIcons.chat_bubble_2,
+            size: 64,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
-          const Text('Ask me about your health today',
-              style: TextStyle(color: _textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600)),
+          const Text(
+            'Ask me about your health today',
+            style: TextStyle(
+              color: _textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text('e.g. "How are my macros today?"',
-              style: TextStyle(color: _textSecondary, fontSize: 13)),
+          const Text(
+            'e.g. "How are my macros today?"',
+            style: TextStyle(color: _textSecondary, fontSize: 13),
+          ),
         ],
       ),
     );
@@ -212,14 +333,15 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   Widget _buildBubble(ChatMessage msg) {
     final isUser = msg.isUser;
-    final hasThinking = msg.thinkingText != null &&
-        msg.thinkingText!.isNotEmpty;
+    final hasThinking =
+        msg.thinkingText != null && msg.thinkingText!.isNotEmpty;
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment
-            .start,
+        crossAxisAlignment: isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           // Thinking expander (only for AI messages)
           if (!isUser && hasThinking)
@@ -227,10 +349,9 @@ class _ChatWidgetState extends State<ChatWidget> {
 
           Container(
             margin: const EdgeInsets.only(bottom: 10),
-            constraints: BoxConstraints(maxWidth: MediaQuery
-                .of(context)
-                .size
-                .width * 0.75),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: isUser ? Colors.black : _card,
@@ -241,36 +362,47 @@ class _ChatWidgetState extends State<ChatWidget> {
                 bottomRight: Radius.circular(isUser ? 4 : 16),
               ),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2))
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: msg.text.isEmpty
                 ? const _TypingDots() // still streaming answer
                 : MarkdownBody(
-              data: msg.text,
-              softLineBreak: true,
-              styleSheet: MarkdownStyleSheet
-                  .fromTheme(Theme.of(context))
-                  .copyWith(
-                p: TextStyle(color: isUser ? Colors.white : _textPrimary,
-                    fontSize: 14,
-                    height: 1.5),
-                strong: TextStyle(color: isUser ? Colors.white : _textPrimary,
-                    fontWeight: FontWeight.bold),
-                listBullet: TextStyle(
-                    color: isUser ? Colors.white : _textPrimary, fontSize: 14),
-                h2: TextStyle(color: isUser ? Colors.white : _textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-                h3: TextStyle(color: isUser ? Colors.white : _textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600),
-                blockSpacing: 8,
-                listIndent: 16,
-              ),
-            ),
+                    data: msg.text,
+                    softLineBreak: true,
+                    styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
+                        .copyWith(
+                          p: TextStyle(
+                            color: isUser ? Colors.white : _textPrimary,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                          strong: TextStyle(
+                            color: isUser ? Colors.white : _textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          listBullet: TextStyle(
+                            color: isUser ? Colors.white : _textPrimary,
+                            fontSize: 14,
+                          ),
+                          h2: TextStyle(
+                            color: isUser ? Colors.white : _textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          h3: TextStyle(
+                            color: isUser ? Colors.white : _textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          blockSpacing: 8,
+                          listIndent: 16,
+                        ),
+                  ),
           ),
         ],
       ),
@@ -299,10 +431,12 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   Widget _buildInputBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, MediaQuery
-          .of(context)
-          .padding
-          .bottom + 10),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        10,
+        16,
+        MediaQuery.of(context).padding.bottom + 10,
+      ),
       decoration: BoxDecoration(
         color: _card,
         boxShadow: [
@@ -310,7 +444,7 @@ class _ChatWidgetState extends State<ChatWidget> {
             color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, -4),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -340,7 +474,10 @@ class _ChatWidgetState extends State<ChatWidget> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                  CupertinoIcons.arrow_up, color: Colors.white, size: 18),
+                CupertinoIcons.arrow_up,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
         ],
@@ -360,15 +497,21 @@ class _ChatWidgetState extends State<ChatWidget> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  const Text('History',
-                      style: TextStyle(
-                          color: _textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    'History',
+                    style: TextStyle(
+                      color: _textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(
-                        CupertinoIcons.xmark, size: 18, color: _textSecondary),
+                      CupertinoIcons.xmark,
+                      size: 18,
+                      color: _textSecondary,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -378,83 +521,103 @@ class _ChatWidgetState extends State<ChatWidget> {
             Expanded(
               child: sessions.isEmpty
                   ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.clock, size: 40,
-                        color: Colors.grey.shade300),
-                    const SizedBox(height: 8),
-                    const Text('No history yet',
-                        style: TextStyle(color: _textSecondary, fontSize: 13)),
-                  ],
-                ),
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: sessions.length,
-                itemBuilder: (context, i) {
-                  final s = sessions[i];
-                  return Dismissible(
-                    key: ValueKey(s.id),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      padding: const EdgeInsets.only(right: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade400,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                          CupertinoIcons.delete, color: Colors.white, size: 18),
-                    ),
-                    onDismissed: (_) async {
-                      await ChatHiveService.instance.deleteSession(s.id);
-                      setState(() {});
-                    },
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 2),
-                      leading: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(CupertinoIcons.chat_bubble_text,
-                            size: 16, color: Colors.black54),
-                      ),
-                      title: Text(s.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: _textPrimary,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            CupertinoIcons.clock,
+                            size: 40,
+                            color: Colors.grey.shade300,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'No history yet',
+                            style: TextStyle(
+                              color: _textSecondary,
                               fontSize: 13,
-                              fontWeight: FontWeight.w500)),
-                      subtitle: Text(
-                        '${s.createdAt.day}/${s.createdAt.month}/${s.createdAt
-                            .year}',
-                        style: const TextStyle(color: _textSecondary,
-                            fontSize: 11),
+                            ),
+                          ),
+                        ],
                       ),
-                      onTap: () {
-                        context.read<ChatCubit>().loadSession(s.id);
-                        Navigator.pop(context);
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: sessions.length,
+                      itemBuilder: (context, i) {
+                        final s = sessions[i];
+                        return Dismissible(
+                          key: ValueKey(s.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            padding: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade400,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.delete,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          onDismissed: (_) async {
+                            await ChatHiveService.instance.deleteSession(s.id);
+                            setState(() {});
+                          },
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
+                            leading: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                CupertinoIcons.chat_bubble_text,
+                                size: 16,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            title: Text(
+                              s.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${s.createdAt.day}/${s.createdAt.month}/${s.createdAt.year}',
+                              style: const TextStyle(
+                                color: _textSecondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                            onTap: () {
+                              context.read<ChatCubit>().loadSession(s.id);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
       ),
     );
   }
-
-
 }
 
 class _TypingDots extends StatefulWidget {
@@ -472,8 +635,9 @@ class _TypingDotsState extends State<_TypingDots>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
   }
 
   @override
@@ -560,7 +724,8 @@ class _ThinkingBlockState extends State<_ThinkingBlock> {
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[700],
-                    fontStyle: FontStyle.italic, // Differentiates from normal text
+                    fontStyle:
+                        FontStyle.italic, // Differentiates from normal text
                   ),
                 ),
               ),

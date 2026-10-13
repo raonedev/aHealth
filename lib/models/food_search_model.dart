@@ -5,9 +5,7 @@ part 'food_search_model.g.dart';
 /// foods : [{"food_name":"Apples","food_type":"Generic","food_description":"Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g","food_id":"35718","food_url":"https://www.fatsecret.com/calories-nutrition/usda/apples"},{"food_name":"Honeycrisp Apples","food_type":"Generic","food_description":"Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g","food_id":"1902657","food_url":"https://www.fatsecret.com/calories-nutrition/generic/apples-honeycrisp"}]
 
 class FoodSearchModel {
-  FoodSearchModel({
-    List<Foods>? foods,
-  }) {
+  FoodSearchModel({List<Foods>? foods}) {
     _foods = foods;
   }
 
@@ -22,12 +20,8 @@ class FoodSearchModel {
 
   List<Foods>? _foods;
 
-  FoodSearchModel copyWith({
-    List<Foods>? foods,
-  }) =>
-      FoodSearchModel(
-        foods: foods ?? _foods,
-      );
+  FoodSearchModel copyWith({List<Foods>? foods}) =>
+      FoodSearchModel(foods: foods ?? _foods);
 
   List<Foods>? get foods => _foods;
 
@@ -45,7 +39,6 @@ class FoodSearchModel {
 /// food_description : "Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g"
 /// food_id : "35718"
 /// food_url : "https://www.fatsecret.com/calories-nutrition/usda/apples"
-
 
 @HiveType(typeId: 1) // Assign a unique typeId for the Foods class
 class Foods extends HiveObject {

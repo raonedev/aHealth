@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:ahealth/models/food_search_model.dart';
 
-
 part 'food_search_state.dart';
 
-const String _baseUrl = 'https://8ggapbx887.execute-api.ap-south-1.amazonaws.com';
+const String _baseUrl =
+    'https://8ggapbx887.execute-api.ap-south-1.amazonaws.com';
 
 class FoodSearchCubit extends Cubit<FoodSearchState> {
   FoodSearchCubit() : super(FoodSearchInitailize());
@@ -21,11 +21,13 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
     emit(FoodSearchLoading());
 
     try {
-      final uri = Uri.parse('$_baseUrl/foods/search').replace(queryParameters: {
-        'q': query,
-        'page': page.toString(),
-        'limit': limit.toString(),
-      });
+      final uri = Uri.parse('$_baseUrl/foods/search').replace(
+        queryParameters: {
+          'q': query,
+          'page': page.toString(),
+          'limit': limit.toString(),
+        },
+      );
 
       final response = await http.get(uri);
       dev.log('Search status: ${response.statusCode}');
@@ -33,11 +35,15 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        emit(FoodSearchSuccess(
-            foodSearchModel: FoodSearchModel.fromJson(decoded)));
+        emit(
+          FoodSearchSuccess(foodSearchModel: FoodSearchModel.fromJson(decoded)),
+        );
       } else {
-        emit(FoodSearchFailed(
-            errorMessage: 'Error: ${response.statusCode} ${response.body}'));
+        emit(
+          FoodSearchFailed(
+            errorMessage: 'Error: ${response.statusCode} ${response.body}',
+          ),
+        );
       }
     } catch (e) {
       emit(FoodSearchFailed(errorMessage: e.toString()));
