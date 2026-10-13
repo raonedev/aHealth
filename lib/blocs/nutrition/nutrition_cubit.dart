@@ -120,8 +120,7 @@ class NutritionCubit extends Cubit<NutritionState> {
       final earlier = now.subtract(const Duration(minutes: 20));
       dev.log("logging : ${valueFood.name}");
 
-      bool success = false;
-      success &= await Health().writeMeal(
+      bool success = await Health().writeMeal(
         mealType: _getMealType(now.hour),
         startTime: earlier,
         endTime: now,

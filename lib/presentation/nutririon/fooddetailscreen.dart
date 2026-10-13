@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/blocs/fooddetail/food_detail_cubit.dart';
 import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
@@ -190,9 +192,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                 .food
                                 ?.servings
                                 ?.serving?[selectIndex!];
+
                             valueFood = ValueFood(
                               name:
-                                  '${state.foodWithServingsModel.food!.foodName ?? "NULL Name"} (${multiplier.toStringAsFixed(multiplier % 1 == 0 ? 0 : 1)} ${serving?.measurementDescription ?? "serving"}${multiplier != 1 ? "s" : ""})',
+                                  '${state.foodWithServingsModel.food!.foodName ?? "NULL Name"} (${(double.parse(serving?.metricServingAmount ?? '0') * multiplier).toStringAsFixed(0)} ${serving?.metricServingUnit ?? ""})',
                               unit: serving?.metricServingUnit,
                               quantity:
                                   double.parse(
