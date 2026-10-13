@@ -1,8 +1,7 @@
 import 'package:hive/hive.dart';
+import 'food_with_servings_model.dart';
 
 part 'food_search_model.g.dart';
-
-/// foods : [{"food_name":"Apples","food_type":"Generic","food_description":"Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g","food_id":"35718","food_url":"https://www.fatsecret.com/calories-nutrition/usda/apples"},{"food_name":"Honeycrisp Apples","food_type":"Generic","food_description":"Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g","food_id":"1902657","food_url":"https://www.fatsecret.com/calories-nutrition/generic/apples-honeycrisp"}]
 
 class FoodSearchModel {
   FoodSearchModel({List<Foods>? foods}) {
@@ -10,9 +9,10 @@ class FoodSearchModel {
   }
 
   FoodSearchModel.fromJson(dynamic json) {
-    if (json['foods'] != null && json['foods']['food'] != null) {
+    final list = json['foods_search']?['results']?['food'];
+    if (list != null) {
       _foods = [];
-      json['foods']['food'].forEach((v) {
+      list.forEach((v) {
         _foods?.add(Foods.fromJson(v));
       });
     }
@@ -34,13 +34,7 @@ class FoodSearchModel {
   }
 }
 
-/// food_name : "Apples"
-/// food_type : "Generic"
-/// food_description : "Per 100g - Calories: 52kcal | Fat: 0.17g | Carbs: 13.81g | Protein: 0.26g"
-/// food_id : "35718"
-/// food_url : "https://www.fatsecret.com/calories-nutrition/usda/apples"
-
-@HiveType(typeId: 1) // Assign a unique typeId for the Foods class
+@HiveType(typeId: 1)
 class Foods extends HiveObject {
   @HiveField(0)
   String? foodName;
@@ -57,20 +51,35 @@ class Foods extends HiveObject {
   @HiveField(4)
   String? foodUrl;
 
+  @HiveField(5)
+  Servings? servings;
+
   Foods({
     this.foodName,
     this.foodType,
     this.foodDescription,
     this.foodId,
     this.foodUrl,
+    this.servings,
   });
 
   Foods.fromJson(Map<String, dynamic> json) {
     foodName = json['food_name'];
     foodType = json['food_type'];
-    foodDescription = json['food_description'];
     foodId = json['food_id'];
     foodUrl = json['food_url'];
+    servings = json['servings'] != null
+        ? Servings.fromJson(json['servings'])
+        : null;
+
+    // API no longer sends food_description. Build it from the first serving.
+    final list = servings?.serving;
+    final s = (list != null && list.isNotEmpty) ? list.first : null;
+    foodDescription =
+        json['food_description'] ??
+        (s == null
+            ? null
+            : '${s.servingDescription} - Calories: ${s.calories}kcal | Fat: ${s.fat}g | Carbs: ${s.carbohydrate}g | Protein: ${s.protein}g');
   }
 
   Foods copyWith({
@@ -79,6 +88,7 @@ class Foods extends HiveObject {
     String? foodDescription,
     String? foodId,
     String? foodUrl,
+    Servings? servings,
   }) {
     return Foods(
       foodName: foodName ?? this.foodName,
@@ -86,6 +96,7 @@ class Foods extends HiveObject {
       foodDescription: foodDescription ?? this.foodDescription,
       foodId: foodId ?? this.foodId,
       foodUrl: foodUrl ?? this.foodUrl,
+      servings: servings ?? this.servings,
     );
   }
 
@@ -96,6 +107,7 @@ class Foods extends HiveObject {
       'food_description': foodDescription,
       'food_id': foodId,
       'food_url': foodUrl,
+      'servings': servings?.toJson(),
     };
   }
 }

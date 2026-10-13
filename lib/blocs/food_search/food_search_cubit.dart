@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:ahealth/models/food_search_model.dart';
+
+import '../../config/appconstants.dart';
+import '../../models/food_with_servings_model.dart';
 
 part 'food_search_state.dart';
 
@@ -31,13 +35,31 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
 
       final response = await http.get(uri);
       dev.log('Search status: ${response.statusCode}');
-      dev.log('Search response: ${response.body}');
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        emit(
-          FoodSearchSuccess(foodSearchModel: FoodSearchModel.fromJson(decoded)),
-        );
+        final model = FoodSearchModel.fromJson(decoded);
+
+        // Save each food with servings, same type as before
+        final box = await Hive.openBox(foodDetailLocationHive);
+        for (final f in model.foods ?? <Foods>[]) {
+          if (f.foodId != null) {
+            await box.put(
+              f.foodId,
+              FoodWithServingsModel(
+                food: Food(
+                  foodId: f.foodId,
+                  foodName: f.foodName,
+                  foodType: f.foodType,
+                  foodUrl: f.foodUrl,
+                  servings: f.servings,
+                ),
+              ),
+            );
+          }
+        }
+
+        emit(FoodSearchSuccess(foodSearchModel: model));
       } else {
         emit(
           FoodSearchFailed(
