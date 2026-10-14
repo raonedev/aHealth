@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../appcolors.dart';
 import '../../common/spring_button_widget.dart';
 import '../../constants.dart';
+import '../common/widgets/edit_goal_dialog.dart';
 import '../profileinfo/health_detail.dart' show Gender;
 
 class ProfileScreen extends StatefulWidget {
@@ -33,12 +34,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
 
+  String _goal = 'maintainWeight';
+  String _activity = 'lightlyActive';
+  static const _goalLabels = {
+    'lossWeight': 'Weight Loss',
+    'gainWeight': 'Weight Gain',
+    'maintainWeight': 'Maintain Weight',
+    'gainMuscle': 'Muscle Gain',
+    'lifeStyleImprove': 'Lifestyle Improvement',
+  };
+  static const _activityLabels = {
+    'sedentary': 'Sedentary',
+    'lightlyActive': 'Lightly Active',
+    'moderatelyActive': 'Moderately Active',
+    'veryActive': 'Very Active',
+    'extraActive': 'Extra Active',
+  };
+
   final List<int> _waterPresetOptions = [150, 200, 250, 300, 350, 500];
+
+  Future<void> _loadGoal() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _goal = prefs.getString(PrefKeys.healthGoal) ?? 'maintainWeight';
+      _activity = prefs.getString(PrefKeys.activityLevel) ?? 'lightlyActive';
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _loadGoal();
   }
 
   @override
@@ -712,6 +740,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    _buildSectionHeader('RE-CALIBRATE GOAL'),
+                    const SizedBox(height: 12),
+                    _buildCard(
+                      child: InkWell(
+                        onTap: () async {
+                          await showEditGoalDialog(context);
+                          _loadGoal();
+                        },  
+                        child: Row(
+                          children: [
+                            const Icon(Icons.flag_rounded, color: primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _goalLabels[_goal] ?? _goal,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    _activityLabels[_activity] ?? _activity,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Text(
+                              'Change',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: primary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),

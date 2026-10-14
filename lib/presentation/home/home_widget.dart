@@ -46,6 +46,8 @@ class _HomeWidgetState extends State<HomeWidget> {
   File? _userImageFile;
   int _targetSteps = kDefaultTargetSteps;
   double _targetWater = kDefaultTargetWaterLiters;
+  // for refresh nuritioncard whencame from profile screen
+  int _nutritionKey = 0;
 
   @override
   void initState() {
@@ -115,7 +117,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                 delegate: SliverChildListDelegate([
                   _buildTopBar(context),
                   const SizedBox(height: 8),
-                  NutritionCard(),
+                  NutritionCard(key: ValueKey(_nutritionKey)),
                   const SizedBox(height: 16),
                   StepsCard(targetSteps: _targetSteps),
                   const SizedBox(height: 16),
@@ -176,6 +178,7 @@ class _HomeWidgetState extends State<HomeWidget> {
             await context.push(AppRoutes.profile);
             if (mounted) {
               await _loadProfileData();
+              setState(() => _nutritionKey++);
             }
           },
           uiChild: Row(
