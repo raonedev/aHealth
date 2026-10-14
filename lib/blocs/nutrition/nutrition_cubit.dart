@@ -84,6 +84,32 @@ class NutritionCubit extends Cubit<NutritionState> {
   }
 
   void invalidateCache(DateTime date) => _cache.remove(_dayKey(date));
+
+  Future<bool> deleteNutritionData(NutritionModel model) async {
+    if (model.uuid == null) {
+      emit(NutritionFailed(errorMessage: "Invalid food log data"));
+      return false;
+    }
+    emit(NutritionLoading());
+    try {
+       final success = await Health().deleteByUUID(
+      type: HealthDataType.NUTRITION,
+      uuid: model.uuid!,
+    );
+      if (success) {
+        invalidateCache(selectedDate);
+        await getNutritionData(date: selectedDate, forceRefresh: true);
+      } else {
+        emit(NutritionFailed(errorMessage: "Failed to delete food log"));
+      }
+      return success;
+    } catch (e, s) {
+      dev.log("Exception deleteNutritionData", error: e, stackTrace: s);
+      emit(NutritionFailed(errorMessage: e.toString()));
+      return false;
+    }
+  }
+
   // Helper function to determine meal type based on the hour of the day
   MealType _getMealType(int hour) {
     if (hour >= 5 && hour < 11) {

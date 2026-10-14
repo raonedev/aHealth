@@ -1,5 +1,3 @@
-import 'dart:developer' as dev;
-
 import 'package:ahealth/appcolors.dart';
 import 'package:ahealth/blocs/fooddetail/food_detail_cubit.dart';
 import 'package:ahealth/blocs/nutrition/nutrition_cubit.dart';
