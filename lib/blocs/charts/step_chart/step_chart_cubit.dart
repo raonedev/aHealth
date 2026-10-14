@@ -5,11 +5,37 @@ import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
 
 import '../../../config/common_method.dart';
+import 'step_day_data.dart';
 
 part 'step_chart_state.dart';
 
 class StepChartCubit extends Cubit<StepChartState> {
   StepChartCubit() : super(StepChartsLoading());
+
+  Future<StepDayData> getStepDataForDay(DateTime day) async {
+    final startTime = DateTime(day.year, day.month, day.day);
+    final endTime =
+        DateTime(day.year, day.month, day.day, 23, 59, 59, 999);
+    final healthData = await Health().getHealthDataFromTypes(
+      types: [HealthDataType.STEPS],
+      startTime: startTime,
+      endTime: endTime,
+    );
+
+    final records = healthData.map((point) {
+      final value = point.value.toJson()['numericValue'];
+      if (value == null) {
+        throw FormatException('Step data is missing its numeric value.');
+      }
+
+      return StepDayRecord(
+        time: point.dateFrom,
+        steps: double.parse(value.toString()),
+      );
+    });
+
+    return StepDayData.fromRecords(day: day, records: records);
+  }
 
   Future<void> getDataFromNow({bool forceRefresh = false}) async {
     if (!forceRefresh && state is StepChartsSuccess) {

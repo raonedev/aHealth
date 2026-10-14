@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../blocs/charts/step_chart/step_chart_cubit.dart';
@@ -12,7 +13,11 @@ import 'widgets/summary_cards.dart';
 class WeeklyTab extends StatelessWidget {
   final List<double> weekData;
   final double targetSteps;
-  const WeeklyTab({super.key, required this.weekData, this.targetSteps = kDailyTarget});
+  const WeeklyTab({
+    super.key,
+    required this.weekData,
+    this.targetSteps = kDailyTarget,
+  });
 
   List<StepPoint> get _points {
     final now = DateTime.now();
@@ -21,14 +26,16 @@ class WeeklyTab extends StatelessWidget {
       return StepPoint(date, weekData[i], targetSteps);
     });
   }
-  
+
   String _fmt(double v) => NumberFormat('#,###').format(v.round());
 
   @override
   Widget build(BuildContext context) {
     final pts = _points;
     final today = pts.isNotEmpty ? pts.last : null;
-    final double avg = weekData.isEmpty ? 0 : weekData.reduce((a, b) => a + b) / weekData.length;
+    final double avg = weekData.isEmpty
+        ? 0
+        : weekData.reduce((a, b) => a + b) / weekData.length;
     final hit = weekData.where((s) => s >= targetSteps).length;
 
     return RefreshIndicator(
@@ -36,7 +43,9 @@ class WeeklyTab extends StatelessWidget {
         await context.read<StepChartCubit>().getDataFromNow(forceRefresh: true);
       },
       child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         children: [
           SummaryCards(
             items: [
@@ -49,12 +58,28 @@ class WeeklyTab extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text('Daily breakdown',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                    color: Colors.grey[600], letterSpacing: .5)),
+            child: Text(
+              'Daily breakdown',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+                letterSpacing: .5,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
-           ...pts.reversed.map((p) => DayListTile(point: p)),
+          ...pts.reversed.map(
+            (point) => DayListTile(
+              point: point,
+              onTap: () => context.pushNamed(
+                'step-day-detail',
+                pathParameters: {
+                  'date': DateFormat('yyyy-MM-dd').format(point.date),
+                },
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
         ],
       ),

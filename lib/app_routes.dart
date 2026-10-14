@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
+import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
 import 'features/streak/presentation/screens/streak_screen.dart';
@@ -32,6 +33,7 @@ import 'presentation/nutririon/nitritiondetailscreen.dart';
 import 'presentation/nutririon/nutrient_chart_screen.dart';
 import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
+import 'presentation/steps/step_day_detail_screen.dart';
 import 'presentation/profile/profile_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
 
@@ -215,6 +217,19 @@ class AppRoutes {
         path: stepChartScreen,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepChartScreen(),
+      ),
+      GoRoute(
+        name: 'step-day-detail',
+        path: '/chart/step/day/:date',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final day = DateTime.parse(state.pathParameters['date']!);
+          return StepDayDetailScreen(
+            day: day,
+            dayData:
+                context.read<StepChartCubit>().getStepDataForDay(day),
+          );
+        },
       ),
       GoRoute(
         path: waterChartScreen,
