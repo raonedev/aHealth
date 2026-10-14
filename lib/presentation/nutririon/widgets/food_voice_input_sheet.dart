@@ -72,12 +72,13 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
     return BlocListener<FoodScanCubit, FoodScanState>(
       listener: (context, state) {
         if (state is FoodScanSuccess) {
+          final foodScanCubit = context.read<FoodScanCubit>();
           Navigator.pop(context); // close sheet
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
-                value: context.read<FoodScanCubit>(),
+                value: foodScanCubit,
                 child: FoodScanResultScreen(
                   foods: state.foods,
                   imagePath: state.imagePath,
