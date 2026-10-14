@@ -1,7 +1,6 @@
-
-
 import 'package:ahealth/appcolors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 ThemeData appTheme = ThemeData(
   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -39,10 +38,10 @@ ThemeData appTheme = ThemeData(
     ),
   ),
 
-
   //appbar
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
+    systemOverlayStyle: SystemUiOverlayStyle.dark,
     elevation: 0,
     titleSpacing: 0,
     centerTitle: false,
@@ -67,9 +66,7 @@ ThemeData appTheme = ThemeData(
       ),
       foregroundColor: Colors.white,
       backgroundColor: primary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    )
-  )
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  ),
 );
