@@ -78,9 +78,9 @@
     "semantic_hash": "a225a382d14d7b16b6f602a5c1d49331"
   },
   "lib/app_routes.dart": {
-    "mtime": 1791791183.5319996,
-    "seen": 1791960494.300808,
-    "ast_hash": "150826f00e2e643d5a79ea1b8cca47a2",
+    "mtime": 1791970144.0771759,
+    "seen": 1791970596.033406,
+    "ast_hash": "ba19ea1556bf74e3865d9d841c9fce34",
     "semantic_hash": ""
   },
   "lib/appcolors.dart": {
@@ -150,9 +150,9 @@
     "semantic_hash": "c1438fb1bc0514dadbdde2f8ad92f858"
   },
   "lib/blocs/charts/step_chart/step_chart_cubit.dart": {
-    "mtime": 1791778201.9509313,
-    "seen": 1791960494.300829,
-    "ast_hash": "fe15ac4ee19291ecbc1cee2e658d38a6",
+    "mtime": 1791968465.9367414,
+    "seen": 1791970596.0334358,
+    "ast_hash": "f288003adeae5b61eab32263106180da",
     "semantic_hash": ""
   },
   "lib/blocs/charts/step_chart/step_chart_state.dart": {
@@ -198,8 +198,8 @@
     "semantic_hash": ""
   },
   "lib/blocs/food_scan/food_scan_cubit.dart": {
-    "mtime": 1787565717.858322,
-    "seen": 1791276438.102583,
+    "mtime": 1791963810.2762554,
+    "seen": 1791970596.033459,
     "ast_hash": "ca29de4cdb9b06c55c0225b095d92d7e",
     "semantic_hash": "ca29de4cdb9b06c55c0225b095d92d7e"
   },
@@ -210,8 +210,8 @@
     "semantic_hash": "626793ce877662a29c40cc9303cde277"
   },
   "lib/blocs/food_search/food_search_cubit.dart": {
-    "mtime": 1791890271.660985,
-    "seen": 1791960494.300847,
+    "mtime": 1791963585.9224799,
+    "seen": 1791970596.033464,
     "ast_hash": "1ed5e0e0ec147cc64008a7e6462bdf75",
     "semantic_hash": ""
   },
@@ -726,8 +726,8 @@
     "semantic_hash": "b8b776488df586ab4008f65966fe0fd4"
   },
   "lib/presentation/home.dart": {
-    "mtime": 1788775488.4604864,
-    "seen": 1791276438.10271,
+    "mtime": 1791970151.0630832,
+    "seen": 1791970596.033675,
     "ast_hash": "14c684390a275ffb69d5cc6388096824",
     "semantic_hash": "14c684390a275ffb69d5cc6388096824"
   },
@@ -780,10 +780,10 @@
     "semantic_hash": ""
   },
   "lib/presentation/nutririon/food_scan_result_screen.dart": {
-    "mtime": 1787825620.9543512,
-    "seen": 1791276438.1027231,
-    "ast_hash": "8d812d9a6392e88d4ad90f41c3a7e792",
-    "semantic_hash": "8d812d9a6392e88d4ad90f41c3a7e792"
+    "mtime": 1791967999.1719527,
+    "seen": 1791970596.033696,
+    "ast_hash": "32fec4819135fe0207bcdfcf56b00a52",
+    "semantic_hash": ""
   },
   "lib/presentation/nutririon/fooddetailscreen.dart": {
     "mtime": 1791893034.4002302,
@@ -852,15 +852,15 @@
     "semantic_hash": "391342918fee3a0869cb09073d24ff3b"
   },
   "lib/presentation/nutririon/widgets/food_scan_nutrition_loading.dart": {
-    "mtime": 1785309485.508506,
-    "seen": 1791276438.1027389,
+    "mtime": 1791966995.9568188,
+    "seen": 1791970596.033725,
     "ast_hash": "c9d718ed4dfe6a4dec6861066694572f",
     "semantic_hash": "c9d718ed4dfe6a4dec6861066694572f"
   },
   "lib/presentation/nutririon/widgets/food_voice_input_sheet.dart": {
-    "mtime": 1791880717.1825635,
-    "seen": 1791960494.301027,
-    "ast_hash": "9b04f5af665c9ec8f7b61aaa21e9939b",
+    "mtime": 1791967384.7621682,
+    "seen": 1791970596.033727,
+    "ast_hash": "ee5202cacb7b6818fd98774af46c2fe3",
     "semantic_hash": ""
   },
   "lib/presentation/nutririon/widgets/macro_card.dart": {
@@ -966,16 +966,16 @@
     "semantic_hash": ""
   },
   "lib/presentation/steps/weekly_tab.dart": {
-    "mtime": 1791791705.6953228,
-    "seen": 1791960494.301059,
-    "ast_hash": "4a51bc97f4b2bbd28830113164fa6f0e",
+    "mtime": 1791969936.837162,
+    "seen": 1791970596.033775,
+    "ast_hash": "a2a083a38ac8e8088f2f6a4d27e36f7f",
     "semantic_hash": ""
   },
   "lib/presentation/steps/widgets/day_list_tile.dart": {
-    "mtime": 1785309485.5198064,
-    "seen": 1791276438.102766,
-    "ast_hash": "ca14af01d1ef4124684b082c52d609e0",
-    "semantic_hash": "ca14af01d1ef4124684b082c52d609e0"
+    "mtime": 1791970015.0469124,
+    "seen": 1791970596.033777,
+    "ast_hash": "406c939df8d14ba61e77a89d62556b04",
+    "semantic_hash": ""
   },
   "lib/presentation/steps/widgets/legend_dot.dart": {
     "mtime": 1785309485.520147,
@@ -984,8 +984,8 @@
     "semantic_hash": "05cabea857a733aa6b1331088e7bf782"
   },
   "lib/presentation/steps/widgets/step_line_chart.dart": {
-    "mtime": 1785309485.520536,
-    "seen": 1791276438.102769,
+    "mtime": 1791968062.5678563,
+    "seen": 1791970596.033782,
     "ast_hash": "64b8474719db171a9b29cd522ad7c118",
     "semantic_hash": "64b8474719db171a9b29cd522ad7c118"
   },
@@ -1068,9 +1068,9 @@
     "semantic_hash": "fa7e017b849434877a91b9fd4cfdd97c"
   },
   "lib/presentation/water/water.dart": {
-    "mtime": 1791805850.4822145,
-    "seen": 1791960494.301087,
-    "ast_hash": "727f5bd2a5342a3ffee9eb9d3c8d0f90",
+    "mtime": 1791970402.8954551,
+    "seen": 1791970596.0338151,
+    "ast_hash": "2de5c9a08b6de7cbc46d38f1325fd21a",
     "semantic_hash": ""
   },
   "lib/presentation/water/widgets/water_summary_card.dart": {
@@ -1125,18 +1125,6 @@
     "mtime": 1791279023.9282432,
     "seen": 1791353540.613434,
     "ast_hash": "61f4c4513df178d424ed7ae6b0acdd59",
-    "semantic_hash": ""
-  },
-  ".agents/skills/ads-and-iap-monetization/examples/rewarded_credit_economy.dart": {
-    "mtime": 1791279023.9392781,
-    "seen": 1791353540.613436,
-    "ast_hash": "d52764e1729afa783768a2ff5c0c8b34",
-    "semantic_hash": ""
-  },
-  ".agents/skills/ads-and-iap-monetization/scripts/check-release-ad-ids.sh": {
-    "mtime": 1791279023.9392827,
-    "seen": 1791353540.613438,
-    "ast_hash": "7a0120cd99315151c826ee5e70eecd32",
     "semantic_hash": ""
   },
   ".agents/skills/ci-pipeline-and-gates/examples/policy_grep_test.dart": {
@@ -1755,24 +1743,6 @@
     "mtime": 1791279023.9295483,
     "seen": 1791353540.614089,
     "ast_hash": "e5d33a53bb1eaee8634d01ea8198b4b5",
-    "semantic_hash": ""
-  },
-  ".agents/skills/ads-and-iap-monetization/SKILL.md": {
-    "mtime": 1791279023.9372196,
-    "seen": 1791353540.614091,
-    "ast_hash": "1be12350f80892c51b6ff44997900824",
-    "semantic_hash": ""
-  },
-  ".agents/skills/ads-and-iap-monetization/references/ad-unit-setup.md": {
-    "mtime": 1791279023.9395812,
-    "seen": 1791353540.614093,
-    "ast_hash": "80c28802597661dc7eca47a1f69c0318",
-    "semantic_hash": ""
-  },
-  ".agents/skills/ads-and-iap-monetization/references/entitlement-and-restore.md": {
-    "mtime": 1791279023.9402292,
-    "seen": 1791353540.614094,
-    "ast_hash": "e2486665c2b67340880ced40fe6e4d12",
     "semantic_hash": ""
   },
   ".agents/skills/app-startup-and-bootstrap/SKILL.md": {
@@ -2634,9 +2604,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791884176.1941297,
-    "seen": 1791960494.3013709,
-    "ast_hash": "60ba0259e10c4c5276011e2b80cdf38c",
+    "mtime": 1791961699.357988,
+    "seen": 1791970596.0342212,
+    "ast_hash": "47695b9663a68e2d9017ad860368645d",
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -2664,8 +2634,8 @@
     "semantic_hash": ""
   },
   "repomix-output.md": {
-    "mtime": 1791277937.5759723,
-    "seen": 1791353540.6143842,
+    "mtime": 1791963300.068394,
+    "seen": 1791970596.034233,
     "ast_hash": "02b714137296d112631100b58e62678e",
     "semantic_hash": ""
   },
@@ -2970,9 +2940,27 @@
     "semantic_hash": ""
   },
   ".github/copilot-instructions.md": {
-    "mtime": 1791959822.8706114,
-    "seen": 1791960494.301368,
-    "ast_hash": "ec2dc0dc7bef63488889f34de2f5584d",
+    "mtime": 1791963299.967598,
+    "seen": 1791970596.034216,
+    "ast_hash": "016b7064ecd9fb82a0ec8bb7cfc2a250",
+    "semantic_hash": ""
+  },
+  "lib/blocs/charts/step_chart/step_day_data.dart": {
+    "mtime": 1791968465.8948123,
+    "seen": 1791970596.033442,
+    "ast_hash": "4d6c5dc9b20c895683aa087b1bf5a5e9",
+    "semantic_hash": ""
+  },
+  "lib/presentation/steps/step_day_detail_screen.dart": {
+    "mtime": 1791969862.506369,
+    "seen": 1791970596.033772,
+    "ast_hash": "da63a5d9097859fb239dfe18341a227b",
+    "semantic_hash": ""
+  },
+  "test/blocs/charts/step_chart/step_day_data_test.dart": {
+    "mtime": 1791968492.4703956,
+    "seen": 1791970596.0338318,
+    "ast_hash": "eb638fccfee8383cf0b10016a833fd8f",
     "semantic_hash": ""
   }
 }
