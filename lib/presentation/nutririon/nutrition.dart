@@ -54,31 +54,23 @@ class _NutritionState extends State<Nutrition> {
   }
 
   Map<String, List<NutritionModel>> _groupItems(List<NutritionModel> items) {
-    final groups = NutritionService.getAllGroups();
     final Map<String, List<NutritionModel>> grouped = {};
-    final List<NutritionModel> ungrouped = [];
+    DateTime? prev;
+    String? key;
 
     for (final item in items) {
-      final group = groups.cast<FoodScanGroup?>().firstWhere(
-        (g) => g!.foods.any(
-          (f) =>
-              item.value?.name != null &&
-              f.name != null &&
-              item.value!.name!.startsWith(f.name!),
-        ),
-        orElse: () => null,
-      );
-      if (group != null) {
-        grouped.putIfAbsent(group.imagePath, () => []).add(item);
-      } else {
-        ungrouped.add(item);
+      final t = DateTime.tryParse(item.dateTo ?? '');
+      if (key == null ||
+          prev == null ||
+          t == null ||
+          prev.difference(t).abs() >= const Duration(minutes: 5)) {
+        key = item.uuid ?? UniqueKey().toString();
+        grouped[key] = [];
       }
+      grouped[key]!.add(item);
+      prev = t;
     }
-
-    return {
-      ...grouped,
-      for (final i in ungrouped) i.value?.name ?? '': [i],
-    };
+    return grouped;
   }
 
   @override
