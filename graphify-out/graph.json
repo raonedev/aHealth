@@ -32627,12 +32627,12 @@
     },
     {
       "id": "blocs_nutrition_nutrition_cubit_dart",
-      "label": "../../blocs/nutrition/nutrition_cubit.dart",
+      "label": "../blocs/nutrition/nutrition_cubit.dart",
       "_origin": "ast",
       "community": 27,
       "community_name": "food_scan_result_screen.dart",
       "file_type": "code",
-      "norm_label": "../../blocs/nutrition/nutrition_cubit.dart",
+      "norm_label": "../blocs/nutrition/nutrition_cubit.dart",
       "source_file": null,
       "source_location": null
     },
@@ -135010,5 +135010,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8acce1780f8cc54672feedb4b4a9d6059457c956"
+  "built_at_commit": "92c8c93efec5dc52dffdefa8e026723255419344"
 }

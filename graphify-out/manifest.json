@@ -726,9 +726,9 @@
     "semantic_hash": "b8b776488df586ab4008f65966fe0fd4"
   },
   "lib/presentation/home.dart": {
-    "mtime": 1792039463.0299194,
-    "seen": 1792044114.4076412,
-    "ast_hash": "9f19d65afe24d4a910377b5108788721",
+    "mtime": 1792048593.855505,
+    "seen": 1792048671.85758,
+    "ast_hash": "8b35e80db4bdcfe5c631b0d9553ffeec",
     "semantic_hash": ""
   },
   "lib/presentation/home/home_widget.dart": {
@@ -804,8 +804,8 @@
     "semantic_hash": ""
   },
   "lib/presentation/nutririon/nutrition.dart": {
-    "mtime": 1792048320.5177162,
-    "seen": 1792048456.917558,
+    "mtime": 1792048504.6226373,
+    "seen": 1792048671.857601,
     "ast_hash": "83552d631fec2676df540c1cffb6f7f7",
     "semantic_hash": ""
   },

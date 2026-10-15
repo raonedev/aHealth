@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8acce178`
+- Built from commit: `92c8c93e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1707,24 +1707,24 @@ Cohesion: 0.50
 Nodes (3): SparklineNotifier, SparklineState, AuthNotifier
 
 ## Knowledge Gaps
-- **3232 isolated node(s):** `_bg`, `_card`, `_textPrimary`, `_textSecondary`, `_proteinColor` (+3227 more)
+- **3232 isolated node(s):** `child`, `_tabs`, `_pageController`, `createState`, `_locationToIndex` (+3227 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3696 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **47 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `_buildTopBar` connect `build` to `home_widget.dart`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **What connects `_bg`, `_card`, `_textPrimary` to the rest of the system?**
+- **Why does `StreakCubit` connect `StreakCubit` to `Cubit`, `main.dart`, `water_cubit.dart`, `nutrition_cubit.dart`, `streak_cubit.dart`, `weight_cubit.dart`, `streak_screen.dart`?**
+  _High betweenness centrality (0.002) - this node is a cross-community bridge._
+- **What connects `child`, `_tabs`, `_pageController` to the rest of the system?**
   _3232 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `spring_button_widget.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.022727272727272728 - nodes in this community are weakly interconnected._
 - **Why does `TrackingRepository` connect `TrackingRepository` to `tracking_cubit.dart`, `tracking_repository.dart`, `service_locator.dart`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+  _High betweenness centrality (0.002) - this node is a cross-community bridge._
 - **Should `water.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.07459677419354839 - nodes in this community are weakly interconnected._
-- **Why does `CalorieChartCubit` connect `calorie_chart_cubit.dart` to `Cubit`, `calorie_chart_screen.dart`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
 - **Should `streak_local_datasource.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
+- **Should `nutrition_card.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.06666666666666667 - nodes in this community are weakly interconnected._
