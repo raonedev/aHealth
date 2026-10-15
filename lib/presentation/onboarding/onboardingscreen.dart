@@ -13,7 +13,9 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
-  final List<Map<String, dynamic>> onBoardingData = [
+  final ValueNotifier<int> _currentIndex = ValueNotifier<int>(0);
+
+  final List<Map<String, String>> onBoardingData = const [
     {
       "title": "Simplify Your Health Goals with Our Minimal Health Tracker",
       "subTitle":
@@ -46,10 +48,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  int currentIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    _precacheSvgs();
+  }
+
+  // Load every SVG into flutter_svg's cache once (flutter_svg 2.x)
+  void _precacheSvgs() {
+    for (final item in onBoardingData) {
+      final loader = SvgAssetLoader(item['imagePath']!);
+      svg.cache.putIfAbsent(loader.cacheKey(null), () => loader.loadBytes(null));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final lastIndex = onBoardingData.length - 1;
+
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
@@ -58,45 +74,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             PageView.builder(
               controller: _pageController,
               itemCount: onBoardingData.length,
-              onPageChanged: (index) {
-                setState(() {
-                  currentIndex = index;
-                });
-              },
+              onPageChanged: (index) => _currentIndex.value = index,
               itemBuilder: (context, index) {
-                return Stack(
-                  children: [
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: RepaintBoundary(
-                        child: SvgPicture.asset(
-                          onBoardingData[index]['imagePath'],
-                          width: MediaQuery.sizeOf(context).width,
-                          fit: BoxFit.fitWidth,
-                          alignment: Alignment.bottomLeft,
+                return KeepAlivePage(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: RepaintBoundary(
+                          child: SvgPicture.asset(
+                            onBoardingData[index]['imagePath']!,
+                            width: MediaQuery.sizeOf(context).width,
+                            fit: BoxFit.fitWidth,
+                            alignment: Alignment.bottomLeft,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: kToolbarHeight),
-                          Text(
-                            onBoardingData[index]['title'],
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            onBoardingData[index]['subTitle'],
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            // const SizedBox(height: kToolbarHeight),
+                            Text(
+                              onBoardingData[index]['title']!,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              onBoardingData[index]['subTitle']!,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
@@ -106,52 +120,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    ...List.generate(
-                      onBoardingData.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: currentIndex == index ? 30 : 10,
-                        height: 10,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(5),
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF090E1D),
-                        minimumSize: const Size(110, 56),
-                      ),
-                      onPressed: () {
-                        if (currentIndex == onBoardingData.length - 1) {
-                          // Navigate to the next screen or perform any action
-                          // Navigator.push(context, MaterialPageRoute(builder: (_)=>const HeathDetailScreen()));
-                          context.push(AppRoutes.heathDetail);
-                        } else {
-                          _pageController.animateToPage(
-                            onBoardingData.length - 1,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _currentIndex,
+                  builder: (context, currentIndex, _) {
+                    return Row(
+                      children: [
+                        ...List.generate(
+                          onBoardingData.length,
+                          (index) => AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        }
-                      },
-                      child: Text(
-                        currentIndex == onBoardingData.length - 1
-                            ? "Done"
-                            : "Skip",
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                            width: currentIndex == index ? 30 : 10,
+                            height: 10,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                        const Spacer(),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF090E1D),
+                            minimumSize: const Size(110, 56),
+                          ),
+                          onPressed: () {
+                            if (currentIndex == lastIndex) {
+                              context.push(AppRoutes.heathDetail);
+                            } else {
+                              _pageController.animateToPage(
+                                lastIndex,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                          child: Text(
+                            currentIndex == lastIndex ? "Done" : "Skip",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -164,6 +181,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _currentIndex.dispose();
     super.dispose();
+  }
+}
+
+class KeepAlivePage extends StatefulWidget {
+  final Widget child;
+  const KeepAlivePage({super.key, required this.child});
+  @override
+  State<KeepAlivePage> createState() => _KeepAlivePageState();
+}
+
+class _KeepAlivePageState extends State<KeepAlivePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

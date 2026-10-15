@@ -207,6 +207,7 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
                             child: const Text('Log Food'),
                           ),
                         ),
+                        const SizedBox(height: kBottomNavigationBarHeight),
                       ],
                     ),
                   ),

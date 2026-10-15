@@ -1,4 +1,5 @@
 import 'package:ahealth/appcolors.dart';
+import 'package:ahealth/common/spring_button_widget.dart';
 
 import '../blocs/food_search/food_search_cubit.dart';
 import '../blocs/fooddetail/food_detail_cubit.dart';
@@ -114,46 +115,74 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
     );
   }
 
-  Container searchFoodCard(Foods food, BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: CupertinoListTile(
-        onTap: () {
-          if (food.foodId != null && searchFoodBox != null) {
-            if (searchFoodBox?.get(food.foodId) == null) {
-              searchFoodBox!.put(food.foodId!, food);
-              dev.log("food is put in local");
-            }
-            dev.log(food.foodId.toString());
-            final foodDetailCubit = context.read<FoodDetailCubit>();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: foodDetailCubit,
-                  child: FoodDetailScreen(foodId: food.foodId!),
+  Widget searchFoodCard(Foods food, BuildContext context) {
+    return SpringButton(
+      SpringButtonType.onlyScale,
+      onTap: () {
+        if (food.foodId != null && searchFoodBox != null) {
+          if (searchFoodBox?.get(food.foodId) == null) {
+            searchFoodBox!.put(food.foodId!, food);
+            dev.log("food is put in local");
+          }
+          dev.log(food.foodId.toString());
+          final foodDetailCubit = context.read<FoodDetailCubit>();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: foodDetailCubit,
+                child: FoodDetailScreen(foodId: food.foodId!),
+              ),
+            ),
+          );
+        } else {
+          dev.log("unable to get foodId");
+        }
+      },
+      uiChild: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: CupertinoListTile(
+          title: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  food.foodName ?? 'Unknown food',
+                  style: Theme.of(context).textTheme.titleSmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            );
-          } else {
-            dev.log("unable to get foodId");
-          }
-        },
-        title: Text(
-          food.foodName ?? 'null',
-          style: Theme.of(context).textTheme.titleSmall,
+              if (food.foodType != null) _foodTypeBadge(food.foodType!),
+            ],
+          ),
+          subtitle: Text(
+            food.foodDescription ?? 'null',
+            style: const TextStyle(fontSize: 11.0),
+            maxLines: 2, // Allows the text to expand to multiple lines
+            overflow: TextOverflow.visible, // Prevents text clipping
+          ),
         ),
-        subtitle: Text(
-          food.foodDescription ?? 'null',
-          style: const TextStyle(fontSize: 11.0),
-          maxLines: null, // Allows the text to expand to multiple lines
-          overflow: TextOverflow.visible, // Prevents text clipping
-        ),
+      ),
+    );
+  }
+
+  Widget _foodTypeBadge(String type) {
+    return Container(
+      margin: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.green, width: 0.8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        type,
+        style: const TextStyle(fontSize: 10, color: Colors.green, height: 1.2),
       ),
     );
   }

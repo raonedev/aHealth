@@ -48,31 +48,31 @@ Future<void> showEditGoalDialog(BuildContext context) async {
       SelectionOption(
         key: 'sedentary',
         title: 'Sedentary',
-        subtitle: 'Little or no daily exercise',
+        subtitle: 'Office work, very little walking, no regular exercise',
         icon: Icons.weekend_rounded,
       ),
       SelectionOption(
         key: 'lightlyActive',
         title: 'Lightly Active',
-        subtitle: 'Light exercise 1–3 days/week',
+        subtitle: 'Office work + light workouts or short gym sessions',
         icon: Icons.directions_walk_rounded,
       ),
       SelectionOption(
         key: 'moderatelyActive',
         title: 'Moderately Active',
-        subtitle: 'Moderate exercise 3–5 days/week',
+        subtitle: 'Office work + gym for 45–60 minutes, 5–6 days/week',
         icon: Icons.directions_run_rounded,
       ),
       SelectionOption(
         key: 'veryActive',
         title: 'Very Active',
-        subtitle: 'Hard exercise 6–7 days/week',
+        subtitle: 'Office work + intense training and high daily physical activity',
         icon: Icons.directions_bike_rounded,
       ),
       SelectionOption(
         key: 'extraActive',
         title: 'Extra Active',
-        subtitle: 'Very physical job or hard training',
+        subtitle: 'Intense training plus physically demanding work or substantial daily activity',
         icon: Icons.bolt_rounded,
       ),
     ];

@@ -158,7 +158,7 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
         }
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: step == 7,
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () {
@@ -226,24 +226,26 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          // child: height(context),
-          child: (step == 1)
-              ? weight(context)
-              : (step == 2)
-              ? height(context)
-              : (step == 3)
-              ? genderWidget(context)
-              : (step == 4)
-              ? healthGoalWidget(context)
-              : (step == 5)
-              ? ageWidget(context)
-              : (step == 6)
-              ? activityLevelWidget(context)
-              : (step == 7)
-              ? nameWidget(context)
-              : notificationWidget(context),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            // child: height(context),
+            child: (step == 1)
+                ? weight(context)
+                : (step == 2)
+                ? height(context)
+                : (step == 3)
+                ? genderWidget(context)
+                : (step == 4)
+                ? healthGoalWidget(context)
+                : (step == 5)
+                ? ageWidget(context)
+                : (step == 6)
+                ? activityLevelWidget(context)
+                : (step == 7)
+                ? nameWidget(context)
+                : notificationWidget(context),
+          ),
         ),
       ),
     );
@@ -1007,104 +1009,125 @@ class _HeathDetailScreenState extends State<HeathDetailScreen> {
   }
 
   // nameWidget — add avatar picker above the name field
-  Widget nameWidget(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: kToolbarHeight),
-        Text(
-          'What should we call you?',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'This helps us personalize your experience.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: kToolbarHeight),
-        SpringButton(
-          SpringButtonType.onlyScale,
-          onTap: pickAndSaveProfileImage,
-          uiChild: CircleAvatar(
-            radius: 48,
-            backgroundColor: grey,
-            backgroundImage: selectedImageFile != null
-                ? FileImage(selectedImageFile!)
-                : null,
-            child: selectedImageFile == null
-                ? const Icon(Icons.add_a_photo_outlined, color: black)
-                : null,
-          ),
-        ),
-        const SizedBox(height: kToolbarHeight),
-        TextField(
-          controller: nameTextEditingController,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 32),
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            hintText: 'Your name',
-          ),
-        ),
-        const Spacer(),
-        SpringButton(
-          SpringButtonType.onlyScale,
-          onTap: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(
-              PrefKeys.userName,
-              nameTextEditingController.text.trim(),
-            );
-            await prefs.setDouble(PrefKeys.weight, initialWeightValue);
-            await prefs.setString(PrefKeys.weightUnit, weightUnit.name);
-            final heightInCm = heightUnit == HeightUnit.ft
-                ? initialHeightValue * 30.48
-                : initialHeightValue;
-            await prefs.setDouble(PrefKeys.height, heightInCm);
-            await prefs.setString(PrefKeys.heightUnit, heightUnit.name);
-            await prefs.setString(PrefKeys.gender, selectedGender.name);
-            await prefs.setString(PrefKeys.healthGoal, selectedHealthGoal.name);
-            await prefs.setInt(PrefKeys.age, age);
-            await prefs.setString(
-              PrefKeys.activityLevel,
-              selectedActivityLevel.name,
-            );
-            await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+ Widget nameWidget(BuildContext context) {
+  final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+  final gap = SizedBox(height: keyboardOpen ? 16 : kToolbarHeight);
 
-            await _logHealthConnectData();
-
-            setState(() {
-              step = 8;
-            });
-          },
-          uiChild: Container(
-            width: double.infinity,
-            height: 52,
-            padding: const EdgeInsets.all(16),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: primary,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+  return LayoutBuilder(
+    builder: (context, constraints) => GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: IntrinsicHeight(
+            child: Column(
               children: [
+                gap,
                 Text(
-                  "Continue",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall!.copyWith(color: white),
+                  'What should we call you?',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(width: 16),
-                const Icon(Icons.arrow_forward, color: white),
+                const SizedBox(height: 10),
+                Text(
+                  'This helps us personalize your experience.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                gap,
+                SpringButton(
+                  SpringButtonType.onlyScale,
+                  onTap: pickAndSaveProfileImage,
+                  uiChild: CircleAvatar(
+                    radius: 48,
+                    backgroundColor: grey,
+                    backgroundImage: selectedImageFile != null
+                        ? FileImage(selectedImageFile!)
+                        : null,
+                    child: selectedImageFile == null
+                        ? const Icon(Icons.add_a_photo_outlined, color: black)
+                        : null,
+                  ),
+                ),
+                gap,
+                TextField(
+                  controller: nameTextEditingController,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(fontSize: 32),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Your name',
+                  ),
+                ),
+                const Spacer(),
+                SpringButton(
+                  SpringButtonType.onlyScale,
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString(
+                      PrefKeys.userName,
+                      nameTextEditingController.text.trim(),
+                    );
+                    await prefs.setDouble(PrefKeys.weight, initialWeightValue);
+                    await prefs.setString(PrefKeys.weightUnit, weightUnit.name);
+                    final heightInCm = heightUnit == HeightUnit.ft
+                        ? initialHeightValue * 30.48
+                        : initialHeightValue;
+                    await prefs.setDouble(PrefKeys.height, heightInCm);
+                    await prefs.setString(PrefKeys.heightUnit, heightUnit.name);
+                    await prefs.setString(PrefKeys.gender, selectedGender.name);
+                    await prefs.setString(
+                      PrefKeys.healthGoal,
+                      selectedHealthGoal.name,
+                    );
+                    await prefs.setInt(PrefKeys.age, age);
+                    await prefs.setString(
+                      PrefKeys.activityLevel,
+                      selectedActivityLevel.name,
+                    );
+                    await prefs.setBool(isOnBoardingSharedPreferenceKey, true);
+
+                    await _logHealthConnectData();
+
+                    setState(() {
+                      step = 8;
+                    });
+                  },
+                  uiChild: Container(
+                    width: double.infinity,
+                    height: 52,
+                    padding: const EdgeInsets.all(16),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: primary,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Continue",
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleSmall!.copyWith(color: white),
+                        ),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.arrow_forward, color: white),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ],
-    );
-  }
-
+      ),
+    ),
+  );
+}
   /// Notification Section => step 8
   Widget notificationWidget(BuildContext context) {
     return Column(

@@ -315,73 +315,75 @@ class _StepsTrackingViewState extends State<StepsTrackingView> {
               ),
             ],
           ),
-          body: Stack(
-            children: [
-              Column(
-                children: [
-                  Expanded(
-                    child: stillLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : PlatformMap(
-                            initialCameraPosition: CameraPosition(
-                              target: resolvedCenter,
-                              zoom: 16,
-                              bearing: 2,
-                              tilt: 45,
-                            ),
-                            onMapCreated: (c) => _mapController = c,
-                            polylines: latLngs.length >= 2
-                                ? {
-                                    Polyline(
-                                      polylineId: PolylineId('route'),
-                                      points: latLngs,
-                                      width: 4,
-                                      color: Colors.blue,
-                                    ),
-                                  }
-                                : {},
-                            markers: {
-                              Marker(
-                                markerId: MarkerId('current'),
-                                position: latLngs.isNotEmpty
-                                    ? latLngs.last
-                                    : resolvedCenter,
-                                icon:
-                                    _runnerIcon ??
-                                    BitmapDescriptor.defaultMarker,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Expanded(
+                      child: stillLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : PlatformMap(
+                              initialCameraPosition: CameraPosition(
+                                target: resolvedCenter,
+                                zoom: 16,
+                                bearing: 2,
+                                tilt: 45,
                               ),
-                            },
-                          ),
-                  ),
-                  _StatsBar(
-                    state: state,
-                    onShare: () {
-                      if (state is TrackingCompleted) {
-                        final a = (state).activity;
-                        _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
-                        _lastTime =
-                            '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
-                        setState(() {});
-                        Future.delayed(
-                          const Duration(milliseconds: 100),
-                          () => _shareWithImage(latLngs),
-                        );
-                      }
-                    },
-                  ),
-                  _Controls(state: state),
-                ],
-              ),
-              Positioned(
-                left: -9999,
-                child: JourneyShareCard(
-                  repaintKey: _shareCardKey,
-                  points: _shareLatLngs,
-                  km: _lastKm,
-                  time: _lastTime,
+                              onMapCreated: (c) => _mapController = c,
+                              polylines: latLngs.length >= 2
+                                  ? {
+                                      Polyline(
+                                        polylineId: PolylineId('route'),
+                                        points: latLngs,
+                                        width: 4,
+                                        color: Colors.blue,
+                                      ),
+                                    }
+                                  : {},
+                              markers: {
+                                Marker(
+                                  markerId: MarkerId('current'),
+                                  position: latLngs.isNotEmpty
+                                      ? latLngs.last
+                                      : resolvedCenter,
+                                  icon:
+                                      _runnerIcon ??
+                                      BitmapDescriptor.defaultMarker,
+                                ),
+                              },
+                            ),
+                    ),
+                    _StatsBar(
+                      state: state,
+                      onShare: () {
+                        if (state is TrackingCompleted) {
+                          final a = (state).activity;
+                          _lastKm = (a.distanceMeters / 1000).toStringAsFixed(2);
+                          _lastTime =
+                              '${a.durationSeconds ~/ 60}:${(a.durationSeconds % 60).toString().padLeft(2, '0')}';
+                          setState(() {});
+                          Future.delayed(
+                            const Duration(milliseconds: 100),
+                            () => _shareWithImage(latLngs),
+                          );
+                        }
+                      },
+                    ),
+                    _Controls(state: state),
+                  ],
                 ),
-              ),
-            ],
+                Positioned(
+                  left: -9999,
+                  child: JourneyShareCard(
+                    repaintKey: _shareCardKey,
+                    points: _shareLatLngs,
+                    km: _lastKm,
+                    time: _lastTime,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

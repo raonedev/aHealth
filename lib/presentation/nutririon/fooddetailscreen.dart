@@ -61,13 +61,26 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                             .isNotEmpty)
                       Expanded(
                         child: ListView.builder(
-                          itemCount: state
-                              .foodWithServingsModel
-                              .food!
-                              .servings!
-                              .serving!
-                              .length,
+                          itemCount:
+                              state
+                                  .foodWithServingsModel
+                                  .food!
+                                  .servings!
+                                  .serving!
+                                  .length +
+                              1,
                           itemBuilder: (context, index) {
+                            if (index ==
+                                state
+                                    .foodWithServingsModel
+                                    .food!
+                                    .servings!
+                                    .serving!
+                                    .length) {
+                              return SizedBox(
+                                height: kBottomNavigationBarHeight + 120,
+                              );
+                            }
                             final serving = state
                                 .foodWithServingsModel
                                 .food!
@@ -138,7 +151,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                 ),
                 if (selectIndex != null)
                   Positioned(
-                    bottom: 10,
+                    bottom: kBottomNavigationBarHeight-8,
                     right: 0,
                     left: 0,
                     child: Column(
