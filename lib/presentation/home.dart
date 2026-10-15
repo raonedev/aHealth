@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           extendBody: true,
           bottomSheet: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, kBottomNavigationBarHeight),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, kBottomNavigationBarHeight-16),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24.0),
                 child: BackdropFilter(
