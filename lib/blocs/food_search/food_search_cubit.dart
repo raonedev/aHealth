@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
@@ -17,7 +19,15 @@ const String _baseUrl =
 class FoodSearchCubit extends Cubit<FoodSearchState> {
   FoodSearchCubit() : super(FoodSearchInitailize());
 
+  int _activeSearchRequest = 0;
+
+  void clearSearch() {
+    _activeSearchRequest++;
+    emit(FoodSearchInitailize());
+  }
+
   Future<void> searchFood(String query, {int page = 0, int limit = 20}) async {
+    final requestId = ++_activeSearchRequest;
     if (query.isEmpty) {
       emit(const FoodSearchFailed(errorMessage: "Please enter food"));
       return;
@@ -59,16 +69,40 @@ class FoodSearchCubit extends Cubit<FoodSearchState> {
           }
         }
 
+        if (requestId != _activeSearchRequest || isClosed) return;
         emit(FoodSearchSuccess(foodSearchModel: model));
       } else {
-        emit(
-          FoodSearchFailed(
-            errorMessage: 'Error: ${response.statusCode} ${response.body}',
-          ),
-        );
+        if (requestId != _activeSearchRequest || isClosed) return;
+        emit(const FoodSearchFailed(errorMessage: 'Something went wrong.'));
       }
-    } catch (e) {
-      emit(FoodSearchFailed(errorMessage: e.toString()));
+    } on SocketException catch (error, stackTrace) {
+      dev.log(
+        'Food search network error',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (requestId != _activeSearchRequest || isClosed) return;
+      emit(const FoodSearchFailed.noInternet());
+    } on http.ClientException catch (error, stackTrace) {
+      dev.log(
+        'Food search request failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (requestId != _activeSearchRequest || isClosed) return;
+      emit(const FoodSearchFailed.noInternet());
+    } on TimeoutException catch (error, stackTrace) {
+      dev.log('Food search timed out', error: error, stackTrace: stackTrace);
+      if (requestId != _activeSearchRequest || isClosed) return;
+      emit(const FoodSearchFailed.noInternet());
+    } catch (error, stackTrace) {
+      dev.log(
+        'Unexpected food search error',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (requestId != _activeSearchRequest || isClosed) return;
+      emit(const FoodSearchFailed(errorMessage: 'Something went wrong.'));
     }
   }
 }
