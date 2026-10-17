@@ -151,7 +151,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                 ),
                 if (selectIndex != null)
                   Positioned(
-                    bottom: kBottomNavigationBarHeight-8,
+                    bottom: kBottomNavigationBarHeight - 8,
                     right: 0,
                     left: 0,
                     child: Column(
@@ -206,7 +206,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
                             valueFood = ValueFood(
                               name:
-                                  '${state.foodWithServingsModel.food!.foodName ?? "NULL Name"} (${(double.parse(serving?.metricServingAmount ?? '0') * multiplier).toStringAsFixed(0)} ${serving?.metricServingUnit ?? ""})',
+                                  '${state.foodWithServingsModel.food!.foodName ?? "NULL Name"} (${(double.parse(serving?.metricServingAmount ?? '0')).toStringAsFixed(0)} ${serving?.metricServingUnit ?? ""}) (${multiplier.toStringAsFixed(multiplier % 1 == 0 ? 0 : 1)}x)',
                               unit: serving?.metricServingUnit,
                               quantity:
                                   double.parse(

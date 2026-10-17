@@ -8,6 +8,7 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
 import '../../common/common_method.dart';
 import '../../models/nutrition_model.dart';
+import '../common/nutrition_calc.dart';
 import '../common/widgets/custom_segment.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
 import 'widgets/build_card_content.dart';
@@ -46,11 +47,13 @@ class NutrientChartScreen extends StatefulWidget {
 
 class _NutrientChartScreenState extends State<NutrientChartScreen> {
   int _tab = 0;
+  late final Future<NutritionTargets> _targetsFuture;
 
   @override
   void initState() {
     super.initState();
     _tab = widget.currentTab;
+    _targetsFuture = TargetCalorieCalculator.calculate();
     context.read<NutrientChartCubit>().getWeekData();
     context.read<NutritionCubit>().getNutritionData();
   }
@@ -101,6 +104,11 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                     final nutrientType = NutrientType.values[_tab];
                     final pts = _points(chartState.weekData[nutrientType]!,
                         chartState.weekStartDate);
+                    final targetFor = switch (nutrientType) {
+                      NutrientType.protein => (NutritionTargets t) => t.protein,
+                      NutrientType.carbs => (NutritionTargets t) => t.carbs,
+                      NutrientType.fat => (NutritionTargets t) => t.fat,
+                    };
 
                     final todayItems = nutriState is NutritionSuccess
                         ? (nutriState.nutritionModel
@@ -126,13 +134,39 @@ class _NutrientChartScreenState extends State<NutrientChartScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: ClipRRect(
-                              borderRadius: BorderRadiusGeometry.circular(8),
-                              child: NutrientLineChart(
-                                points: pts,
-                                label: '${conf.label} - last 7 days',
-                                color: conf.color,
-                              ),
+                            child: FutureBuilder<NutritionTargets>(
+                              future: _targetsFuture,
+                              builder: (context, targetSnapshot) {
+                                if (targetSnapshot.hasError) {
+                                  return const SizedBox(
+                                    height: 240,
+                                    child: Center(
+                                      child: Text(
+                                        'Unable to load nutrient targets',
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final targets = targetSnapshot.data;
+                                if (targets == null) {
+                                  return const SizedBox(
+                                    height: 240,
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+                                return ClipRRect(
+                                  borderRadius:
+                                      BorderRadiusGeometry.circular(8),
+                                  child: NutrientLineChart(
+                                    points: pts,
+                                    label: '${conf.label} - last 7 days',
+                                    color: conf.color,
+                                    target: targetFor(targets),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(height: 16),

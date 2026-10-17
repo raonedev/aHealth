@@ -244,12 +244,6 @@ class _SearchFoodScreenState extends State<SearchFoodScreen> {
       ),
     );
     if (!mounted) return;
-
-    _searchController.clear();
-    context.read<FoodSearchCubit>().clearSearch();
-    setState(() {
-      isTextEmpty = true;
-    });
   }
 
   Widget _foodTypeBadge(String type) {
