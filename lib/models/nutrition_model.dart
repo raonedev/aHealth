@@ -11,19 +11,31 @@
 /// recordingMethod : "unknown"
 library;
 
+final RegExp _loggedQuantitySuffix = RegExp(r' \((\d+(?:\.\d+)?) servings?\)$');
+
+double? _quantityFromName(String? name) {
+  final match = _loggedQuantitySuffix.firstMatch(name ?? '');
+  final quantity = double.tryParse(match?.group(1) ?? '');
+  if (quantity == null || !quantity.isFinite || quantity <= 0) {
+    return null;
+  }
+  return quantity;
+}
+
 class NutritionModel {
   NutritionModel({
-      String? uuid, 
-      ValueFood? value, 
-      String? type, 
-      String? unit, 
-      String? dateFrom, 
-      String? dateTo, 
-      String? sourcePlatform, 
-      String? sourceDeviceId, 
-      String? sourceId, 
-      String? sourceName, 
-      String? recordingMethod,}){
+    String? uuid,
+    ValueFood? value,
+    String? type,
+    String? unit,
+    String? dateFrom,
+    String? dateTo,
+    String? sourcePlatform,
+    String? sourceDeviceId,
+    String? sourceId,
+    String? sourceName,
+    String? recordingMethod,
+  }) {
     _uuid = uuid;
     _value = value;
     _type = type;
@@ -35,7 +47,7 @@ class NutritionModel {
     _sourceId = sourceId;
     _sourceName = sourceName;
     _recordingMethod = recordingMethod;
-}
+  }
 
   NutritionModel.fromJson(dynamic json) {
     _uuid = json['uuid'];
@@ -61,29 +73,31 @@ class NutritionModel {
   String? _sourceId;
   String? _sourceName;
   String? _recordingMethod;
-NutritionModel copyWith({  String? uuid,
-  ValueFood? value,
-  String? type,
-  String? unit,
-  String? dateFrom,
-  String? dateTo,
-  String? sourcePlatform,
-  String? sourceDeviceId,
-  String? sourceId,
-  String? sourceName,
-  String? recordingMethod,
-}) => NutritionModel(  uuid: uuid ?? _uuid,
-  value: value ?? _value,
-  type: type ?? _type,
-  unit: unit ?? _unit,
-  dateFrom: dateFrom ?? _dateFrom,
-  dateTo: dateTo ?? _dateTo,
-  sourcePlatform: sourcePlatform ?? _sourcePlatform,
-  sourceDeviceId: sourceDeviceId ?? _sourceDeviceId,
-  sourceId: sourceId ?? _sourceId,
-  sourceName: sourceName ?? _sourceName,
-  recordingMethod: recordingMethod ?? _recordingMethod,
-);
+  NutritionModel copyWith({
+    String? uuid,
+    ValueFood? value,
+    String? type,
+    String? unit,
+    String? dateFrom,
+    String? dateTo,
+    String? sourcePlatform,
+    String? sourceDeviceId,
+    String? sourceId,
+    String? sourceName,
+    String? recordingMethod,
+  }) => NutritionModel(
+    uuid: uuid ?? _uuid,
+    value: value ?? _value,
+    type: type ?? _type,
+    unit: unit ?? _unit,
+    dateFrom: dateFrom ?? _dateFrom,
+    dateTo: dateTo ?? _dateTo,
+    sourcePlatform: sourcePlatform ?? _sourcePlatform,
+    sourceDeviceId: sourceDeviceId ?? _sourceDeviceId,
+    sourceId: sourceId ?? _sourceId,
+    sourceName: sourceName ?? _sourceName,
+    recordingMethod: recordingMethod ?? _recordingMethod,
+  );
   String? get uuid => _uuid;
   ValueFood? get value => _value;
   String? get type => _type;
@@ -113,7 +127,6 @@ NutritionModel copyWith({  String? uuid,
     map['recordingMethod'] = _recordingMethod;
     return map;
   }
-
 }
 
 /// name : "Breakfast"
@@ -168,7 +181,7 @@ class ValueFood {
     _potassium = potassium;
     _sodium = sodium;
     _sugar = sugar;
-    _quantity = quantity;
+    _quantity = quantity ?? _quantityFromName(name);
     _unit = unit;
     _servingDescription = servingDescription;
     _metricServingAmount = metricServingAmount;
@@ -195,7 +208,8 @@ class ValueFood {
     _potassium = json['potassium'];
     _sodium = json['sodium'];
     _sugar = json['sugar'];
-    _quantity = json['quantity'];
+    _quantity =
+        _quantityFromName(_name) ?? (json['quantity'] as num?)?.toDouble();
     _unit = json['unit'];
     _servingDescription = json['servingDescription'];
     _metricServingAmount = json['metricServingAmount'];
@@ -259,33 +273,32 @@ class ValueFood {
     double? monounsaturatedFat,
     double? vitaminA,
     double? vitaminC,
-  }) =>
-      ValueFood(
-        name: name ?? _name,
-        calories: calories ?? _calories,
-        protein: protein ?? _protein,
-        fat: fat ?? _fat,
-        carbs: carbs ?? _carbs,
-        calcium: calcium ?? _calcium,
-        cholesterol: cholesterol ?? _cholesterol,
-        fiber: fiber ?? _fiber,
-        iron: iron ?? _iron,
-        potassium: potassium ?? _potassium,
-        sodium: sodium ?? _sodium,
-        sugar: sugar ?? _sugar,
-        quantity: quantity ?? _quantity,
-        unit: unit ?? _unit,
-        servingDescription: servingDescription ?? _servingDescription,
-        metricServingAmount: metricServingAmount ?? _metricServingAmount,
-        metricServingUnit: metricServingUnit ?? _metricServingUnit,
-        numberOfUnits: numberOfUnits ?? _numberOfUnits,
-        measurementDescription: measurementDescription ?? _measurementDescription,
-        saturatedFat: saturatedFat ?? _saturatedFat,
-        polyunsaturatedFat: polyunsaturatedFat ?? _polyunsaturatedFat,
-        monounsaturatedFat: monounsaturatedFat ?? _monounsaturatedFat,
-        vitaminA: vitaminA ?? _vitaminA,
-        vitaminC: vitaminC ?? _vitaminC,
-      );
+  }) => ValueFood(
+    name: name ?? _name,
+    calories: calories ?? _calories,
+    protein: protein ?? _protein,
+    fat: fat ?? _fat,
+    carbs: carbs ?? _carbs,
+    calcium: calcium ?? _calcium,
+    cholesterol: cholesterol ?? _cholesterol,
+    fiber: fiber ?? _fiber,
+    iron: iron ?? _iron,
+    potassium: potassium ?? _potassium,
+    sodium: sodium ?? _sodium,
+    sugar: sugar ?? _sugar,
+    quantity: quantity ?? _quantity,
+    unit: unit ?? _unit,
+    servingDescription: servingDescription ?? _servingDescription,
+    metricServingAmount: metricServingAmount ?? _metricServingAmount,
+    metricServingUnit: metricServingUnit ?? _metricServingUnit,
+    numberOfUnits: numberOfUnits ?? _numberOfUnits,
+    measurementDescription: measurementDescription ?? _measurementDescription,
+    saturatedFat: saturatedFat ?? _saturatedFat,
+    polyunsaturatedFat: polyunsaturatedFat ?? _polyunsaturatedFat,
+    monounsaturatedFat: monounsaturatedFat ?? _monounsaturatedFat,
+    vitaminA: vitaminA ?? _vitaminA,
+    vitaminC: vitaminC ?? _vitaminC,
+  );
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -319,6 +332,14 @@ class ValueFood {
 
   // Add getters for all the fields
   String? get name => _name;
+
+  /// Returns the food name without its persisted quantity marker.
+  String? get displayName {
+    final name = _name;
+    return name == null ? null : name.replaceFirst(_loggedQuantitySuffix, '');
+    // return name;
+  }
+
   double? get calories => _calories;
   double? get protein => _protein;
   double? get fat => _fat;

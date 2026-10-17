@@ -92,10 +92,10 @@ class NutritionCubit extends Cubit<NutritionState> {
     }
     emit(NutritionLoading());
     try {
-       final success = await Health().deleteByUUID(
-      type: HealthDataType.NUTRITION,
-      uuid: model.uuid!,
-    );
+      final success = await Health().deleteByUUID(
+        type: HealthDataType.NUTRITION,
+        uuid: model.uuid!,
+      );
       if (success) {
         invalidateCache(selectedDate);
         await getNutritionData(date: selectedDate, forceRefresh: true);
@@ -108,6 +108,158 @@ class NutritionCubit extends Cubit<NutritionState> {
       emit(NutritionFailed(errorMessage: e.toString()));
       return false;
     }
+  }
+
+  Future<bool> updateNutritionQuantity({
+    required NutritionModel model,
+    required double quantity,
+  }) async {
+    final uuid = model.uuid;
+    final valueFood = model.value;
+    final oldQuantity = valueFood?.quantity ?? 1;
+    final startTime = DateTime.tryParse(model.dateFrom ?? '');
+    final endTime = DateTime.tryParse(model.dateTo ?? '');
+
+    if (uuid == null ||
+        valueFood == null ||
+        !quantity.isFinite ||
+        quantity < 0.001 ||
+        !oldQuantity.isFinite ||
+        oldQuantity < 0.001 ||
+        startTime == null ||
+        endTime == null) {
+      emit(NutritionFailed(errorMessage: 'Invalid food log quantity'));
+      return false;
+    }
+
+    final updatedValue = _nutritionAtQuantity(valueFood, quantity);
+    emit(NutritionLoading());
+    return _replaceNutritionMeal(
+      uuid: uuid,
+      originalValue: valueFood,
+      updatedValue: updatedValue,
+      startTime: startTime,
+      endTime: endTime,
+    );
+  }
+
+  ValueFood _nutritionAtQuantity(ValueFood valueFood, double quantity) {
+    final multiplier = quantity / (valueFood.quantity ?? 1);
+    return valueFood.copyWith(
+      name: _nutritionNameWithQuantity(
+        valueFood.displayName ?? 'Food',
+        quantity,
+      ),
+      quantity: quantity,
+      calories: _scale(valueFood.calories, multiplier),
+      protein: _scale(valueFood.protein, multiplier),
+      fat: _scale(valueFood.fat, multiplier),
+      carbs: _scale(valueFood.carbs, multiplier),
+      calcium: _scale(valueFood.calcium, multiplier),
+      cholesterol: _scale(valueFood.cholesterol, multiplier),
+      fiber: _scale(valueFood.fiber, multiplier),
+      iron: _scale(valueFood.iron, multiplier),
+      potassium: _scale(valueFood.potassium, multiplier),
+      sodium: _scale(valueFood.sodium, multiplier),
+      sugar: _scale(valueFood.sugar, multiplier),
+      saturatedFat: _scale(valueFood.saturatedFat, multiplier),
+      polyunsaturatedFat: _scale(valueFood.polyunsaturatedFat, multiplier),
+      monounsaturatedFat: _scale(valueFood.monounsaturatedFat, multiplier),
+      vitaminA: _scale(valueFood.vitaminA, multiplier),
+      vitaminC: _scale(valueFood.vitaminC, multiplier),
+    );
+  }
+
+  Future<bool> _replaceNutritionMeal({
+    required String uuid,
+    required ValueFood originalValue,
+    required ValueFood updatedValue,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    if (!await _deleteNutritionMeal(uuid)) {
+      await _refreshNutritionData();
+      emit(NutritionFailed(errorMessage: 'Failed to update food log'));
+      return false;
+    }
+
+    final written = await _tryWriteNutritionMeal(
+      valueFood: updatedValue,
+      startTime: startTime,
+      endTime: endTime,
+      failureContext: 'writing updated food log',
+    );
+    if (!written) {
+      final restored = await _tryWriteNutritionMeal(
+        valueFood: originalValue,
+        startTime: startTime,
+        endTime: endTime,
+        failureContext: 'restoring food log after failed quantity update',
+      );
+      await _refreshNutritionData();
+      if (!restored) {
+        emit(
+          NutritionFailed(
+            errorMessage:
+                'Failed to update the food log and could not restore it.',
+          ),
+        );
+      }
+      return false;
+    }
+
+    await _refreshNutritionData();
+    return true;
+  }
+
+  Future<bool> _deleteNutritionMeal(String uuid) async {
+    try {
+      return await Health().deleteByUUID(
+        type: HealthDataType.NUTRITION,
+        uuid: uuid,
+      );
+    } catch (error, stackTrace) {
+      dev.log(
+        'Exception deleting food log for quantity update',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _tryWriteNutritionMeal({
+    required ValueFood valueFood,
+    required DateTime startTime,
+    required DateTime endTime,
+    required String failureContext,
+  }) async {
+    try {
+      return await _writeNutritionMeal(
+        valueFood: valueFood,
+        startTime: startTime,
+        endTime: endTime,
+      );
+    } catch (error, stackTrace) {
+      dev.log('Exception $failureContext', error: error, stackTrace: stackTrace);
+      return false;
+    }
+  }
+
+  Future<void> _refreshNutritionData() async {
+    invalidateCache(selectedDate);
+    await getNutritionData(date: selectedDate, forceRefresh: true);
+  }
+
+  double? _scale(double? value, double multiplier) =>
+      value == null ? null : value * multiplier;
+
+  String _nutritionNameWithQuantity(String name, double quantity) {
+    final displayQuantity = quantity
+        .toStringAsFixed(3)
+        .replaceFirst(RegExp(r'\.?0+$'), '');
+    final unit = quantity == 1 ? 'serving' : 'servings';
+    return '$name ($displayQuantity $unit)';
   }
 
   // Helper function to determine meal type based on the hour of the day
@@ -146,26 +298,19 @@ class NutritionCubit extends Cubit<NutritionState> {
       final earlier = now.subtract(const Duration(minutes: 20));
       dev.log("logging : ${valueFood.name}");
 
-      bool success = await Health().writeMeal(
-        mealType: _getMealType(now.hour),
-        startTime: earlier,
-        endTime: now,
-        caloriesConsumed: valueFood.calories,
-        protein: valueFood.protein,
-        fatTotal: valueFood.fat,
-        carbohydrates: valueFood.carbs,
+      final healthValueFood = valueFood.copyWith(
         calcium: _mgToG(valueFood.calcium),
         cholesterol: _mgToG(valueFood.cholesterol),
-        fiber: valueFood.fiber,
         iron: _mgToG(valueFood.iron),
         potassium: _mgToG(valueFood.potassium),
         sodium: _mgToG(valueFood.sodium),
         vitaminC: _mgToG(valueFood.vitaminC),
         vitaminA: _mgToG(valueFood.vitaminA),
-        sugar: valueFood.sugar,
-        name: valueFood.name,
-        fatMonounsaturated: valueFood.monounsaturatedFat,
-        recordingMethod: RecordingMethod.manual,
+      );
+      final success = await _writeNutritionMeal(
+        valueFood: healthValueFood,
+        startTime: earlier,
+        endTime: now,
       );
       if (success) {
         invalidateCache(selectedDate);
@@ -181,6 +326,36 @@ class NutritionCubit extends Cubit<NutritionState> {
       emit(NutritionFailed(errorMessage: "failed to add Nutririons"));
       return false;
     }
+  }
+
+  Future<bool> _writeNutritionMeal({
+    required ValueFood valueFood,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) {
+    return Health().writeMeal(
+      mealType: _getMealType(endTime.hour),
+      startTime: startTime,
+      endTime: endTime,
+      caloriesConsumed: valueFood.calories,
+      protein: valueFood.protein,
+      fatTotal: valueFood.fat,
+      carbohydrates: valueFood.carbs,
+      calcium: valueFood.calcium,
+      cholesterol: valueFood.cholesterol,
+      fiber: valueFood.fiber,
+      iron: valueFood.iron,
+      potassium: valueFood.potassium,
+      sodium: valueFood.sodium,
+      fatSaturated: valueFood.saturatedFat,
+      fatPolyunsaturated: valueFood.polyunsaturatedFat,
+      vitaminC: valueFood.vitaminC,
+      vitaminA: valueFood.vitaminA,
+      sugar: valueFood.sugar,
+      name: valueFood.name,
+      fatMonounsaturated: valueFood.monounsaturatedFat,
+      recordingMethod: RecordingMethod.manual,
+    );
   }
 
   double? _mgToG(double? mg) => mg == null ? null : mg / 1000;

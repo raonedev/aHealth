@@ -63,6 +63,10 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
         final qty = _quantities[i];
         selectedFoods.add(
           f.copyWith(
+            name: qty == 1.0
+                ? f.name
+                : '${f.name ?? 'Unknown Item'} (${qty}x) ${f.servingDescription ?? ''}'
+                      .trim(),
             calories: (f.calories ?? 0) * qty,
             protein: (f.protein ?? 0) * qty,
             carbs: (f.carbs ?? 0) * qty,
@@ -249,7 +253,9 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "${f.name ?? 'Unknown Item'} (${_quantities[i]}x) ${f.servingDescription}",
+                                _quantities[i] == 1.0
+                                    ? "${f.name ?? 'Unknown Item'} ${f.servingDescription ?? ''}"
+                                    : "${f.name ?? 'Unknown Item'} (${_quantities[i]}x) ${f.servingDescription ?? ''}",
                                 style: TextStyle(
                                   color: isCurrentSelected
                                       ? _textPrimary

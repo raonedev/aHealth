@@ -1,6 +1,7 @@
 import 'package:ahealth/common/spring_button_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/nutrition/nutrition_cubit.dart';
@@ -19,11 +20,56 @@ const Color _carbsColor = Color(0xFFFF9F0A); // iOS System Orange
 const Color _fatColor = Color(0xFF0A84FF); // iOS System Blue
 const Color _microColor = Color(0xFF30D158); // iOS System Green
 
-class NutritionDetailScreen extends StatelessWidget {
+class NutritionDetailScreen extends StatefulWidget {
   final NutritionModel nutritionModel;
 
   const NutritionDetailScreen({super.key, required this.nutritionModel});
-    Future<void> _confirmDelete(BuildContext context) async {
+
+  @override
+  State<NutritionDetailScreen> createState() => _NutritionDetailScreenState();
+}
+
+class _NutritionDetailScreenState extends State<NutritionDetailScreen> {
+  double _quantity = 1;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final savedQuantity = widget.nutritionModel.value?.quantity;
+    _quantity =
+        savedQuantity != null && savedQuantity.isFinite && savedQuantity > 0
+        ? savedQuantity
+        : 1;
+  }
+
+  Future<void> _editQuantity() async {
+    final quantity = await showCupertinoDialog<double>(
+      context: context,
+      builder: (_) => _EditQuantityDialog(initialQuantity: _quantity),
+    );
+    if (quantity == null || quantity == _quantity || !mounted) return;
+
+    setState(() => _isSaving = true);
+    final success = await context
+        .read<NutritionCubit>()
+        .updateNutritionQuantity(
+          model: widget.nutritionModel,
+          quantity: quantity,
+        );
+    if (!mounted) return;
+
+    setState(() => _isSaving = false);
+    if (success) {
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to update food quantity.')),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
     final cubit = context.read<NutritionCubit>();
     final confirmed = await showCupertinoDialog<bool>(
       context: context,
@@ -43,8 +89,9 @@ class NutritionDetailScreen extends StatelessWidget {
         ],
       ),
     );
+    if (!context.mounted) return;
     if (confirmed == true) {
-      final ok = await cubit.deleteNutritionData(nutritionModel);
+      final ok = await cubit.deleteNutritionData(widget.nutritionModel);
       if (ok && context.mounted) Navigator.of(context).pop();
     }
   }
@@ -53,7 +100,7 @@ class NutritionDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueFood = nutritionModel.value;
+    final valueFood = widget.nutritionModel.value;
     final totalCalories = valueFood?.calories?.toInt() ?? 0;
 
     return Scaffold(
@@ -77,7 +124,20 @@ class NutritionDetailScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(CupertinoIcons.delete, color: Colors.red),
+            tooltip: 'Edit quantity',
+            icon: const Icon(
+              Icons.edit_outlined,
+              semanticLabel: 'Edit quantity',
+            ),
+            onPressed: _isSaving ? null : _editQuantity,
+          ),
+          IconButton(
+            tooltip: 'Delete food log',
+            icon: const Icon(
+              CupertinoIcons.delete,
+              color: Colors.red,
+              semanticLabel: 'Delete food log',
+            ),
             onPressed: () => _confirmDelete(context),
           ),
         ],
@@ -93,7 +153,7 @@ class NutritionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Food Name Header
+            // Food Name Headers
             Text(
               valueFood?.name ?? "Unknown Food",
               style: const TextStyle(
@@ -105,7 +165,8 @@ class NutritionDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Per serving size",
+              '${_quantity.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '')} '
+              '${_quantity == 1 ? 'serving' : 'servings'} logged',
               style: TextStyle(
                 color: _textSecondary,
                 fontSize: 15,
@@ -334,6 +395,104 @@ class NutritionDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _EditQuantityDialog extends StatefulWidget {
+  const _EditQuantityDialog({required this.initialQuantity});
+
+  final double initialQuantity;
+
+  @override
+  State<_EditQuantityDialog> createState() => _EditQuantityDialogState();
+}
+
+class _EditQuantityDialogState extends State<_EditQuantityDialog> {
+  static const double _quantityStep = 0.5;
+
+  late double _quantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantity = widget.initialQuantity;
+  }
+
+  void _save() {
+    Navigator.of(context).pop(_quantity);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoAlertDialog(
+      title: const Text('Edit quantity'),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${_quantity.toStringAsFixed(1)}x servings',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Semantics(
+                  button: true,
+                  label: 'Decrease quantity by 0.5 servings',
+                  sortKey: const OrdinalSortKey(1),
+                  child: IconButton(
+                    tooltip: 'Decrease by 0.5 servings',
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    onPressed: _quantity > _quantityStep
+                        ? () => setState(() {
+                            _quantity -= _quantityStep;
+                          })
+                        : null,
+                    icon: const Icon(
+                      Icons.remove,
+                      semanticLabel: 'Decrease quantity',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Semantics(
+                  button: true,
+                  label: 'Increase quantity by 0.5 servings',
+                  sortKey: const OrdinalSortKey(2),
+                  child: IconButton(
+                    tooltip: 'Increase by 0.5 servings',
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    onPressed: () => setState(() {
+                      _quantity += _quantityStep;
+                    }),
+                    icon: const Icon(
+                      Icons.add,
+                      semanticLabel: 'Increase quantity',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(onPressed: _save, child: const Text('Save')),
+      ],
     );
   }
 }
