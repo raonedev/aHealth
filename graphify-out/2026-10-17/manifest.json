@@ -210,16 +210,16 @@
     "semantic_hash": "626793ce877662a29c40cc9303cde277"
   },
   "lib/blocs/food_search/food_search_cubit.dart": {
-    "mtime": 1791963585.9224799,
-    "seen": 1791970596.033464,
-    "ast_hash": "1ed5e0e0ec147cc64008a7e6462bdf75",
+    "mtime": 1792224771.5405753,
+    "seen": 1792227225.4433,
+    "ast_hash": "a13335ba3115670194fe8e8f56652f90",
     "semantic_hash": ""
   },
   "lib/blocs/food_search/food_search_state.dart": {
-    "mtime": 1785309485.4602747,
-    "seen": 1791276438.102587,
-    "ast_hash": "bc2054d633b22e1b641625eef277f22d",
-    "semantic_hash": "bc2054d633b22e1b641625eef277f22d"
+    "mtime": 1792224496.8078828,
+    "seen": 1792227225.443305,
+    "ast_hash": "af7fedac3f17ddee18df013b7d61f265",
+    "semantic_hash": ""
   },
   "lib/blocs/fooddetail/food_detail_cubit.dart": {
     "mtime": 1791890228.1870615,
@@ -942,9 +942,9 @@
     "semantic_hash": "82ad3d755ae0c8100d8cb8151293dda4"
   },
   "lib/presentation/searchscreen.dart": {
-    "mtime": 1792048851.7594109,
-    "seen": 1792222781.505738,
-    "ast_hash": "f9741d8a42bad12f3780eb81289e31f8",
+    "mtime": 1792227193.5731282,
+    "seen": 1792227225.4438999,
+    "ast_hash": "b40fc05879dfd556e3804c4438c36586",
     "semantic_hash": ""
   },
   "lib/presentation/sleep/sleep_picker.dart": {
