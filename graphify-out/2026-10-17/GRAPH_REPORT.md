@@ -1,24 +1,24 @@
-# Graph Report - aHealth  (2026-10-15)
+# Graph Report - aHealth  (2026-10-17)
 
 ## Corpus Check
-- 440 files · ~726,056 words
+- 440 files · ~726,985 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 46 file(s) not represented in the graph (top: .xml 11, .ttf 9, (none) 6)
 
 ## Summary
-- 5167 nodes · 6789 edges · 371 communities (324 shown, 47 thin omitted)
+- 5195 nodes · 6824 edges · 375 communities (328 shown, 47 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 24 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `92c8c93e`
+- Built from commit: `dbfee077`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - spring_button_widget.dart
 - water.dart
-- streak_local_datasource.dart
+- progress_local_db.dart
 - nutrition_card.dart
 - nutrition_model.dart
 - height_chart_cubit.dart
@@ -29,9 +29,9 @@
 - tracking_view.dart
 - app_routes.dart
 - tracking_cubit.dart
-- nutrient_line_chart.dart
+- Color
 - water_chart_cubit.dart
-- fooddetailscreen.dart
+- build_card_content.dart
 - step_chart_screen.dart
 - main.dart
 - sleep_cubit.dart
@@ -42,10 +42,10 @@
 - profile_screen.dart
 - food_scan_cubit.dart
 - chat.dart
-- package:flutter/material.dart
+- circular_progress.dart
 - food_scan_result_screen.dart
 - AppDelegate
-- progress_bloc.dart
+- Equatable
 - Files
 - service_locator.dart
 - chat_cubit.dart
@@ -68,8 +68,8 @@
 - height_model.dart
 - sleep_model.dart
 - water_cubit.dart
-- tasks_notifier.dart
-- streak_cubit.dart
+- package:flutter_riverpod/flutter_riverpod.dart
+- get_streak_usecase.dart
 - step_card.dart
 - weight_cubit.dart
 - nutrient_chart_cubit.dart
@@ -78,7 +78,7 @@
 - step_model.dart
 - water_model.dart
 - weightmodel.dart
-- sleep_card.dart
+- @HiveType
 - searchscreen.dart
 - backup_envelope.dart
 - step_cubit.dart
@@ -88,9 +88,9 @@
 - nutrition_group_dialog.dart
 - height_card.dart
 - water_week_tile.dart
-- package:flutter_bloc/flutter_bloc.dart
+- hydration_card.dart
 - helper_func.dart
-- structural_grid.dart
+- package:flutter/material.dart
 - onboardingscreen.dart
 - food_voice_input_sheet.dart
 - progress_photos_screen.dart
@@ -102,18 +102,18 @@
 - calorie_point.dart
 - List
 - Building Dart CLI Applications
-- tracking_repository.dart
-- calorie_chart_screen.dart
-- ConsumerWidget
+- tracking_repository_impl.dart
+- directional_widget.dart
+- package:flutter/cupertino.dart
 - streak_screen.dart
-- progress_event.dart
+- macro_card.dart
 - weight_chart.dart
 - StreakCubit
-- String? get
+- String?
 - app_theme.dart
 - scene_painter.dart
 - tracking_local_datasource.dart
-- streak_entity.dart
+- ../../domain/entities/streak_entity.dart
 - policy_grep_test.dart
 - seeded_generator.dart
 - T
@@ -128,7 +128,7 @@
 - app_database.dart
 - error-handling-typed-results/examples/transactional_write.dart
 - list_detail_pane.dart
-- progress_local_db.dart
+- food_scan_nutrition_loading.dart
 - gesture_translator.dart
 - monthly_collage.dart
 - MainActivity.kt
@@ -151,7 +151,7 @@
 - native_gateway.dart
 - public_api_surface.dart
 - Implementing Routing and Deep Linking
-- directional_widget.dart
+- tasks_screen.dart
 - unsupported_locale_delegates.dart
 - notifier_container_test.dart
 - money.dart
@@ -170,7 +170,7 @@
 - Dart 3 idioms and coding standards
 - Dependency hygiene
 - scoped_watch_repository.dart
-- custom_segment.dart
+- package:flutter_bloc/flutter_bloc.dart
 - allocate_property_test.dart
 - nutrition_calc.dart
 - step_chart_cubit.dart
@@ -181,7 +181,7 @@
 - cross_platform_paths.dart
 - json_patterns.dart
 - status_encoding.dart
-- package:flutter_riverpod/flutter_riverpod.dart
+- soft_delete_undo.dart
 - 3. Optimistic soft-delete + Trash + Undo
 - Architecting Flutter Applications
 - State + DI with Riverpod 3.x — the context-free wiring
@@ -212,9 +212,9 @@
 - overflow_matrix_test.dart
 - Accessibility testing — guidelines, gate, and honest limits
 - dart:developer
-- Cubit
-- Equatable
-- progress_repository.dart
+- sleep_chart_cubit.dart
+- weight_chart_cubit.dart
+- week_list_tile.dart
 - Window size classes, MediaQuery aspects, insets, and foldables
 - Adaptive Layout
 - Painter, Scene, transform & hit-testing — deep dive
@@ -226,7 +226,7 @@
 - Dartdoc Conventions — the public surface is a contract
 - csv_writer.dart
 - Data export and restore
-- vendored_plugin_behind_interface.dart
+- nutrition_card_summary.dart
 - Result / Failure spine, the global net, isolate re-wrap & logging
 - Implementing Adaptive Layouts
 - Flutter Conventions — Index
@@ -256,7 +256,7 @@
 - Native channels and cross-language contracts
 - allocate() and the split pipeline
 - Overflow and text-scale testing
-- String?
+- progress_entry.dart
 - Reference — the grep-based invariant gate
 - When multi-package (workspace) — opt-in only
 - CustomPainter
@@ -284,7 +284,7 @@
 - Structural layout — background vs content, computed sizing, grids, IME
 - Golden testing — the refusal, and the two honest lanes
 - The harness and MediaQuery layering
-- getstartingscreen.dart
+- streak_cubit.dart
 - Honesty bans — never dodge the type system
 - Motion tokens and reduced motion
 - Module & layers — the shape, the DAG, folder-vs-package, barrels
@@ -375,23 +375,27 @@
 - run_tests.sh
 - verify-core.sh
 - LaunchImage.imageset/README.md
-- tracking_repository_impl.dart
+- ../../domain/entities/location_point.dart
 - water_point.dart
 - build
-- Notifier
+- FoodScanCubit
 - TestHarness
+- custom_segment.dart
+- streak_repository_impl.dart
+- double? get
+- _buildTopBar
 
 ## God Nodes (most connected - your core abstractions)
 1. `Files` - 225 edges
-2. `main()` - 28 edges
-3. `NutritionCubit` - 26 edges
+2. `NutritionCubit` - 28 edges
+3. `main()` - 28 edges
 4. `StepChartCubit` - 17 edges
 5. `SleepCubit` - 16 edges
 6. `FoodScanCubit` - 15 edges
 7. `ProgressBloc` - 15 edges
 8. `WeightCubit` - 15 edges
-9. `StreakCubit` - 15 edges
-10. `App startup and bootstrap` - 14 edges
+9. `App startup and bootstrap` - 14 edges
+10. `WaterChartCubit` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Do not lock orientation` --references--> `main()`  [INFERRED]
@@ -408,7 +412,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (371 total, 47 thin omitted)
+## Communities (375 total, 47 thin omitted)
 
 ### Community 0 - "spring_button_widget.dart"
 Cohesion: 0.02
@@ -418,20 +422,20 @@ Nodes (64): alignment, animation, animationController, build, createState, _debu
 Cohesion: 0.07
 Nodes (26): build, angle, animValue, background, build, _buildWaterLogsList, createState, _currentAngle (+18 more)
 
-### Community 2 - "streak_local_datasource.dart"
+### Community 2 - "progress_local_db.dart"
 Cohesion: 0.12
-Nodes (10): calculateCurrentStreak, calculateLongestStreak, db, markActivity, StreakLocalDataSource, StreakLocalDataSourceImpl, fromEntity, getStreak (+2 more)
+Nodes (13): database, deleteEntry, getAllEntries, insertEntry, instance, ProgressLocalDb, updateEntry, calculateCurrentStreak (+5 more)
 
 ### Community 3 - "nutrition_card.dart"
-Cohesion: 0.07
-Nodes (23): appTheme, color, createState, icon, initState, key, _kOnSurfaceVariant, _kPrimary (+15 more)
+Cohesion: 0.09
+Nodes (20): color, createState, icon, initState, key, _kOnSurfaceVariant, _kPrimary, _kSecondaryContainer (+12 more)
 
 ### Community 4 - "nutrition_model.dart"
 Cohesion: 0.05
-Nodes (37): _calcium, _calories, _carbs, _cholesterol, copyWith, _dateFrom, _dateTo, _fat (+29 more)
+Nodes (40): _calcium, _calories, _carbs, _cholesterol, copyWith, _dateFrom, _dateTo, _fat (+32 more)
 
 ### Community 5 - "height_chart_cubit.dart"
-Cohesion: 0.38
+Cohesion: 0.33
 Nodes (10): getDataFromNow, HeightChartCubit, dataMonth, dataWeek, errorMessage, HeightChartsFailed, HeightChartsLoading, HeightChartsSuccess (+2 more)
 
 ### Community 6 - "rularslider.dart"
@@ -448,7 +452,7 @@ Nodes (19): _addHours, cancelAll, cancelMealReminders, cancelWaterReminders, get
 
 ### Community 9 - "food_with_servings_model.dart"
 Cohesion: 0.06
-Nodes (43): calcium, calories, carbohydrate, cholesterol, copyWith, fat, fiber, Food (+35 more)
+Nodes (35): calcium, calories, carbohydrate, cholesterol, copyWith, fat, fiber, foodId (+27 more)
 
 ### Community 10 - "tracking_view.dart"
 Cohesion: 0.05
@@ -462,41 +466,41 @@ Nodes (13): getStart, heathDetail, home, onBoarding, permissionError, profile, r
 Cohesion: 0.06
 Nodes (26): _accuracyThreshold, _activityId, calculateDistance, close, _currentType, _distance, _elapsed, _emitActive (+18 more)
 
-### Community 13 - "nutrient_line_chart.dart"
-Cohesion: 0.22
-Nodes (7): build, color, _fmt, label, NutrientLineChart, points, unit
+### Community 13 - "Color"
+Cohesion: 0.09
+Nodes (17): build, color, _fmt, label, NutrientLineChart, points, unit, build (+9 more)
 
 ### Community 14 - "water_chart_cubit.dart"
 Cohesion: 0.07
 Nodes (29): getChartData, getMonthData, _getWaterBatch, getWeekData, WaterChartCubit, build, createState, dispose (+21 more)
 
-### Community 15 - "fooddetailscreen.dart"
-Cohesion: 0.16
-Nodes (10): build, createState, FoodDetailScreen, _FoodDetailScreenState, foodId, initState, multiplier, selectIndex (+2 more)
+### Community 15 - "build_card_content.dart"
+Cohesion: 0.10
+Nodes (14): NutritionModel, build, BuildCardContent, _carbsColor, count, _fatColor, groupItems, item (+6 more)
 
 ### Community 16 - "step_chart_screen.dart"
-Cohesion: 0.15
-Nodes (9): build, createState, dispose, kDailyTarget, _loadTarget, _selectedTab, StepChartScreen, _StepChartScreenState (+1 more)
+Cohesion: 0.10
+Nodes (12): StepChartCubit, build, createState, dispose, initState, kDailyTarget, _loadTarget, _selectedTab (+4 more)
 
 ### Community 17 - "main.dart"
 Cohesion: 0.08
 Nodes (12): build, child, _ConfettiOverlay, _ConfettiOverlayState, _controller, createState, dispose, init (+4 more)
 
 ### Community 18 - "sleep_cubit.dart"
-Cohesion: 0.12
-Nodes (23): addSleep, asleep, calculateSleepScore, deepPct, deleteToadySleepData, durationScore, efficiencyScore, endTime (+15 more)
+Cohesion: 0.05
+Nodes (42): addSleep, asleep, calculateSleepScore, deepPct, deleteToadySleepData, durationScore, efficiencyScore, endTime (+34 more)
 
 ### Community 19 - "nutrition.dart"
 Cohesion: 0.09
-Nodes (9): _bg, _carbsColor, _card, createState, _fatColor, _groupItems, _proteinColor, _textPrimary (+1 more)
+Nodes (11): _bg, _carbsColor, _card, createState, _fatColor, _groupItems, Nutrition, _NutritionState (+3 more)
 
 ### Community 20 - "nutrition_cubit.dart"
-Cohesion: 0.13
-Nodes (23): addMultipleNutritionData, addNutritionData, _cache, _dayKey, deleteNutritionData, _getMealType, getNutritionData, invalidateCache (+15 more)
+Cohesion: 0.08
+Nodes (29): addMultipleNutritionData, addNutritionData, _cache, _dayKey, deleteNutritionData, _deleteNutritionMeal, _getMealType, getNutritionData (+21 more)
 
 ### Community 21 - "step_day_detail_screen.dart"
-Cohesion: 0.08
-Nodes (20): build, _kOnSurfaceVariant, _kPrimary, ProgressCard, build, build, data, day (+12 more)
+Cohesion: 0.09
+Nodes (18): _kOnSurfaceVariant, _kPrimary, ProgressCard, build, data, day, dayData, _formatSteps (+10 more)
 
 ### Community 22 - "home_widget.dart"
 Cohesion: 0.09
@@ -507,28 +511,28 @@ Cohesion: 0.07
 Nodes (29): _activity, _activityLabels, build, _buildCard, _buildSectionHeader, createState, dispose, _gender (+21 more)
 
 ### Community 24 - "food_scan_cubit.dart"
-Cohesion: 0.08
-Nodes (37): _apiKey, _canScanToday, _csvHeaders, _fallbackModels, FoodScanCubit, _maxScansPerDay, _parseCsv, _prompt (+29 more)
+Cohesion: 0.11
+Nodes (21): _apiKey, _canScanToday, _csvHeaders, _fallbackModels, _maxScansPerDay, _parseCsv, _prompt, _scanCountKey (+13 more)
 
 ### Community 25 - "chat.dart"
-Cohesion: 0.07
-Nodes (23): _bg, _buildBubble, _buildEmptyState, _buildInputBar, _buildTypingIndicator, _card, chats, ChatWidget (+15 more)
+Cohesion: 0.08
+Nodes (19): _bg, _buildBubble, _buildEmptyState, _buildInputBar, _buildTypingIndicator, _card, chats, _controller (+11 more)
 
-### Community 26 - "package:flutter/material.dart"
-Cohesion: 0.04
-Nodes (40): build, isMoving, RunnerMarker, build, CircularProgress, color, icon, iconColor (+32 more)
+### Community 26 - "circular_progress.dart"
+Cohesion: 0.13
+Nodes (12): build, CircularProgress, color, icon, iconColor, size, value, build (+4 more)
 
 ### Community 27 - "food_scan_result_screen.dart"
-Cohesion: 0.07
-Nodes (24): _bg, _buildMacroText, _buildSummaryChip, _carbsColor, _card, createState, _fatColor, foods (+16 more)
+Cohesion: 0.10
+Nodes (20): _bg, _buildMacroText, _buildSummaryChip, _carbsColor, _card, createState, _fatColor, foods (+12 more)
 
 ### Community 28 - "AppDelegate"
 Cohesion: 0.10
 Nodes (7): Flutter, flutter_local_notifications, AppDelegate, SceneDelegate, RunnerTests, UIKit, XCTest
 
-### Community 29 - "progress_bloc.dart"
-Cohesion: 0.16
-Nodes (14): _onAdd, _onDelete, _onEdit, _onLoad, ProgressBloc, repository, AddProgressEntry, DeleteProgressEntry (+6 more)
+### Community 29 - "Equatable"
+Cohesion: 0.10
+Nodes (24): ProgressEntry, _onAdd, _onDelete, _onEdit, _onLoad, ProgressBloc, repository, AddProgressEntry (+16 more)
 
 ### Community 30 - "Files"
 Cohesion: 0.01
@@ -539,19 +543,19 @@ Cohesion: 0.10
 Nodes (6): localDataSource, repository, setupLocator, sl, streakLocalDataSource, streakRepository
 
 ### Community 32 - "chat_cubit.dart"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (20): _apiKey, ChatCubit, clearChat, _currentSessionId, _messages, _fallbackModels, loadSession, sendMessage (+12 more)
 
 ### Community 33 - "nutrient_chart_screen.dart"
-Cohesion: 0.10
-Nodes (17): build, _carbs, color, _confs, createState, currentTab, _fat, label (+9 more)
+Cohesion: 0.06
+Nodes (25): NutritionCubit, CalorieChartScreen, _CalorieChartScreenState, createState, pageName, _textPrimary, build, _confirmDelete (+17 more)
 
 ### Community 34 - "tracking_state.dart"
 Cohesion: 0.23
 Nodes (13): TrackingCubit, activity, distanceMeters, elapsed, paceSecPerKm, points, props, TrackingActive (+5 more)
 
 ### Community 35 - "camera_view.dart"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (14): build, cameras, CameraScreen, _CameraScreenState, _capture, _controller, createState, dispose (+6 more)
 
 ### Community 36 - "food_scan_group_model.dart"
@@ -559,16 +563,16 @@ Cohesion: 0.18
 Nodes (15): foods, FoodScanGroup, fromValueFood, imagePath, timestamp, toValueFood, uuid, ValueFoodHive (+7 more)
 
 ### Community 37 - "init_app_cubit.dart"
-Cohesion: 0.24
+Cohesion: 0.22
 Nodes (13): checkPermissions, InitAppCubit, initializeHealthSdk, installHealthConnect, prefs, types, InitAppFailed, InitAppLoading (+5 more)
 
 ### Community 38 - "monthly_tab.dart"
-Cohesion: 0.10
-Nodes (14): StepChartCubit, build, _fmt, _fmtK, loaded, monthData, MonthlyTab, targetSteps (+6 more)
+Cohesion: 0.12
+Nodes (11): build, _fmt, _fmtK, loaded, monthData, MonthlyTab, targetSteps, _fmt (+3 more)
 
 ### Community 39 - "nitritiondetailscreen.dart"
-Cohesion: 0.11
-Nodes (17): _bg, build, _buildListTile, _buildSectionHeader, _carbsColor, CupertinoBackButton, _fatColor, _iOSListGroup (+9 more)
+Cohesion: 0.07
+Nodes (27): _bg, build, _buildListTile, _buildSectionHeader, _carbsColor, createState, CupertinoBackButton, _EditQuantityDialog (+19 more)
 
 ### Community 40 - "StatelessWidget"
 Cohesion: 0.05
@@ -583,48 +587,48 @@ Cohesion: 0.12
 Nodes (12): ChatHiveService, deleteSession, getMessages, getSessions, instance, _messages, _messagesBox, openBoxes (+4 more)
 
 ### Community 43 - "food_search_cubit.dart"
-Cohesion: 0.32
-Nodes (11): _baseUrl, FoodSearchCubit, searchFood, errorMessage, FoodSearchFailed, FoodSearchInitailize, FoodSearchLoading, foodSearchModel (+3 more)
+Cohesion: 0.20
+Nodes (12): _baseUrl, FoodSearchCubit, searchFood, FoodSearchModel, errorMessage, FoodSearchFailed, FoodSearchInitailize, FoodSearchLoading (+4 more)
 
 ### Community 44 - "journey_share_card.dart"
 Cohesion: 0.12
 Nodes (13): boundary, build, byteData, captureCardAsPng, image, JourneyShareCard, km, paint (+5 more)
 
 ### Community 45 - "home.dart"
-Cohesion: 0.14
-Nodes (11): build, child, createState, dispose, HomeScreen, _HomeScreenState, _locationToIndex, _onAndroidBack (+3 more)
+Cohesion: 0.08
+Nodes (21): build, child, createState, dispose, HomeScreen, _HomeScreenState, _locationToIndex, _onAndroidBack (+13 more)
 
 ### Community 46 - "TrackingRepository"
 Cohesion: 0.15
 Nodes (11): TrackingRepositoryImpl, TrackingRepository, call, GetActivities, repo, call, GetLocationStream, repo (+3 more)
 
 ### Community 47 - "calorie_chart_cubit.dart"
-Cohesion: 0.27
-Nodes (13): CalorieChartCubit, getWeekData, build, CalorieChartFailed, CalorieChartLoading, CalorieChartState, CalorieChartSuccess, consumed (+5 more)
+Cohesion: 0.24
+Nodes (14): CalorieChartCubit, getWeekData, build, initState, CalorieChartFailed, CalorieChartLoading, CalorieChartState, CalorieChartSuccess (+6 more)
 
 ### Community 48 - "add_edit_entry_screen.dart"
 Cohesion: 0.13
 Nodes (14): build, createState, _date, dispose, existing, _fieldCard, initState, _kOnSurfaceVariant (+6 more)
 
 ### Community 49 - "height_model.dart"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (14): copyWith, _dateFrom, _dateTo, HeightModel, _recordingMethod, _sourceDeviceId, _sourceId, _sourceName (+6 more)
 
 ### Community 50 - "sleep_model.dart"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (14): copyWith, _dateFrom, _dateTo, _recordingMethod, SleepModel, _sourceDeviceId, _sourceId, _sourceName (+6 more)
 
 ### Community 51 - "water_cubit.dart"
-Cohesion: 0.19
+Cohesion: 0.24
 Nodes (13): addWater, decreaseLastWaterData, deleteWaterData, getWaterData, WaterCubit, WaterSummaryCard, errorMessage, props (+5 more)
 
-### Community 52 - "tasks_notifier.dart"
-Cohesion: 0.15
+### Community 52 - "package:flutter_riverpod/flutter_riverpod.dart"
+Cohesion: 0.14
 Nodes (13): add, idGeneratorProvider, toggle, add, build, complete, _newId, openTaskCountProvider (+5 more)
 
-### Community 53 - "streak_cubit.dart"
-Cohesion: 0.10
-Nodes (14): StreakRepositoryImpl, getStreak, logActivity, StreakRepository, call, GetStreakUsecase, repository, call (+6 more)
+### Community 53 - "get_streak_usecase.dart"
+Cohesion: 0.16
+Nodes (10): StreakRepositoryImpl, getStreak, logActivity, StreakRepository, call, GetStreakUsecase, repository, call (+2 more)
 
 ### Community 54 - "step_card.dart"
 Cohesion: 0.13
@@ -639,12 +643,12 @@ Cohesion: 0.35
 Nodes (11): getWeekData, NutrientChartCubit, NutrientType, errorMessage, NutrientChartFailed, NutrientChartLoading, NutrientChartState, NutrientChartSuccess (+3 more)
 
 ### Community 57 - "State"
-Cohesion: 0.11
-Nodes (23): ItemTrackView, _ItemTrackViewState, EditItemScreen, _EditItemScreenState, DelayedSkeleton, _DelayedSkeletonState, SpringButton, SpringButtonState (+15 more)
+Cohesion: 0.17
+Nodes (14): ItemTrackView, _ItemTrackViewState, SpringButton, SpringButtonState, AddEditEntryScreen, ProgressPhotosScreen, ChatWidget, _ChatWidgetState (+6 more)
 
 ### Community 58 - "food_search_model.dart"
-Cohesion: 0.14
-Nodes (16): copyWith, foodDescription, foodId, foodName, Foods, FoodSearchModel, foodType, foodUrl (+8 more)
+Cohesion: 0.17
+Nodes (13): copyWith, foodDescription, foodId, foodName, foodType, foodUrl, servings, toJson (+5 more)
 
 ### Community 59 - "step_model.dart"
 Cohesion: 0.13
@@ -658,12 +662,12 @@ Nodes (14): copyWith, _dateFrom, _dateTo, _recordingMethod, _sourceDeviceId, _so
 Cohesion: 0.12
 Nodes (14): copyWith, _dateFrom, _dateTo, _recordingMethod, _sourceDeviceId, _sourceId, _sourceName, _sourcePlatform (+6 more)
 
-### Community 62 - "sleep_card.dart"
-Cohesion: 0.09
-Nodes (19): _bedTime, build, _formatClock, _kOnSurfaceVariant, _kPrimary, _kSurfaceContainerLowest, _kTertiary, _remLabel (+11 more)
+### Community 62 - "@HiveType"
+Cohesion: 0.22
+Nodes (12): ChatMessage, Foods, Food, FoodWithServingsModel, Serving, Servings, ChatMessageAdapter, FoodsAdapter (+4 more)
 
 ### Community 63 - "searchscreen.dart"
-Cohesion: 0.14
+Cohesion: 0.16
 Nodes (9): build, createState, _foodTypeBadge, initialized, initState, isTextEmpty, searchFoodBox, SearchFoodScreen (+1 more)
 
 ### Community 64 - "backup_envelope.dart"
@@ -671,8 +675,8 @@ Cohesion: 0.05
 Nodes (39): actual, appSchema, appVersion, BackupEnvelope, cause, checksum, code, decoded (+31 more)
 
 ### Community 65 - "step_cubit.dart"
-Cohesion: 0.27
-Nodes (12): getStepData, getTodayStep, StepsCubit, loadData, MyApp, errorMessage, props, StepFailed (+4 more)
+Cohesion: 0.30
+Nodes (11): getStepData, getTodayStep, StepsCubit, MyApp, errorMessage, props, StepFailed, StepLoadingState (+3 more)
 
 ### Community 66 - "constants.dart"
 Cohesion: 0.10
@@ -680,15 +684,15 @@ Nodes (19): activityLevel, age, gender, healthGoal, healthSdkSharedPreferenceKey
 
 ### Community 67 - "chat_message_model.dart"
 Cohesion: 0.22
-Nodes (12): ChatMessage, isUser, sessionId, text, thinkingText, time, ChatMessageAdapter, hashCode (+4 more)
+Nodes (10): isUser, sessionId, text, thinkingText, time, hashCode, operator, read (+2 more)
 
 ### Community 68 - "calorie_line_chart.dart"
-Cohesion: 0.04
-Nodes (35): dateLabel, build, CalorieLineChart, _consumedColor, _fmt, label, points, _targetColor (+27 more)
+Cohesion: 0.06
+Nodes (26): dateLabel, build, CalorieLineChart, _consumedColor, _fmt, label, points, _targetColor (+18 more)
 
 ### Community 69 - "nutrition_group_dialog.dart"
-Cohesion: 0.05
-Nodes (33): NutritionModel, build, BuildCardContent, _carbsColor, count, _fatColor, groupItems, item (+25 more)
+Cohesion: 0.10
+Nodes (19): _AnimatedCard, child, color, _controller, createState, dispose, GroupFoodCard, groupItems (+11 more)
 
 ### Community 70 - "height_card.dart"
 Cohesion: 0.17
@@ -698,40 +702,40 @@ Nodes (10): build, createState, HeightCard, _HeightCardState, _kOnSurfaceVariant
 Cohesion: 0.15
 Nodes (7): avg, end, WaterWeekSummary, weekNum, build, summary, WaterWeekTile
 
-### Community 72 - "package:flutter_bloc/flutter_bloc.dart"
-Cohesion: 0.13
-Nodes (10): createState, didUpdateWidget, initState, _kOnSurfaceVariant, _kSurfaceContainerLowest, _kTertiary, _loadTarget, _targetWater (+2 more)
+### Community 72 - "hydration_card.dart"
+Cohesion: 0.15
+Nodes (11): createState, didUpdateWidget, HydrationCard, _HydrationCardState, initState, _kOnSurfaceVariant, _kSurfaceContainerLowest, _kTertiary (+3 more)
 
 ### Community 73 - "helper_func.dart"
-Cohesion: 0.14
-Nodes (20): addHeight, getHeight, HeightCubit, _dialogButton, from, picked, selectTime, showCustomDialog (+12 more)
+Cohesion: 0.13
+Nodes (21): addHeight, getHeight, HeightCubit, _dialogButton, from, loadData, picked, selectTime (+13 more)
 
-### Community 74 - "structural_grid.dart"
-Cohesion: 0.20
-Nodes (9): build, data, id, name, price, ProductGridScreen, products, ProductTile (+1 more)
+### Community 74 - "package:flutter/material.dart"
+Cohesion: 0.10
+Nodes (16): build, data, id, name, price, ProductGridScreen, products, ProductTile (+8 more)
 
 ### Community 75 - "onboardingscreen.dart"
-Cohesion: 0.10
-Nodes (15): build, child, createState, _currentIndex, dispose, initState, KeepAlivePage, _KeepAlivePageState (+7 more)
+Cohesion: 0.08
+Nodes (19): build, createState, GetStartingScreen, _GetStartingScreenState, build, child, createState, _currentIndex (+11 more)
 
 ### Community 76 - "food_voice_input_sheet.dart"
 Cohesion: 0.12
 Nodes (14): build, _controller, createState, dispose, _editing, FoodVoiceInputSheet, _FoodVoiceInputSheetState, initState (+6 more)
 
 ### Community 77 - "progress_photos_screen.dart"
-Cohesion: 0.15
-Nodes (6): _card, createState, progressPhotos, ProgressPhotosScreen, _ProgressPhotosScreenState, screenshotController
+Cohesion: 0.17
+Nodes (4): _card, createState, progressPhotos, screenshotController
 
 ### Community 78 - "location_point.dart"
-Cohesion: 0.14
-Nodes (12): LocationPointModel, accuracy, activityId, altitude, copyWith, id, lat, lng (+4 more)
+Cohesion: 0.17
+Nodes (10): accuracy, activityId, altitude, copyWith, id, lat, lng, props (+2 more)
 
 ### Community 79 - "appcolors.dart"
 Cohesion: 0.17
 Nodes (11): appWhite, background, black, darkGrey, grey, greyBackground, primary, red (+3 more)
 
 ### Community 80 - "food_detail_cubit.dart"
-Cohesion: 0.41
+Cohesion: 0.36
 Nodes (10): fetchFoodDetails, FoodDetailCubit, errorMessage, FoodDetailFailed, FoodDetailInitial, FoodDetailLoading, FoodDetailState, FoodDetailSuccess (+2 more)
 
 ### Community 81 - "chat_session_model.dart"
@@ -747,32 +751,32 @@ Cohesion: 0.33
 Nodes (5): CaloriePoint, consumed, date, target, tdee
 
 ### Community 84 - "List"
-Cohesion: 0.08
-Nodes (21): TaskListNotifier, copyWith, date, fromMap, id, photoPath, props, toMap (+13 more)
+Cohesion: 0.10
+Nodes (17): TaskListNotifier, copyWith, entries, errorMessage, ProgressStatus, props, status, ActivityType (+9 more)
 
 ### Community 85 - "Building Dart CLI Applications"
 Cohesion: 0.05
 Nodes (34): 1. The AOT SDK Discovery Trap, 2. The Solution: `package:cli_util` (`^0.6.0`), 3. Subprocess Spawning Invariants, Consequences of Naive Resolution:, Dart SDK Discovery and Subprocess Spawning in AOT & JIT, Potential Dart SDK Locations:, Why This Fails in Standalone AOT:, 1. Cross-Platform Signal Handling (+26 more)
 
-### Community 86 - "tracking_repository.dart"
-Cohesion: 0.17
-Nodes (8): getActivities, getPointsForActivity, positionStream, saveActivity, savePoint, savePointsBatch, CalculateDistance, call
+### Community 86 - "tracking_repository_impl.dart"
+Cohesion: 0.09
+Nodes (15): getActivities, getPointsForActivity, local, positionStream, saveActivity, savePoint, savePointsBatch, getActivities (+7 more)
 
-### Community 87 - "calorie_chart_screen.dart"
-Cohesion: 0.17
-Nodes (6): CalorieChartScreen, _CalorieChartScreenState, createState, initState, pageName, _textPrimary
+### Community 87 - "directional_widget.dart"
+Cohesion: 0.15
+Nodes (11): build, isolateLtr, itemCount, _lri, numberFormatFor, onOpen, orderRefLine, OrderSummaryCard (+3 more)
 
-### Community 88 - "ConsumerWidget"
-Cohesion: 0.24
-Nodes (8): build, taskListNotifierProvider, TaskListScreen, _TaskTile, build, NotesScreen, build, TaskListScreen
+### Community 88 - "package:flutter/cupertino.dart"
+Cohesion: 0.15
+Nodes (7): appTheme, build, build, _kOnSurfaceVariant, _kPrimary, _kSurfaceContainerLowest, WeightCard
 
 ### Community 89 - "streak_screen.dart"
 Cohesion: 0.22
 Nodes (6): build, createState, initState, pageName, StreakScreen, _StreakScreenState
 
-### Community 90 - "progress_event.dart"
-Cohesion: 0.22
-Nodes (8): ProgressEntry, date, entry, existing, image, newImage, props, weight
+### Community 90 - "macro_card.dart"
+Cohesion: 0.15
+Nodes (11): build, _card, color, icon, label, MacroCard, progress, _textPrimary (+3 more)
 
 ### Community 91 - "weight_chart.dart"
 Cohesion: 0.18
@@ -782,7 +786,7 @@ Nodes (8): build, entries, maxY, minY, sorted, spots, WeightChart, weights
 Cohesion: 0.40
 Nodes (9): StreakCubit, message, streak, StreakCelebration, StreakError, StreakInitial, StreakLoaded, StreakLoading (+1 more)
 
-### Community 93 - "String? get"
+### Community 93 - "String?"
 Cohesion: 0.22
 Nodes (5): copyWith, _numericValue, toJson, _type, Value
 
@@ -791,16 +795,16 @@ Cohesion: 0.05
 Nodes (35): accent, accent45, accent62, App, brightness, build, buildAppTheme, c (+27 more)
 
 ### Community 95 - "scene_painter.dart"
-Cohesion: 0.08
-Nodes (27): best, bestDx, build, CanvasTransform, color, _dot, fit, hashCode (+19 more)
+Cohesion: 0.07
+Nodes (29): best, bestDx, build, CanvasTransform, color, _dot, fit, hashCode (+21 more)
 
 ### Community 96 - "tracking_local_datasource.dart"
 Cohesion: 0.20
 Nodes (8): db, getActivities, getPointsForActivity, insertActivity, insertPoint, insertPointsBatch, TrackingLocalDataSource, TrackingLocalDataSourceImpl
 
-### Community 97 - "streak_entity.dart"
-Cohesion: 0.33
-Nodes (5): StreakModel, currentStreak, longestStreak, StreakActivityType, StreakEntity
+### Community 97 - "../../domain/entities/streak_entity.dart"
+Cohesion: 0.22
+Nodes (6): fromEntity, StreakModel, currentStreak, longestStreak, StreakActivityType, StreakEntity
 
 ### Community 98 - "policy_grep_test.dart"
 Cohesion: 0.20
@@ -815,16 +819,16 @@ Cohesion: 0.50
 Nodes (6): Err, Ok, Err, Ok, Err, Ok
 
 ### Community 101 - "nutrition_service.dart"
-Cohesion: 0.17
-Nodes (7): deleteGroup, _foodScanGroupBox, getAllGroups, init, NutritionService, saveScanGroup, _uuid
+Cohesion: 0.09
+Nodes (16): addEntry, deleteEntry, _deleteFileIfExists, getEntries, _localDb, ProgressRepository, _saveImageLocally, updateEntry (+8 more)
 
 ### Community 102 - "package:shared_preferences/shared_preferences.dart"
-Cohesion: 0.20
+Cohesion: 0.18
 Nodes (6): build, onSelect, options, selectedValue, _SelectionListView, showEditGoalDialog
 
 ### Community 103 - "typed_result_boundary.dart"
 Cohesion: 0.07
-Nodes (28): AppLog, byId, code, _dao, describeFailureCode, error, Failure, field (+20 more)
+Nodes (27): AppLog, byId, code, _dao, describeFailureCode, error, Failure, field (+19 more)
 
 ### Community 104 - "dart:io"
 Cohesion: 0.11
@@ -858,9 +862,9 @@ Nodes (26): accountId, AppDatabase, AppLog, bumpRevision, canonicalize, _clock, 
 Cohesion: 0.10
 Nodes (22): WindowSizeClassX, build, canShowTwoPanes, clear, _DetailPlaceholder, details, id, onTap (+14 more)
 
-### Community 112 - "progress_local_db.dart"
-Cohesion: 0.22
-Nodes (7): database, deleteEntry, getAllEntries, insertEntry, instance, ProgressLocalDb, updateEntry
+### Community 112 - "food_scan_nutrition_loading.dart"
+Cohesion: 0.17
+Nodes (8): build, build, build, FoodScanLoadingSheet, _sheetBg, _sheetCard, _sheetTextPrimary, _sheetTextSecondary
 
 ### Community 113 - "gesture_translator.dart"
 Cohesion: 0.09
@@ -883,20 +887,20 @@ Cohesion: 0.08
 Nodes (23): 1. Overview, 2.1 Basic Class Header Syntax, 2.2 Declaring, Initializing, and Plain Parameters, 2.3 Constant Primary Constructors, 2.4 Extension Types, 2.5 Empty Body Semicolon Shorthand (`;`), 2.6 The In-Body Part of a Primary Constructor (`this ...`), 2.7 Abbreviated Concise Constructor Syntax (+15 more)
 
 ### Community 126 - "auth_redirect.dart"
-Cohesion: 0.09
-Nodes (19): AuthSignedIn, AuthSignedOut, AuthUnknown, appRedirect, atOnboarding, atSignIn, AuthSignedIn, AuthSignedOut (+11 more)
+Cohesion: 0.08
+Nodes (20): AuthNotifier, AuthSignedIn, AuthSignedOut, AuthUnknown, appRedirect, atOnboarding, atSignIn, AuthSignedIn (+12 more)
 
 ### Community 127 - "service_boundary.dart"
-Cohesion: 0.09
+Cohesion: 0.10
 Nodes (22): AnalyticsController, analyticsControllerProvider, AnalyticsService, analyticsServiceProvider, _AppPlaceholder, bootstrap, clockProvider, code (+14 more)
 
 ### Community 128 - "async_state_view.dart"
-Cohesion: 0.10
-Nodes (19): actionLabel, child, createState, delay, dispose, EmptyStateView, ErrorStateView, initState (+11 more)
+Cohesion: 0.09
+Nodes (23): actionLabel, build, child, createState, delay, DelayedSkeleton, _DelayedSkeletonState, dispose (+15 more)
 
 ### Community 129 - "feature_slice.dart"
-Cohesion: 0.12
-Nodes (15): _controller, copyWith, create, dispose, done, hashCode, id, IdGenerator (+7 more)
+Cohesion: 0.11
+Nodes (21): build, _controller, copyWith, create, dispose, done, hashCode, id (+13 more)
 
 ### Community 130 - "allocate.dart"
 Cohesion: 0.09
@@ -919,12 +923,12 @@ Cohesion: 0.11
 Nodes (16): all, _AppUnderTest, build, compact, Device, dpr, enqueue, enqueued (+8 more)
 
 ### Community 135 - "async_field_notifier.dart"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (17): AccountNameField, _AccountNameFieldState, AccountRepository, accountRepositoryProvider, build, clockProvider, controller, createState (+9 more)
 
 ### Community 136 - "shell_scaffold.dart"
-Cohesion: 0.12
-Nodes (15): AppShell, build, buildAdaptivePage, _confirmDiscard, createState, _Dest, _destinations, _dirty (+7 more)
+Cohesion: 0.11
+Nodes (17): AppShell, build, buildAdaptivePage, _confirmDiscard, createState, _Dest, _destinations, _dirty (+9 more)
 
 ### Community 137 - "native_gateway.dart"
 Cohesion: 0.12
@@ -938,9 +942,9 @@ Nodes (12): code, _extended, hashCode, id, lines, operator, priceMinorUnits, qua
 Cohesion: 0.11
 Nodes (17): 1. Scaffold the Application, 2. Configure the Router, Contents, Core Concepts, Examples, High-Fidelity Shell Widget Implementation, If configuring for Android:, If configuring for iOS: (+9 more)
 
-### Community 140 - "directional_widget.dart"
-Cohesion: 0.06
-Nodes (24): build, isolateLtr, itemCount, _lri, numberFormatFor, onOpen, orderRefLine, OrderSummaryCard (+16 more)
+### Community 140 - "tasks_screen.dart"
+Cohesion: 0.11
+Nodes (13): body, _EmptyState, onTap, onToggle, projectId, task, _TaskTile, title (+5 more)
 
 ### Community 141 - "unsupported_locale_delegates.dart"
 Cohesion: 0.12
@@ -963,8 +967,8 @@ Cohesion: 0.12
 Nodes (15): 1. Add Dependencies, 1. Run Tests with VM Service, 2. Collect Coverage and Generate LCOV, 2. Collect Raw Coverage, 3. Feedback Loop: Validate Output, 3. Format to LCOV, Contents, Coverage Directives (+7 more)
 
 ### Community 146 - "in_memory_drift_test.dart"
-Cohesion: 0.17
-Nodes (6): TaskDao, _db, OrderRepository, place, db, main
+Cohesion: 0.14
+Nodes (7): TaskDao, SqliteException, _db, OrderRepository, place, db, main
 
 ### Community 147 - "numeral_normalizer.dart"
 Cohesion: 0.12
@@ -995,7 +999,7 @@ Cohesion: 0.17
 Nodes (11): Anti-patterns, Definition of done, Fakes over mocks, Non-negotiable rules, One live impl at the composition root, Provider / ChangeNotifier appendix, References, Related skills (+3 more)
 
 ### Community 154 - "task_form.dart"
-Cohesion: 0.12
+Cohesion: 0.14
 Nodes (12): build, createState, dispose, _formKey, _notesController, _notesFocus, _submit, TaskFormScreen (+4 more)
 
 ### Community 155 - "placement_by_failure.dart"
@@ -1014,9 +1018,9 @@ Nodes (13): Anti-patterns, Auditing the transitive tree, Definition of done, Dep
 Cohesion: 0.22
 Nodes (8): _db, endMs, OrderReadRepository, pageBefore, startMs, TimeWindow, _toDomain, watchForAccount
 
-### Community 159 - "custom_segment.dart"
-Cohesion: 0.13
-Nodes (11): AppRoutes, build, children, currentSelection, CustomSlidingSegmentedControl, icons, thumbColor, build (+3 more)
+### Community 159 - "package:flutter_bloc/flutter_bloc.dart"
+Cohesion: 0.19
+Nodes (6): AppRoutes, build, PermissionErrorScreem, build, SdkErrorScreen, build
 
 ### Community 160 - "allocate_property_test.dart"
 Cohesion: 0.14
@@ -1051,14 +1055,14 @@ Cohesion: 0.15
 Nodes (12): compoundExt, computeWebAssetKey, contains, ext, insertContentHash, isCanvasKitWasmAsset, main, nativeSamplePath (+4 more)
 
 ### Community 168 - "json_patterns.dart"
-Cohesion: 0.18
-Nodes (11): ApiResponse, code, data, error, ErrorResponse, main, message, parseApiResponse (+3 more)
+Cohesion: 0.10
+Nodes (20): ApiResponse, code, data, error, ErrorResponse, main, message, parseApiResponse (+12 more)
 
 ### Community 169 - "status_encoding.dart"
-Cohesion: 0.13
-Nodes (12): borderWidth, build, color, icon, label, OrderStatus, OrderStatusView, status (+4 more)
+Cohesion: 0.17
+Nodes (9): borderWidth, build, color, icon, label, OrderStatus, OrderStatusView, status (+1 more)
 
-### Community 170 - "package:flutter_riverpod/flutter_riverpod.dart"
+### Community 170 - "soft_delete_undo.dart"
 Cohesion: 0.20
 Nodes (7): active, activeTasks, build, delete, restore, softDelete, TasksNotifier
 
@@ -1182,17 +1186,17 @@ Nodes (11): Accessibility testing — guidelines, gate, and honest limits, Contr
 Cohesion: 0.14
 Nodes (10): end, endOfDay, getDataForDay, getDataForDaysBatch, result, start, startOfDay, total (+2 more)
 
-### Community 201 - "Cubit"
-Cohesion: 0.30
+### Community 201 - "sleep_chart_cubit.dart"
+Cohesion: 0.33
 Nodes (10): getDataFromNow, SleepChartCubit, dataMonth, dataWeek, errorMessage, props, SleepChartsFailed, SleepChartsLoading (+2 more)
 
-### Community 202 - "Equatable"
-Cohesion: 0.30
-Nodes (11): getDataFromNow, WeightChartCubit, ProgressState, dataMonth, dataWeek, errorMessage, props, WeightChartsFailed (+3 more)
+### Community 202 - "weight_chart_cubit.dart"
+Cohesion: 0.38
+Nodes (10): getDataFromNow, WeightChartCubit, dataMonth, dataWeek, errorMessage, props, WeightChartsFailed, WeightChartsLoading (+2 more)
 
-### Community 203 - "progress_repository.dart"
+### Community 203 - "week_list_tile.dart"
 Cohesion: 0.17
-Nodes (9): addEntry, deleteEntry, _deleteFileIfExists, getEntries, _localDb, ProgressRepository, _saveImageLocally, updateEntry (+1 more)
+Nodes (11): avg, build, end, _fmt, start, summary, targetSteps, total (+3 more)
 
 ### Community 204 - "Window size classes, MediaQuery aspects, insets, and foldables"
 Cohesion: 0.18
@@ -1238,9 +1242,9 @@ Nodes (9): CsvRow, encodeCsvField, _formulaLeaders, needsQuotes, _neutralize, _q
 Cohesion: 0.18
 Nodes (10): Anti-patterns, Choosing a format, Data export and restore, Definition of done, Non-negotiable rules, References, Related skills, Restore: validate, stage, swap (+2 more)
 
-### Community 215 - "vendored_plugin_behind_interface.dart"
-Cohesion: 0.24
-Nodes (9): delete, FakeSecureStorageGateway, _plugin, PluginSecureStorageGateway, read, SecureStorageGateway, secureStorageGatewayProvider, _store (+1 more)
+### Community 215 - "nutrition_card_summary.dart"
+Cohesion: 0.22
+Nodes (6): build, _carbsColor, _fatColor, NutritionSummaryCard, _proteinColor, _textPrimary
 
 ### Community 216 - "Result / Failure spine, the global net, isolate re-wrap & logging"
 Cohesion: 0.18
@@ -1263,7 +1267,7 @@ Cohesion: 0.18
 Nodes (10): ARB workflow, l10n.yaml & ICU, ICU — always, never concatenation, l10n.yaml — the settings that matter, Pitfalls, Placeholder typing, Step-by-step, The locale set (illustrative), Values and units in strings (+2 more)
 
 ### Community 221 - "sync_notifications.dart"
-Cohesion: 0.17
+Cohesion: 0.18
 Nodes (10): cancelAll, clock, current, currentIds, desired, desiredIds, gw, reconcileAfterRestore (+2 more)
 
 ### Community 222 - "Navigation and routing"
@@ -1358,9 +1362,9 @@ Nodes (9): allocate() and the split pipeline, Edge policies to pin in tests, The
 Cohesion: 0.20
 Nodes (9): Fixing a red matrix — the four wrong fixes, Geometry invariants replace the layout golden, Make the ban structural, Overflow and text-scale testing, The anti-clamp behavioural check, The fit assertion — the real constraint, The matrix, Three traps that make an overflow suite pass while checking nothing (+1 more)
 
-### Community 245 - "String?"
-Cohesion: 0.25
-Nodes (6): copyWith, entries, errorMessage, ProgressStatus, props, status
+### Community 245 - "progress_entry.dart"
+Cohesion: 0.22
+Nodes (8): copyWith, date, fromMap, id, photoPath, props, toMap, weight
 
 ### Community 246 - "Reference — the grep-based invariant gate"
 Cohesion: 0.22
@@ -1470,9 +1474,9 @@ Nodes (8): Discipline, First decide whether you need a golden at all, Golden tes
 Cohesion: 0.22
 Nodes (8): Asserting the effect, not the call, Device presets are logical size + DPR, not physical pixels, Driving MediaQuery flags, Finders that survive refactors, `pump()` vs `pumpAndSettle()`, Seams throw until overridden, The four load-bearing lines, The harness and MediaQuery layering
 
-### Community 273 - "getstartingscreen.dart"
-Cohesion: 0.29
-Nodes (4): build, createState, GetStartingScreen, _GetStartingScreenState
+### Community 273 - "streak_cubit.dart"
+Cohesion: 0.25
+Nodes (4): getStreakUsecase, loadStreak, logActivityAndRefresh, logActivityUsecase
 
 ### Community 274 - "Honesty bans — never dodge the type system"
 Cohesion: 0.25
@@ -1489,6 +1493,10 @@ Nodes (7): Feature-folder anatomy (single package), Module & layers — the shap
 ### Community 277 - "Numerals & calendars — projection, format AND parse"
 Cohesion: 0.25
 Nodes (7): Calendars, Export, Format — pin the numbering system, Numerals & calendars — projection, format AND parse, Parse — normalize FIRST, always, Separators — the trap, The four digit systems
+
+### Community 278 - "build"
+Cohesion: 0.22
+Nodes (3): build, build, build
 
 ### Community 279 - "Platform: boot re-arm, exact alarms, OEM survival"
 Cohesion: 0.25
@@ -1687,44 +1695,56 @@ Cohesion: 0.83
 Nodes (3): note(), section(), check_test_hygiene.sh script
 
 ### Community 330 - "../../domain/entities/activity.dart"
-Cohesion: 0.40
-Nodes (3): fromEntity, fromMap, toMap
+Cohesion: 0.29
+Nodes (5): ActivityModel, fromEntity, fromMap, toMap, Activity
 
 ### Community 345 - "step_point.dart"
 Cohesion: 0.40
 Nodes (4): date, StepPoint, steps, target
 
-### Community 364 - "tracking_repository_impl.dart"
-Cohesion: 0.13
-Nodes (10): fromEntity, fromMap, toMap, getActivities, getPointsForActivity, local, positionStream, saveActivity (+2 more)
+### Community 364 - "../../domain/entities/location_point.dart"
+Cohesion: 0.29
+Nodes (5): fromEntity, fromMap, LocationPointModel, toMap, LocationPoint
 
 ### Community 365 - "water_point.dart"
 Cohesion: 0.40
 Nodes (4): date, liters, target, WaterPoint
 
-### Community 367 - "Notifier"
+### Community 367 - "FoodScanCubit"
+Cohesion: 0.43
+Nodes (8): FoodScanCubit, _showLogDialog, FoodScanError, FoodScanLoading, FoodScanNoItems, FoodScanState, FoodScanSuccess, FoodScanThinking
+
+### Community 371 - "custom_segment.dart"
+Cohesion: 0.29
+Nodes (6): build, children, currentSelection, CustomSlidingSegmentedControl, icons, thumbColor
+
+### Community 372 - "streak_repository_impl.dart"
+Cohesion: 0.33
+Nodes (3): getStreak, localDataSource, logActivity
+
+### Community 373 - "double? get"
 Cohesion: 0.50
-Nodes (3): SparklineNotifier, SparklineState, AuthNotifier
+Nodes (3): ActivityLevel, ActivityLevelFactor, factor
 
 ## Knowledge Gaps
-- **3232 isolated node(s):** `child`, `_tabs`, `_pageController`, `createState`, `_locationToIndex` (+3227 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3696 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **3251 isolated node(s):** `_cache`, `selectedDate`, `_dayKey`, `getNutritionData`, `invalidateCache` (+3246 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3716 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **47 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StreakCubit` connect `StreakCubit` to `Cubit`, `main.dart`, `water_cubit.dart`, `nutrition_cubit.dart`, `streak_cubit.dart`, `weight_cubit.dart`, `streak_screen.dart`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
-- **What connects `child`, `_tabs`, `_pageController` to the rest of the system?**
-  _3232 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `NutritionModel` connect `build_card_content.dart` to `nutrition_model.dart`, `nutrition_group_dialog.dart`, `nitritiondetailscreen.dart`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+- **What connects `_cache`, `selectedDate`, `_dayKey` to the rest of the system?**
+  _3251 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `spring_button_widget.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.022727272727272728 - nodes in this community are weakly interconnected._
-- **Why does `TrackingRepository` connect `TrackingRepository` to `tracking_cubit.dart`, `tracking_repository.dart`, `service_locator.dart`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
+- **Why does `TaskFormScreen` connect `task_form.dart` to `async_field_notifier.dart`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **Should `water.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.07459677419354839 - nodes in this community are weakly interconnected._
-- **Should `streak_local_datasource.dart` be split into smaller, more focused modules?**
+- **Should `progress_local_db.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
 - **Should `nutrition_card.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.06666666666666667 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
