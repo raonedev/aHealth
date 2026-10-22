@@ -34,6 +34,7 @@ import 'presentation/nutririon/nutrient_chart_screen.dart';
 import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
 import 'presentation/steps/step_day_detail_screen.dart';
+import 'features/workout/presentation/screens/workout_screen.dart';
 import 'presentation/profile/profile_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
 
@@ -45,6 +46,7 @@ class AppRoutes {
   static const String heathDetail = "/heathDetail";
   static const String home = "/home";
   static const String profile = "/profile";
+  static const String workout = "/workout";
   static const String searchFoodScreen = "/searchFood";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
@@ -266,6 +268,11 @@ class AppRoutes {
         path: AppRoutes.profile,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.workout,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutScreen(),
       ),
     ],
   );

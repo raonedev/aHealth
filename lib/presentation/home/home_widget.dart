@@ -30,6 +30,7 @@ import '../../features/streak/presentation/cubit/streak_state.dart';
 import '../../features/streak/presentation/screens/streak_screen.dart';
 import 'widget/nutrition_card.dart';
 import 'widget/step_card.dart';
+import 'widget/workout_card.dart';
 
 const _kOnSurfaceVariant = Color(0xFF40493D);
 const _kSurfaceContainerLowest = Color(0xFFFFFFFF);
@@ -135,6 +136,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                   HeightCard(),
                   const SizedBox(height: 16),
                   SleepCard(),
+                  const SizedBox(height: 16),
+                  const WorkoutCard(),
                 ]),
               ),
             ),

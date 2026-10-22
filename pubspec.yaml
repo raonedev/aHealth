@@ -80,6 +80,8 @@ dependencies:
   screenshot: ^3.0.0
   confetti: ^0.8.0
   speech_to_text: ^7.4.0
+  video_player: ^2.14.1
+  cached_network_image: ^4.0.5
 
 dev_dependencies:
   flutter_test:
@@ -110,6 +112,7 @@ flutter:
     - assets/lottieanimations/
     - assets/icons/
     - assets/svgs/
+    - assets/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
