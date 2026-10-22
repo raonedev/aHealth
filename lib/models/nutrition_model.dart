@@ -336,7 +336,7 @@ class ValueFood {
   /// Returns the food name without its persisted quantity marker.
   String? get displayName {
     final name = _name;
-    return name == null ? null : name.replaceFirst(_loggedQuantitySuffix, '');
+    return name?.replaceFirst(_loggedQuantitySuffix, '');
     // return name;
   }
 

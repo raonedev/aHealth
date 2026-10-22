@@ -21,7 +21,6 @@ import '../../common/common_method.dart';
 import '../../services/nutrition_service.dart';
 import '../common/camera_view.dart';
 import '../common/nutrition_calc.dart';
-import 'nutrition_group/models/food_scan_group_model.dart';
 import 'widgets/circular_progress.dart';
 import 'widgets/food_scan_nutrition_loading.dart';
 import 'widgets/food_voice_input_sheet.dart';

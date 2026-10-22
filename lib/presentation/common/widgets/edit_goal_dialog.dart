@@ -275,7 +275,7 @@ class _SelectionListView extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Theme.of(context).primaryColor.withOpacity(0.08)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.08)
                   : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(

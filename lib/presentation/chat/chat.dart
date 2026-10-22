@@ -265,8 +265,9 @@ class _ChatWidgetState extends State<ChatWidget> {
                       const Duration(milliseconds: 100),
                       _scrollToBottom,
                     );
-                    if (state.logFoodText != null)
+                    if (state.logFoodText != null) {
                       _showLogDialog(state.logFoodText!);
+                    }
                   }
                 },
                 builder: (context, state) {

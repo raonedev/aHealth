@@ -301,8 +301,9 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                                 children: [
                                   _qtyButton(Icons.remove, () {
                                     setState(() {
-                                      if (_quantities[i] > 0.5)
+                                      if (_quantities[i] > 0.5) {
                                         _quantities[i] -= 0.5;
+                                      }
                                     });
                                   }),
                                   Padding(
