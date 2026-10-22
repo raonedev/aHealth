@@ -201,15 +201,36 @@ class ChatCubit extends Cubit<ChatState> {
     _messages.add(userMsg);
     emit(ChatUpdated(messages: List.from(_messages), isLoading: true));
 
+    final targetCal = healthContext['target'] ?? healthContext['targetCalories'];
+    final calStr = targetCal != null
+        ? "${healthContext['calories'] ?? 0} kcal (Daily Target: $targetCal kcal)"
+        : "${healthContext['calories'] ?? 'N/A'} kcal";
+
+    final proteinStr = healthContext['targetProtein'] != null
+        ? "${healthContext['protein'] ?? 'N/A'}g / ${healthContext['targetProtein']}g"
+        : "${healthContext['protein'] ?? 'N/A'}g";
+
+    final carbsStr = healthContext['targetCarbs'] != null
+        ? "${healthContext['carbs'] ?? 'N/A'}g / ${healthContext['targetCarbs']}g"
+        : "${healthContext['carbs'] ?? 'N/A'}g";
+
+    final fatStr = healthContext['targetFat'] != null
+        ? "${healthContext['fat'] ?? 'N/A'}g / ${healthContext['targetFat']}g"
+        : "${healthContext['fat'] ?? 'N/A'}g";
+
+    final bmrTdeeStr = healthContext['bmr'] != null
+        ? "\n- BMR: ${healthContext['bmr']} kcal | TDEE: ${healthContext['tdee']} kcal"
+        : "";
+
     final systemContext =
         '''
 You are a personal health assistant. The user's data for today:
 - Steps: ${healthContext['steps'] ?? 'N/A'}
 - Water: ${healthContext['water'] ?? 'N/A'} ml
-- Calories: ${healthContext['calories'] ?? 'N/A'} kcal
-- Protein: ${healthContext['protein'] ?? 'N/A'}g | Carbs: ${healthContext['carbs'] ?? 'N/A'}g | Fat: ${healthContext['fat'] ?? 'N/A'}g
+- Calories: $calStr
+- Protein: $proteinStr | Carbs: $carbsStr | Fat: $fatStr
 - Sleep: ${healthContext['sleep'] ?? 'N/A'} hrs
-- Weight: ${healthContext['weight'] ?? 'N/A'} kg
+- Weight: ${healthContext['weight'] ?? 'N/A'} kg$bmrTdeeStr
 
 If the user wants to log/add/record food they ate, reply ONLY with: LOG_FOOD: <food description with quantity>
 Otherwise answer normally.

@@ -12,6 +12,7 @@ import '../../blocs/water/water_cubit.dart';
 import '../../blocs/weight/weight_cubit.dart';
 import '../../models/chat/chat_message_model.dart';
 import '../../services/chat_hive_service.dart';
+import '../common/nutrition_calc.dart';
 import '../nutririon/food_scan_result_screen.dart';
 
 const Color _bg = Color(0xFFF6F6F9);
@@ -33,6 +34,21 @@ class _ChatWidgetState extends State<ChatWidget> {
   final _scrollController = ScrollController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _loggingFromChat = false;
+  NutritionTargets? _nutritionTargets;
+
+  @override
+  void initState() {
+    super.initState();
+    _nutritionTargets = TargetCalorieCalculator.lastTargets;
+    _loadNutritionTargets();
+  }
+
+  Future<void> _loadNutritionTargets() async {
+    final targets = await TargetCalorieCalculator.calculate();
+    if (mounted) {
+      setState(() => _nutritionTargets = targets);
+    }
+  }
 
   Map<String, dynamic> get _healthContext {
     // Steps
@@ -95,6 +111,8 @@ class _ChatWidgetState extends State<ChatWidget> {
         ? weightState.weightModel.first.value?.numericValue?.toStringAsFixed(1)
         : 'N/A';
 
+    final targets = _nutritionTargets ?? TargetCalorieCalculator.lastTargets;
+
     return {
       'steps': steps,
       'water': water,
@@ -104,14 +122,26 @@ class _ChatWidgetState extends State<ChatWidget> {
       'fat': fat.toStringAsFixed(1),
       'sleep': sleep,
       'weight': weight,
+      'target': targets?.target,
+      'targetCalories': targets?.target,
+      'targetProtein': targets?.protein.toStringAsFixed(1),
+      'targetCarbs': targets?.carbs.toStringAsFixed(1),
+      'targetFat': targets?.fat.toStringAsFixed(1),
+      'bmr': targets?.bmr,
+      'tdee': targets?.tdee,
+      'activityLevel': targets?.activityLabel,
       'currentTime': DateTime.now(),
     };
   }
 
-  void _send() {
+  void _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _controller.clear();
+
+    _nutritionTargets ??= TargetCalorieCalculator.lastTargets ?? await TargetCalorieCalculator.calculate();
+    if (!mounted) return;
+
     context.read<ChatCubit>().sendMessage(
       userText: text,
       healthContext: _healthContext,
