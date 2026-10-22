@@ -122,3 +122,5 @@ samples, guidance on mobile development, and a full API reference.
 
 npx repomix@latest --ignore "assets/**,**/pubspec.lock,ios/Pods/**,ios/Runner.xcodeproj/**,ios/Runner.xcworkspace/**,graphify-out/cache/**,.fvm/**,.agents/**,android/secrets.properties,lib/secrets/secrets.dart" --style markdown
 
+exercise licence
+https://github.com/luisaraujoc/free-exercise-db-api/blob/main/LICENSE
