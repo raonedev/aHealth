@@ -501,18 +501,57 @@ class _WorkoutScreenState extends State<WorkoutScreen>
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                Builder(builder: (_) {
+                  final matched = _allExercises.cast<Exercise?>().firstWhere(
+                        (e) =>
+                            e!.id == planned.exerciseId ||
+                            e.name.toLowerCase() ==
+                                planned.exerciseName.toLowerCase(),
+                        orElse: () => null,
+                      );
+                  final thumb =
+                      matched?.maleThumbnail ?? matched?.femaleThumbnail;
+                  return ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.fitness_center,
-                    color: Colors.black87,
-                  ),
-                ),
+                    child: thumb != null && thumb.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: thumb,
+                            width: 54,
+                            height: 54,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              width: 54,
+                              height: 54,
+                              color: Colors.grey.shade100,
+                              child: const Icon(
+                                Icons.fitness_center,
+                                color: Colors.black38,
+                                size: 22,
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              width: 54,
+                              height: 54,
+                              color: Colors.grey.shade100,
+                              child: const Icon(
+                                Icons.fitness_center,
+                                color: Colors.black38,
+                                size: 22,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 54,
+                            height: 54,
+                            color: Colors.grey.shade100,
+                            child: const Icon(
+                              Icons.fitness_center,
+                              color: Colors.black87,
+                              size: 22,
+                            ),
+                          ),
+                  );
+                }),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -600,30 +639,354 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  void _logPlannedExercise(PlannedExercise planned) async {
-    final log = await _service.logWorkout(
-      exerciseName: planned.exerciseName,
-      bodyPart: planned.bodyPart,
-      sets: planned.sets,
-      reps: planned.reps,
-      weightKg: planned.weightKg,
-      durationMinutes:
-          (planned.sets * 3) + (planned.sets * planned.restSeconds ~/ 60),
-      caloriesBurned: planned.sets * 25,
-      syncHealthConnect: true,
+  void _logPlannedExercise(PlannedExercise planned) {
+    int sets = planned.sets;
+    int reps = planned.reps;
+    double weight = planned.weightKg;
+    int duration =
+        (planned.sets * 3) + (planned.sets * planned.restSeconds ~/ 60);
+    int calories = planned.sets * 25;
+    bool syncHealthConnect = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                16,
+                24,
+                MediaQuery.of(ctx).viewInsets.bottom + 28,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag handle
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Log Workout Session',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                planned.exerciseName,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            planned.bodyPart.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Sets & Reps
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _stepperFieldLarge(
+                            'Sets',
+                            sets,
+                            '',
+                            (v) => setSheetState(
+                              () => sets = (sets + v).clamp(1, 20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _stepperFieldLarge(
+                            'Reps',
+                            reps,
+                            '',
+                            (v) => setSheetState(
+                              () => reps = (reps + v).clamp(1, 100),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Weight & Duration
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _stepperFieldLarge(
+                            'Weight',
+                            weight.toInt(),
+                            'kg',
+                            (v) => setSheetState(
+                              () => weight = (weight + v).clamp(0.0, 500.0),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _stepperFieldLarge(
+                            'Duration',
+                            duration,
+                            'min',
+                            (v) => setSheetState(
+                              () => duration = (duration + v).clamp(1, 180),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Calories
+                    _stepperFieldLarge(
+                      'Est. Calories',
+                      calories,
+                      'kcal',
+                      (v) => setSheetState(
+                        () => calories = (calories + (v * 10)).clamp(10, 2000),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Health Connect toggle
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          secondary: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: syncHealthConnect
+                                  ? Colors.green.shade50
+                                  : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.favorite,
+                              color: syncHealthConnect
+                                  ? Colors.green
+                                  : Colors.grey,
+                              size: 20,
+                            ),
+                          ),
+                          title: const Text(
+                            'Sync to Health Connect',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            'Directly write workout session to Android Health',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                          value: syncHealthConnect,
+                          activeThumbColor: Colors.black87,
+                          onChanged: (v) =>
+                              setSheetState(() => syncHealthConnect = v),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Confirm button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          final log = await _service.logWorkout(
+                            exerciseName: planned.exerciseName,
+                            bodyPart: planned.bodyPart,
+                            sets: sets,
+                            reps: reps,
+                            weightKg: weight,
+                            durationMinutes: duration,
+                            caloriesBurned: calories,
+                            syncHealthConnect: syncHealthConnect,
+                          );
+                          await _loadInitialData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  log.syncedHealthConnect
+                                      ? 'Logged "${planned.exerciseName}" to Health Connect!'
+                                      : 'Logged "${planned.exerciseName}" locally!',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          'Confirm & Log Session',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
-    await _loadInitialData();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            log.syncedHealthConnect
-                ? 'Logged "${planned.exerciseName}" to Health Connect!'
-                : 'Logged "${planned.exerciseName}" locally!',
+  }
+
+  Widget _stepperFieldLarge(
+    String label,
+    int val,
+    String unit,
+    Function(int) onChange,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
           ),
-        ),
-      );
-    }
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => onChange(-1),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: const Icon(
+                    Icons.remove,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    '$val',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
+                  ),
+                  if (unit.isNotEmpty) ...[
+                    const SizedBox(width: 2),
+                    Text(
+                      unit,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              GestureDetector(
+                onTap: () => onChange(1),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add, size: 20, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   // ==========================================
