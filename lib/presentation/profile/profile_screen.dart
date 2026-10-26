@@ -31,6 +31,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File? _imageFile;
   Gender _gender = Gender.male;
   int _waterLogAmountMl = kDefaultWaterLogAmountMl;
+  double _selectedWaterTarget = kDefaultTargetWaterLiters;
+  final List<double> _waterTargetOptions = [
+    1.5,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    4.5,
+    5.0,
+    6.0,
+  ];
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -103,6 +115,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       file = File(imagePath);
     }
 
+    final normalizedWaterTarget = double.parse(waterTarget.toStringAsFixed(1));
+    if (!_waterTargetOptions.any(
+      (opt) => (opt - normalizedWaterTarget).abs() < 0.05,
+    )) {
+      _waterTargetOptions.add(normalizedWaterTarget);
+      _waterTargetOptions.sort();
+    }
+
     if (mounted) {
       setState(() {
         _nameController.text = name;
@@ -110,7 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _gender = loadedGender;
         _waterLogAmountMl = logAmount;
         _targetStepsController.text = steps.toString();
-        _targetWaterController.text = waterTarget.toStringAsFixed(1);
+        _selectedWaterTarget = normalizedWaterTarget;
+        _targetWaterController.text = _selectedWaterTarget.toStringAsFixed(1);
         _isLoading = false;
       });
     }
@@ -175,10 +196,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await prefs.setInt(PrefKeys.targetSteps, steps.clamp(1000, 100000));
 
     // 6. Target Water (Liters)
-    final waterL =
-        double.tryParse(_targetWaterController.text.trim()) ??
-        kDefaultTargetWaterLiters;
-    await prefs.setDouble(PrefKeys.targetWaterLiters, waterL.clamp(0.5, 15.0));
+    await prefs.setDouble(
+      PrefKeys.targetWaterLiters,
+      _selectedWaterTarget.clamp(0.5, 15.0),
+    );
 
     if (mounted) {
       setState(() {
@@ -229,6 +250,247 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case Gender.preferNotToSay:
         return Icons.person_outline_rounded;
     }
+  }
+
+  void _showEditStepGoalBottomSheet() {
+    HapticFeedback.lightImpact();
+    final currentSteps =
+        int.tryParse(_targetStepsController.text.trim()) ?? kDefaultTargetSteps;
+    final TextEditingController tempController = TextEditingController(
+      text: currentSteps.toString(),
+    );
+    final presets = [6000, 8000, 10000, 12000, 15000];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF2E7D32,
+                            ).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.directions_walk_rounded,
+                            color: Color(0xFF2E7D32),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Daily Step Goal',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                'Recommended: 8,000 - 10,000 steps',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: tempController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      autofocus: true,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Target Steps',
+                        hintText: 'e.g. 10000',
+                        suffixText: 'steps',
+                        suffixStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: primary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      onChanged: (_) {
+                        setSheetState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Quick Presets',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: presets.map((p) {
+                        final isSelected =
+                            tempController.text.trim() == p.toString();
+                        return GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            tempController.text = p.toString();
+                            setSheetState(() {});
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF2E7D32)
+                                  : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF2E7D32)
+                                    : Colors.transparent,
+                              ),
+                            ),
+                            child: Text(
+                              '$p steps',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF334155),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          final parsed = int.tryParse(
+                            tempController.text.trim(),
+                          );
+                          if (parsed != null &&
+                              parsed >= 1000 &&
+                              parsed <= 100000) {
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              _targetStepsController.text = parsed.toString();
+                            });
+                            Navigator.pop(sheetContext);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Please enter a valid step goal (1,000 - 100,000)',
+                                ),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          'Update Goal',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -597,72 +859,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         children: [
                           // Target Steps
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF2E7D32,
-                                  ).withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.directions_walk_rounded,
-                                  color: Color(0xFF2E7D32),
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Daily Step Goal',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                          InkWell(
+                            onTap: _showEditStepGoalBottomSheet,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF2E7D32,
+                                      ).withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    Text(
-                                      'Recommended: 8,000 - 10,000 steps',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Color(0xFF64748B),
-                                      ),
+                                    child: const Icon(
+                                      Icons.directions_walk_rounded,
+                                      color: Color(0xFF2E7D32),
+                                      size: 20,
                                     ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                width: 100,
-                                child: TextField(
-                                  controller: _targetStepsController,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.end,
-                                  decoration: InputDecoration(
-                                    suffixText: ' steps',
-                                    suffixStyle: const TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF64748B),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Daily Step Goal',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Recommended: 8,000 - 10,000 steps',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 8,
                                     ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    border: OutlineInputBorder(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8FAFC),
                                       borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(
+                                      border: Border.all(
                                         color: Colors.grey.shade200,
                                       ),
                                     ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${_targetStepsController.text.isEmpty ? '8000' : _targetStepsController.text} steps',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        const Icon(
+                                          Icons.edit_outlined,
+                                          size: 15,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12),
@@ -707,33 +982,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                width: 90,
-                                child: TextField(
-                                  controller: _targetWaterController,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  textAlign: TextAlign.end,
-                                  decoration: InputDecoration(
-                                    suffixText: ' L',
-                                    suffixStyle: const TextStyle(
-                                      fontSize: 12,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<double>(
+                                    value: _selectedWaterTarget,
+                                    icon: const Icon(
+                                      Icons.arrow_drop_down,
                                       color: Color(0xFF64748B),
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.shade200,
-                                      ),
-                                    ),
+                                    isDense: true,
+                                    borderRadius: BorderRadius.circular(12),
+                                    items: _waterTargetOptions.map((
+                                      double value,
+                                    ) {
+                                      return DropdownMenuItem<double>(
+                                        value: value,
+                                        child: Text(
+                                          '${value.toStringAsFixed(1)} L',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (double? newValue) {
+                                      if (newValue != null) {
+                                        HapticFeedback.selectionClick();
+                                        setState(() {
+                                          _selectedWaterTarget = newValue;
+                                          _targetWaterController.text = newValue
+                                              .toStringAsFixed(1);
+                                        });
+                                      }
+                                    },
                                   ),
                                 ),
                               ),
@@ -751,7 +1045,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () async {
                           await showEditGoalDialog(context);
                           _loadGoal();
-                        },  
+                        },
                         child: Row(
                           children: [
                             const Icon(Icons.flag_rounded, color: primary),
