@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a1182a94`
+- Built from commit: `6bebb6e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1730,24 +1730,24 @@ Cohesion: 0.33
 Nodes (3): getStreak, localDataSource, logActivity
 
 ## Knowledge Gaps
-- **3447 isolated node(s):** `WindowSizeClass`, `canShowTwoPanes`, `icon`, `label`, `destinations` (+3442 more)
+- **3447 isolated node(s):** `PrefKeys`, `healthSdkSharedPreferenceKey`, `isOnBoardingSharedPreferenceKey`, `userName`, `profileImagePath` (+3442 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3910 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StreakCubit` connect `StreakCubit` to `main.dart`, `sleep_cubit.dart`, `water_cubit.dart`, `nutrition_cubit.dart`, `home_widget.dart`, `weight_cubit.dart`, `Cubit`, `streak_cubit.dart`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **What connects `WindowSizeClass`, `canShowTwoPanes`, `icon` to the rest of the system?**
+- **Why does `TaskListNotifier` connect `List` to `feature_slice.dart`, `dart:async`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+- **What connects `PrefKeys`, `healthSdkSharedPreferenceKey`, `isOnBoardingSharedPreferenceKey` to the rest of the system?**
   _3447 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `spring_button_widget.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.022727272727272728 - nodes in this community are weakly interconnected._
-- **Why does `TaskListNotifier` connect `List` to `feature_slice.dart`, `dart:async`?**
+- **Why does `_WaterWidgetState` connect `water.dart` to `State`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Should `water.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.06951871657754011 - nodes in this community are weakly interconnected._
+- **Why does `ModalSheetPage` connect `model_router.dart` to `T`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **Should `nutrition_card.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
-- **Should `nutrition_model.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected._
