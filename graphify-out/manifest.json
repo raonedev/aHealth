@@ -348,9 +348,9 @@
     "semantic_hash": "abfc40d71ab22928f2dd4b7f4d7062de"
   },
   "lib/constants.dart": {
-    "mtime": 1791789933.9477258,
-    "seen": 1791960494.300884,
-    "ast_hash": "b2eb0e7ae066f18a63ce2bd11810e821",
+    "mtime": 1793178439.4591696,
+    "seen": 1793179261.228745,
+    "ast_hash": "22653c8a01e2538d57714c59fe01e091",
     "semantic_hash": ""
   },
   "lib/core/database/app_database.dart": {
@@ -2982,9 +2982,9 @@
     "semantic_hash": ""
   },
   "lib/features/workout/presentation/screens/workout_screen.dart": {
-    "mtime": 1792744457.0225668,
-    "seen": 1792755421.500349,
-    "ast_hash": "328a021e1fa646cef5475bb13efdc982",
+    "mtime": 1793187139.5798523,
+    "seen": 1793187317.604204,
+    "ast_hash": "71c8700533da2752996ef9abbf68df5d",
     "semantic_hash": ""
   },
   "lib/features/workout/presentation/widgets/body_map_widget.dart": {
@@ -3006,9 +3006,9 @@
     "semantic_hash": ""
   },
   "lib/features/workout/services/workout_service.dart": {
-    "mtime": 1792744457.0257332,
-    "seen": 1792755421.500355,
-    "ast_hash": "e9584a4f91ce9baf433a0d42dbc69f48",
+    "mtime": 1793187067.6421459,
+    "seen": 1793187317.604213,
+    "ast_hash": "514e3daff46b52aeb91c190b2f00a033",
     "semantic_hash": ""
   },
   "lib/presentation/home/widget/workout_card.dart": {
@@ -3033,6 +3033,18 @@
     "mtime": 1792744457.0170991,
     "seen": 1792755421.5007942,
     "ast_hash": "a47cfb758e781adec29df0dcf58d4c81",
+    "semantic_hash": ""
+  },
+  "assets/general_plan.json": {
+    "mtime": 1793177334.5101569,
+    "seen": 1793179261.2286131,
+    "ast_hash": "6ea68dda7fbf10fd9aa2f26216caeada",
+    "semantic_hash": ""
+  },
+  "lib/features/workout/presentation/widgets/workout_onboarding_dialog.dart": {
+    "mtime": 1793179271.9714978,
+    "seen": 1793187317.604212,
+    "ast_hash": "7f973a7daf1bbbbe3b519e2681daef24",
     "semantic_hash": ""
   }
 }

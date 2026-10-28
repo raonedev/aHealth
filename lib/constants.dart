@@ -15,6 +15,9 @@ class PrefKeys {
   static const String waterLogAmountMl = 'userWaterLogAmountMlSharedPreferenceKey';
   static const String targetSteps = 'userTargetStepsSharedPreferenceKey';
   static const String targetWaterLiters = 'userTargetWaterLitersSharedPreferenceKey';
+  static const String workoutOnboardingCompleted = 'workoutOnboardingCompletedSharedPreferenceKey';
+  static const String workoutGoal = 'workoutGoalSharedPreferenceKey';
+  static const String workoutLevel = 'workoutLevelSharedPreferenceKey';
 }
 
 const int kDefaultWaterLogAmountMl = 250;

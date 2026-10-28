@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:health/health.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../constants.dart';
 import '../models/workout_models.dart';
 
 class WorkoutService {
@@ -74,6 +75,20 @@ class WorkoutService {
     final current = await getPlanForDay(dayOfWeek);
     current.removeWhere((e) => e.id == plannedId);
     await savePlanForDay(dayOfWeek, current);
+  }
+
+  // Plan: Clear all planned exercises for a single day
+  Future<void> clearPlanForDay(int dayOfWeek) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('${_kWeeklyPlanKey}_day_$dayOfWeek');
+  }
+
+  // Plan: Clear planned exercises for the entire week
+  Future<void> clearWeeklyPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (int day = 1; day <= 7; day++) {
+      await prefs.remove('${_kWeeklyPlanKey}_day_$day');
+    }
   }
 
   // Logs: Get all logged workouts (newest first)
@@ -171,6 +186,78 @@ class WorkoutService {
     await prefs.setString(_kLogsKey, jsonEncode(logs.map((e) => e.toJson()).toList()));
 
     return newLog;
+  }
+
+  // Check if first-time workout survey/onboarding is done
+  Future<bool> isWorkoutOnboardingCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(PrefKeys.workoutOnboardingCompleted) ?? false;
+  }
+
+  // Mark first-time workout survey as completed
+  Future<void> setWorkoutOnboardingCompleted({
+    bool completed = true,
+    String? goal,
+    String? level,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(PrefKeys.workoutOnboardingCompleted, completed);
+    if (goal != null) await prefs.setString(PrefKeys.workoutGoal, goal);
+    if (level != null) await prefs.setString(PrefKeys.workoutLevel, level);
+  }
+
+  // Apply default recommended exercise plan from assets/general_plan.json
+  Future<bool> applyRecommendedPlan(String goal, String level) async {
+    try {
+      final jsonStr = await rootBundle.loadString('assets/general_plan.json');
+      final Map<String, dynamic> allPlans = jsonDecode(jsonStr);
+      final levelPlan = allPlans[goal]?[level] as Map<String, dynamic>?;
+      if (levelPlan == null) return false;
+
+      final exercises = await getExercises();
+      final exerciseMap = {for (final e in exercises) e.id: e};
+
+      const dayKeys = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ];
+
+      for (int i = 0; i < dayKeys.length; i++) {
+        final dayName = dayKeys[i];
+        final dayOfWeek = i + 1; // 1 = Mon ... 7 = Sun
+        final List ids = (levelPlan[dayName] as List?) ?? [];
+        final plannedList = <PlannedExercise>[];
+
+        for (int j = 0; j < ids.length; j++) {
+          final id = ids[j].toString();
+          final ex = exerciseMap[id];
+          if (ex != null) {
+            plannedList.add(
+              PlannedExercise(
+                id: '${DateTime.now().millisecondsSinceEpoch}_${dayOfWeek}_$j',
+                exerciseId: ex.id,
+                exerciseName: ex.name,
+                bodyPart: ex.bodyPart,
+                sets: 3,
+                reps: 10,
+                weightKg: 0.0,
+                restSeconds: 60,
+              ),
+            );
+          }
+        }
+        await savePlanForDay(dayOfWeek, plannedList);
+      }
+      return true;
+    } catch (e, s) {
+      dev.log('Error applying recommended plan', error: e, stackTrace: s);
+      return false;
+    }
   }
 
   // Delete a logged workout session

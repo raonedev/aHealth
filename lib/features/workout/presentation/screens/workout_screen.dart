@@ -8,6 +8,7 @@ import '../../services/workout_service.dart';
 import '../widgets/body_map_widget.dart';
 import '../widgets/break_timer_widget.dart';
 import '../widgets/exercise_detail_dialog.dart';
+import '../widgets/workout_onboarding_dialog.dart';
 
 class WorkoutScreen extends StatefulWidget {
   static const String routeName = '/workout';
@@ -78,7 +79,173 @@ class _WorkoutScreenState extends State<WorkoutScreen>
         _userGender = gender;
         _isLoading = false;
       });
+      _checkFirstTimeOnboarding();
     }
+  }
+
+  Future<void> _checkFirstTimeOnboarding() async {
+    final isDone = await _service.isWorkoutOnboardingCompleted();
+    if (!isDone && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final applied = await WorkoutOnboardingDialog.show(context);
+        if (applied == true && mounted) {
+          _openSurveyAndReload();
+        }
+      });
+    }
+  }
+
+  Future<void> _openSurveyAndReload() async {
+    final applied = await WorkoutOnboardingDialog.show(context);
+    final updatedPlan = await _service.getPlanForDay(_selectedDay);
+    if (mounted) {
+      setState(() => _currentPlan = updatedPlan);
+      if (applied == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Recommended workout routine loaded!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showResetOptions() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Reset & Reload Plan',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Re-load recommended exercises or clear your existing routine.',
+              style: TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.auto_awesome, color: Colors.blue.shade700, size: 20),
+              ),
+              title: const Text('Retake Survey & Reload Plan', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Re-answer goal & fitness level to regenerate your schedule', style: TextStyle(fontSize: 12)),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _openSurveyAndReload();
+              },
+            ),
+            const Divider(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.today, color: Colors.orange.shade700, size: 20),
+              ),
+              title: Text('Clear ${_dayNames[_selectedDay - 1]}\'s Plan', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Remove exercises for the selected day only', style: TextStyle(fontSize: 12)),
+              onTap: () async {
+                Navigator.pop(sheetCtx);
+                await _service.clearPlanForDay(_selectedDay);
+                final updatedPlan = await _service.getPlanForDay(_selectedDay);
+                if (mounted) {
+                  setState(() => _currentPlan = updatedPlan);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${_dayNames[_selectedDay - 1]}\'s plan cleared.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            ),
+            const Divider(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.delete_sweep_rounded, color: Colors.red.shade700, size: 20),
+              ),
+              title: const Text('Clear Entire Weekly Plan', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red)),
+              subtitle: const Text('Remove all planned exercises from Mon to Sun', style: TextStyle(fontSize: 12)),
+              onTap: () async {
+                Navigator.pop(sheetCtx);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (dlgCtx) => AlertDialog(
+                    title: const Text('Clear All Plans?'),
+                    content: const Text(
+                      'This will delete all scheduled exercises for the entire week. You can reload recommendations anytime.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dlgCtx, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dlgCtx, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Clear All'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true && mounted) {
+                  await _service.clearWeeklyPlan();
+                  final updatedPlan = await _service.getPlanForDay(_selectedDay);
+                  if (mounted) {
+                    setState(() => _currentPlan = updatedPlan);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('All weekly plans cleared.'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _changeDay(int day) async {
@@ -161,6 +328,11 @@ class _WorkoutScreenState extends State<WorkoutScreen>
               color: _hasHealthPermission ? Colors.green : Colors.orange,
             ),
             onPressed: _requestHealthPerm,
+          ),
+          IconButton(
+            tooltip: 'Reset & Reload Plan',
+            icon: const Icon(Icons.restart_alt_rounded, color: Colors.black87),
+            onPressed: _showResetOptions,
           ),
         ],
         bottom: TabBar(
@@ -411,19 +583,38 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                       color: Colors.grey.shade700,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => _tabController.animateTo(1),
+                        child: const Text(
+                          'Browse & Add',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                    ),
-                    onPressed: () => _tabController.animateTo(1),
-                    child: const Text(
-                      'Browse & Add to Plan',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.auto_awesome, size: 16),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.black87,
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _openSurveyAndReload,
+                        label: const Text('Load Recommendations'),
+                      ),
+                    ],
                   ),
                 ],
               ),

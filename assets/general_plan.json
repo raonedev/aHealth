@@ -1,0 +1,503 @@
+{
+    "build_muscle": {
+        "beginner": {
+            "monday": [
+                "0493",
+                "0308",
+                "0289",
+                "0334",
+                "1723",
+                "drv-bench-dips"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "0198",
+                "0293",
+                "0208",
+                "0294",
+                "0320",
+                "0573"
+            ],
+            "thursday": [],
+            "friday": [
+                "1760",
+                "0300",
+                "0336",
+                "0585",
+                "0599",
+                "0417"
+            ],
+            "saturday": [
+                "0464",
+                "drv-sit-up",
+                "0872",
+                "0705"
+            ],
+            "sunday": []
+        },
+        "intermediate": {
+            "monday": [
+                "0025",
+                "0047",
+                "0314",
+                "drv-chest-dips",
+                "0200",
+                "0061"
+            ],
+            "tuesday": [
+                "drv-chin-ups-pull-ups",
+                "0027",
+                "drv-lever-t-bar-row",
+                "0031",
+                "0322"
+            ],
+            "wednesday": [
+                "1435",
+                "0116",
+                "0054",
+                "2611",
+                "0586",
+                "0605"
+            ],
+            "thursday": [],
+            "friday": [
+                "0553",
+                "2137",
+                "0334",
+                "0602",
+                "0095",
+                "0437"
+            ],
+            "saturday": [
+                "0474",
+                "drv-v-up",
+                "0226",
+                "0985"
+            ],
+            "sunday": []
+        },
+        "advanced": {
+            "monday": [
+                "0025",
+                "0033",
+                "0047",
+                "0301",
+                "drv-chest-dips",
+                "1274",
+                "0030"
+            ],
+            "tuesday": [
+                "1429",
+                "0027",
+                "drv-lever-t-bar-row",
+                "0248",
+                "2327",
+                "0651"
+            ],
+            "wednesday": [
+                "1435",
+                "0042",
+                "0116",
+                "0743",
+                "0851",
+                "0411",
+                "0605"
+            ],
+            "thursday": [
+                "drv-barbell-seated-behind-head-military-press",
+                "0553",
+                "2137",
+                "0123",
+                "0075",
+                "2407",
+                "0061"
+            ],
+            "friday": [
+                "0028",
+                "0300",
+                "0054",
+                "drv-commando-pull-up"
+            ],
+            "saturday": [
+                "0796",
+                "drv-otis-ups",
+                "0474",
+                "drv-v-up",
+                "0562"
+            ],
+            "sunday": []
+        }
+    },
+    "lose_fat": {
+        "beginner": {
+            "monday": [
+                "2141",
+                "1760",
+                "drv-push-ups",
+                "0464",
+                "new-low-impact-jumping-jack"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "2138",
+                "0293",
+                "0336",
+                "drv-hip-raise-bridge",
+                "0872"
+            ],
+            "thursday": [],
+            "friday": [
+                "drv-treadmill-running",
+                "0413",
+                "0493",
+                "0705",
+                "2612"
+            ],
+            "saturday": [
+                "drv-walk-wave-machine",
+                "1511",
+                "1585",
+                "0257"
+            ],
+            "sunday": []
+        },
+        "intermediate": {
+            "monday": [
+                "1160",
+                "2612",
+                "1760",
+                "drv-push-ups",
+                "0474"
+            ],
+            "tuesday": [
+                "drv-running",
+                "0054",
+                "0293",
+                "drv-v-up"
+            ],
+            "wednesday": [
+                "0128",
+                "drv-jump-step-up",
+                "1274",
+                "0226"
+            ],
+            "thursday": [],
+            "friday": [
+                "drv-treadmill-running",
+                "1435",
+                "drv-chin-ups-pull-ups",
+                "0985"
+            ],
+            "saturday": [
+                "2138",
+                "1160",
+                "0562",
+                "0705"
+            ],
+            "sunday": []
+        },
+        "advanced": {
+            "monday": [
+                "1160",
+                "0028",
+                "2612",
+                "1274",
+                "0054",
+                "0474"
+            ],
+            "tuesday": [
+                "drv-running",
+                "1435",
+                "1429",
+                "drv-v-up",
+                "0796"
+            ],
+            "wednesday": [
+                "0128",
+                "0411",
+                "drv-commando-pull-up",
+                "drv-otis-ups"
+            ],
+            "thursday": [],
+            "friday": [
+                "1160",
+                "0028",
+                "drv-jump-step-up",
+                "0562",
+                "0851"
+            ],
+            "saturday": [
+                "drv-treadmill-running",
+                "2612",
+                "0025",
+                "0474"
+            ],
+            "sunday": []
+        }
+    },
+    "improve_strength": {
+        "beginner": {
+            "monday": [
+                "1760",
+                "0289",
+                "0293",
+                "0464"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "0300",
+                "0493",
+                "0198",
+                "0705"
+            ],
+            "thursday": [],
+            "friday": [
+                "0413",
+                "0577",
+                "0208",
+                "drv-hip-raise-bridge"
+            ],
+            "saturday": [],
+            "sunday": []
+        },
+        "intermediate": {
+            "monday": [
+                "1435",
+                "0025",
+                "0027",
+                "0464"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "0553",
+                "drv-chin-ups-pull-ups",
+                "0116",
+                "0030"
+            ],
+            "thursday": [],
+            "friday": [
+                "0042",
+                "0047",
+                "drv-lever-t-bar-row",
+                "0474"
+            ],
+            "saturday": [],
+            "sunday": []
+        },
+        "advanced": {
+            "monday": [
+                "1435",
+                "0025",
+                "0027",
+                "0796"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "0028",
+                "1429",
+                "0116",
+                "0030"
+            ],
+            "thursday": [],
+            "friday": [
+                "0042",
+                "0047",
+                "drv-commando-pull-up",
+                "drv-barbell-seated-behind-head-military-press",
+                "drv-otis-ups"
+            ],
+            "saturday": [
+                "0851",
+                "0411",
+                "0562"
+            ],
+            "sunday": []
+        }
+    },
+    "improve_endurance": {
+        "beginner": {
+            "monday": [
+                "drv-running",
+                "0464"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "2138",
+                "drv-squat",
+                "drv-push-ups"
+            ],
+            "thursday": [],
+            "friday": [
+                "2141",
+                "0336",
+                "0705"
+            ],
+            "saturday": [
+                "drv-walk-wave-machine",
+                "1511"
+            ],
+            "sunday": []
+        },
+        "intermediate": {
+            "monday": [
+                "drv-running",
+                "2612",
+                "0464"
+            ],
+            "tuesday": [
+                "2138",
+                "1760",
+                "drv-push-ups",
+                "0705"
+            ],
+            "wednesday": [],
+            "thursday": [
+                "drv-treadmill-running",
+                "1160",
+                "0293"
+            ],
+            "friday": [
+                "0128",
+                "drv-jump-step-up",
+                "drv-v-up"
+            ],
+            "saturday": [
+                "2141",
+                "1585",
+                "1511"
+            ],
+            "sunday": []
+        },
+        "advanced": {
+            "monday": [
+                "drv-running",
+                "1160",
+                "2612",
+                "0796"
+            ],
+            "tuesday": [
+                "0128",
+                "0054",
+                "1429",
+                "drv-v-up"
+            ],
+            "wednesday": [
+                "2138",
+                "0411",
+                "1274",
+                "0562"
+            ],
+            "thursday": [],
+            "friday": [
+                "drv-treadmill-running",
+                "0028",
+                "drv-jump-step-up",
+                "drv-otis-ups"
+            ],
+            "saturday": [
+                "drv-running",
+                "1160",
+                "0474"
+            ],
+            "sunday": []
+        }
+    },
+    "general_fitness": {
+        "beginner": {
+            "monday": [
+                "2141",
+                "drv-squat",
+                "drv-push-ups",
+                "0464"
+            ],
+            "tuesday": [],
+            "wednesday": [
+                "2138",
+                "0293",
+                "0336",
+                "0872"
+            ],
+            "thursday": [],
+            "friday": [
+                "drv-running",
+                "1760",
+                "0493",
+                "0705"
+            ],
+            "saturday": [
+                "1511",
+                "1585",
+                "1494",
+                "0257"
+            ],
+            "sunday": []
+        },
+        "intermediate": {
+            "monday": [
+                "1435",
+                "0025",
+                "drv-chin-ups-pull-ups",
+                "0464"
+            ],
+            "tuesday": [
+                "drv-running",
+                "2612"
+            ],
+            "wednesday": [],
+            "thursday": [
+                "0553",
+                "0054",
+                "0027",
+                "drv-v-up"
+            ],
+            "friday": [
+                "1160",
+                "drv-jump-step-up",
+                "1274",
+                "0705"
+            ],
+            "saturday": [
+                "2138",
+                "1511",
+                "1585",
+                "1363"
+            ],
+            "sunday": []
+        },
+        "advanced": {
+            "monday": [
+                "1435",
+                "0025",
+                "1429",
+                "0796"
+            ],
+            "tuesday": [
+                "drv-running",
+                "1160",
+                "2612"
+            ],
+            "wednesday": [
+                "0028",
+                "0116",
+                "drv-commando-pull-up",
+                "drv-otis-ups"
+            ],
+            "thursday": [],
+            "friday": [
+                "0042",
+                "0047",
+                "0027",
+                "0474",
+                "0562"
+            ],
+            "saturday": [
+                "0128",
+                "0411",
+                "drv-treadmill-running",
+                "1585",
+                "1511"
+            ],
+            "sunday": []
+        }
+    }
+}
