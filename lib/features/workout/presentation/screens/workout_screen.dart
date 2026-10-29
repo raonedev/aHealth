@@ -670,6 +670,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
   }
 
   Widget _buildPlanCard(PlannedExercise planned) {
+    final isLogged = _isPlannedExerciseLogged(planned);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -767,10 +768,12 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Log directly',
-                  icon: const Icon(
+                  tooltip: isLogged
+                      ? 'Completed this week (tap to re-log)'
+                      : 'Not logged yet (tap to log)',
+                  icon: Icon(
                     Icons.check_circle,
-                    color: Colors.green,
+                    color: isLogged ? Colors.green : Colors.grey.shade400,
                     size: 28,
                   ),
                   onPressed: () => _logPlannedExercise(planned),
@@ -828,6 +831,26 @@ class _WorkoutScreenState extends State<WorkoutScreen>
         );
       }
     }
+  }
+
+  bool _isPlannedExerciseLogged(PlannedExercise planned) {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
+    final targetDate = startOfWeek.add(Duration(days: _selectedDay - 1));
+    final plannedName = planned.exerciseName.trim().toLowerCase();
+
+    return _workoutLogs.any((l) {
+      final matchesName = l.exerciseName.trim().toLowerCase() == plannedName;
+      if (!matchesName) return false;
+
+      return l.date.year == targetDate.year &&
+          l.date.month == targetDate.month &&
+          l.date.day == targetDate.day;
+    });
   }
 
   void _logPlannedExercise(PlannedExercise planned) {
@@ -1051,6 +1074,25 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                         onPressed: () async {
                           final messenger = ScaffoldMessenger.of(context);
                           if (ctx.mounted) Navigator.pop(ctx);
+
+                          final now = DateTime.now();
+                          final startOfWeek = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                          ).subtract(Duration(days: now.weekday - 1));
+                          final targetDate = startOfWeek.add(Duration(days: _selectedDay - 1));
+                          final logDate = _selectedDay == now.weekday
+                              ? now
+                              : DateTime(
+                                  targetDate.year,
+                                  targetDate.month,
+                                  targetDate.day,
+                                  now.hour,
+                                  now.minute,
+                                  now.second,
+                                );
+
                           final log = await _service.logWorkout(
                             exerciseName: planned.exerciseName,
                             bodyPart: planned.bodyPart,
@@ -1059,6 +1101,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                             weightKg: weight,
                             durationMinutes: duration,
                             caloriesBurned: calories,
+                            date: logDate,
                             syncHealthConnect: syncHealthConnect,
                           );
                           await _loadInitialData();
