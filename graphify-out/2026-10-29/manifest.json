@@ -1,9 +1,9 @@
 {
   ".vscode/settings.json": {
-    "mtime": 1790667903.7028072,
-    "seen": 1791276438.1025338,
-    "ast_hash": "c99fac04fc4951593758bf341223b5c4",
-    "semantic_hash": "c99fac04fc4951593758bf341223b5c4"
+    "mtime": 1793260899.656878,
+    "seen": 1793263522.529865,
+    "ast_hash": "984441b63aac9ff045365a86ad3c69c9",
+    "semantic_hash": ""
   },
   "android/app/build.gradle.kts": {
     "mtime": 1790828861.4863544,
@@ -2982,9 +2982,9 @@
     "semantic_hash": ""
   },
   "lib/features/workout/presentation/screens/workout_screen.dart": {
-    "mtime": 1793187456.9271822,
-    "seen": 1793189012.599234,
-    "ast_hash": "71c8700533da2752996ef9abbf68df5d",
+    "mtime": 1793263573.3436317,
+    "seen": 1793263595.555112,
+    "ast_hash": "9376f9d14be2c04086f433cd603485ff",
     "semantic_hash": ""
   },
   "lib/features/workout/presentation/widgets/body_map_widget.dart": {
