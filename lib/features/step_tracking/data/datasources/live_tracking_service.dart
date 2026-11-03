@@ -28,7 +28,7 @@ class LiveTracking {
       }
       if (!await _la.areActivitiesEnabled()) return;
       final data = <String, dynamic>{
-        'title': running ? 'aHealth is tracking' : 'Tracking paused',
+        'title': running ? 'Docto is tracking' : 'Tracking paused',
         'distance': text,
         'elapsedText': _fmt(elapsed),
         'startMs': DateTime.now()
