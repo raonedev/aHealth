@@ -12,10 +12,10 @@
     "semantic_hash": "80dbcc7bed75f8cd310ee9e1605c5663"
   },
   "android/app/src/main/kotlin/dev/raone/ahealth/MainActivity.kt": {
-    "mtime": 1785309485.4376273,
-    "seen": 1791276438.102539,
-    "ast_hash": "74a70dc3f85ffd8c065718fdfced58b0",
-    "semantic_hash": "74a70dc3f85ffd8c065718fdfced58b0"
+    "mtime": 1793701165.3752303,
+    "seen": 1793701701.002815,
+    "ast_hash": "6d18501d057ae6e8b3d5bf87c8e22878",
+    "semantic_hash": ""
   },
   "android/build.gradle.kts": {
     "mtime": 1785309485.4429066,
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "lib/features/step_tracking/data/repositories/tracking_repository_impl.dart": {
-    "mtime": 1791353364.7931097,
-    "seen": 1791353540.613826,
-    "ast_hash": "fe13b533e15a3cda4f3ae3941118eea4",
+    "mtime": 1793700075.5356576,
+    "seen": 1793701701.0029492,
+    "ast_hash": "e8d2a18cdd81ac85d273acccb4ac5b88",
     "semantic_hash": ""
   },
   "lib/features/step_tracking/domain/entities/activity.dart": {
@@ -498,9 +498,9 @@
     "semantic_hash": "52ec1086e76788882226344230cbf1fc"
   },
   "lib/features/step_tracking/presentation/viewmodels/tracking_cubit.dart": {
-    "mtime": 1791354194.2461448,
-    "seen": 1791960494.300927,
-    "ast_hash": "120f3249214b4180f187ab03774abffd",
+    "mtime": 1793700757.0619826,
+    "seen": 1793701701.0029619,
+    "ast_hash": "817c12292de768ed9246473ecf606e6c",
     "semantic_hash": ""
   },
   "lib/features/step_tracking/presentation/viewmodels/tracking_state.dart": {
@@ -2628,9 +2628,9 @@
     "semantic_hash": ""
   },
   "pubspec.yaml": {
-    "mtime": 1793690240.2895925,
-    "seen": 1793697882.331382,
-    "ast_hash": "ab4d3b81ac48569184fa198d0a1d02fc",
+    "mtime": 1793701042.2340136,
+    "seen": 1793701701.0034401,
+    "ast_hash": "11a2013f0cd45c4c8505e3309bcaba81",
     "semantic_hash": ""
   },
   "repomix-output.md": {
@@ -3045,6 +3045,18 @@
     "mtime": 1793179271.9714978,
     "seen": 1793187317.604212,
     "ast_hash": "7f973a7daf1bbbbe3b519e2681daef24",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/kotlin/dev/raone/ahealth/CustomLiveActivityManager.kt": {
+    "mtime": 1793701133.8240886,
+    "seen": 1793701701.002812,
+    "ast_hash": "6dc71ef950f7ecc8bc1c6a419ae8ebd3",
+    "semantic_hash": ""
+  },
+  "lib/features/step_tracking/data/datasources/live_tracking_service.dart": {
+    "mtime": 1793701272.702329,
+    "seen": 1793701701.0029418,
+    "ast_hash": "95a0e4432f94124b25b69021f4796b14",
     "semantic_hash": ""
   }
 }
