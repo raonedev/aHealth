@@ -106,7 +106,6 @@ class _HomeWidgetState extends State<HomeWidget> {
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
-        
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
@@ -222,7 +221,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         BlocBuilder<StreakCubit, StreakState>(
           builder: (context, state) {
             final count = state is StreakLoaded
-                ? state.streak.longestStreak
+                ? state.streak.currentStreak
                 : 0;
             return SpringButton(
               SpringButtonType.withOpacity,
