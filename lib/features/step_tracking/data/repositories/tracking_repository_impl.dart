@@ -20,7 +20,7 @@ class TrackingRepositoryImpl implements TrackingRepository {
             distanceFilter: 5,
             intervalDuration: const Duration(seconds: 3),
             foregroundNotificationConfig: const ForegroundNotificationConfig(
-              notificationTitle: "aHealth is tracking",
+              notificationTitle: "DOCTO is tracking",
               notificationText: "Recording your activity in the background",
               enableWakeLock: true,
             ),

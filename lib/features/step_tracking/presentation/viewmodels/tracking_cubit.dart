@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
+import '../../data/datasources/live_tracking_service.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/location_point.dart';
 import '../../domain/usecases/get_location_stream.dart';
@@ -77,6 +78,7 @@ class TrackingCubit extends Cubit<TrackingState> {
           elapsed: Duration.zero,
         ),
       );
+      _live(); // live update
     });
   }
 
@@ -119,6 +121,7 @@ class TrackingCubit extends Cubit<TrackingState> {
     _saveIntervalData(point);
 
     _emitActive();
+    _live(); // live update
   }
 
   Future<void> _saveIntervalData(LocationPoint point) async {
@@ -151,6 +154,20 @@ class TrackingCubit extends Cubit<TrackingState> {
     return (distanceMeters / 1000) * 60;
   }
 
+  String _fmtDistance(double m) {
+    final meters = m.round();
+    if (meters < 1000) return '$meters m';
+    final km = meters ~/ 1000;
+    final rem = meters % 1000;
+    return rem == 0 ? '$km km' : '$km km $rem m';
+  }
+
+  void _live({bool running = true}) => LiveTracking.show(
+    text: _fmtDistance(_distance),
+    elapsed: _elapsed,
+    running: running,
+  );
+
   void _emitActive() {
     if (state is TrackingPaused) return;
     emit(
@@ -166,6 +183,7 @@ class TrackingCubit extends Cubit<TrackingState> {
     _sub?.pause();
     _timer?.cancel();
     _syncActiveSession();
+    _live(running: false); // live update
     emit(
       TrackingPaused(
         points: List.unmodifiable(_points),
@@ -190,6 +208,7 @@ class TrackingCubit extends Cubit<TrackingState> {
         elapsed: _elapsed,
       ),
     );
+    _live(); // live update
   }
 
   Future<void> stop({
@@ -198,6 +217,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   }) async {
     _sub?.cancel();
     _timer?.cancel();
+    LiveTracking.stop(); // live update
 
     _currentType = type;
     final finalCalories = calories > 0
@@ -229,6 +249,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   Future<void> close() {
     _sub?.cancel();
     _timer?.cancel();
+    LiveTracking.stop(); // live update
     return super.close();
   }
 }

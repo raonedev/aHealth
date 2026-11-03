@@ -82,6 +82,8 @@ dependencies:
   speech_to_text: ^7.4.0
   video_player: ^2.14.1
   cached_network_image: ^4.0.5
+  device_info_plus: ^13.3.0
+  live_activities: ^2.6.0
 
 dev_dependencies:
   flutter_test:
