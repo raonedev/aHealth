@@ -3058,5 +3058,41 @@
     "seen": 1793701701.0029418,
     "ast_hash": "95a0e4432f94124b25b69021f4796b14",
     "semantic_hash": ""
+  },
+  "ios/TrackingWidget/Assets.xcassets/AccentColor.colorset/Contents.json": {
+    "mtime": 1793702556.0387115,
+    "seen": 1793705357.275996,
+    "ast_hash": "55019f7265dde0a78318b0807f98e847",
+    "semantic_hash": ""
+  },
+  "ios/TrackingWidget/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1793702558.505803,
+    "seen": 1793705357.2759979,
+    "ast_hash": "cbe75704b2680422c4156009a528e292",
+    "semantic_hash": ""
+  },
+  "ios/TrackingWidget/Assets.xcassets/Contents.json": {
+    "mtime": 1793702556.0413353,
+    "seen": 1793705357.276,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "ios/TrackingWidget/Assets.xcassets/WidgetBackground.colorset/Contents.json": {
+    "mtime": 1793702556.0344446,
+    "seen": 1793705357.276001,
+    "ast_hash": "55019f7265dde0a78318b0807f98e847",
+    "semantic_hash": ""
+  },
+  "ios/TrackingWidget/TrackingLiveActivity.swift": {
+    "mtime": 1793703311.2399926,
+    "seen": 1793705357.2760031,
+    "ast_hash": "5d0c62b9386258f591864372c4e2ea53",
+    "semantic_hash": ""
+  },
+  "ios/TrackingWidget/TrackingWidgetBundle.swift": {
+    "mtime": 1793703329.2955186,
+    "seen": 1793705357.276005,
+    "ast_hash": "34cdc7d5931c0043a53a71688350cf22",
+    "semantic_hash": ""
   }
 }
