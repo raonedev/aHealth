@@ -3054,9 +3054,9 @@
     "semantic_hash": ""
   },
   "lib/features/step_tracking/data/datasources/live_tracking_service.dart": {
-    "mtime": 1793701272.702329,
-    "seen": 1793701701.0029418,
-    "ast_hash": "95a0e4432f94124b25b69021f4796b14",
+    "mtime": 1793706459.7454915,
+    "seen": 1793706477.8280268,
+    "ast_hash": "53c03a29bccd767b518c1e28d416bbf4",
     "semantic_hash": ""
   },
   "ios/TrackingWidget/Assets.xcassets/AccentColor.colorset/Contents.json": {
