@@ -82,8 +82,7 @@ lib/features/workout/
 - **Local Weekly Plan**: Keyed in `SharedPreferences` by `workout_weekly_plan`. Allows getting, adding, and removing planned exercises per day of the week.
 - **Local Workout Logs**: Keyed in `SharedPreferences` by `workout_logs_history`. Stores session records in descending chronological order.
 - **Health Connect Integration**:
-  - Checks authorization with `Health().hasPermissions([HealthDataType.WORKOUT])`.
-  - Requests permissions via `Health().requestAuthorization(...)`.
+  - Checks and requests `HealthDataAccess.WRITE` for `HealthDataType.WORKOUT`; it does not read Health Connect exercise records.
   - Writes strength training sessions using `Health().writeWorkoutData(...)` with activity type `TRADITIONAL_STRENGTH_TRAINING`, start/end timestamps, energy burned in kcal, and exercise title.
 - **Log Management**: Supports `updateWorkoutLog` and `deleteWorkoutLog` for full user control over past sessions.
 
@@ -156,7 +155,7 @@ Configured with a scrollable `TabBar` (`isScrollable: true, tabAlignment: TabAli
 ### Manifest Configuration (`android/app/src/main/AndroidManifest.xml`)
 ```xml
 <!-- Health Connect Permissions -->
-<uses-permission android:name="android.permission.health.READ_EXERCISE"/>
+<!-- Workout sessions are written to Health Connect; the app does not read them. -->
 <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
 
 <queries>

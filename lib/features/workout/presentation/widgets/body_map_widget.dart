@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -55,7 +57,8 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
   @override
   void didUpdateWidget(covariant BodyMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedTarget != widget.selectedTarget && widget.selectedTarget != null) {
+    if (oldWidget.selectedTarget != widget.selectedTarget &&
+        widget.selectedTarget != null) {
       if (_isBackTarget(widget.selectedTarget)) {
         _showBack = true;
       } else {
@@ -82,24 +85,43 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
           _cachedBackSvg = back;
         });
       }
-    } catch (_) {}
+    } on Exception catch (error, stackTrace) {
+      dev.log(
+        'Unable to load body map assets',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   static String? _targetToSvgId(String? target) {
     if (target == null) return null;
     final t = target.toLowerCase().trim();
     if (t.contains('chest') || t.contains('pectoral')) return 'chest';
-    if (t.contains('abdom') || t.contains('abs') || t.contains('rectus') || t.contains('core')) {
+    if (t.contains('abdom') ||
+        t.contains('abs') ||
+        t.contains('rectus') ||
+        t.contains('core')) {
       return 'abdominals';
     }
     if (t.contains('oblique')) return 'obliques';
     if (t.contains('bicep')) return 'biceps';
     if (t.contains('tricep')) return 'triceps';
-    if (t.contains('rear delt') || t.contains('posterior delt')) return 'rear-shoulders';
+    if (t.contains('rear delt') || t.contains('posterior delt')) {
+      return 'rear-shoulders';
+    }
     if (t.contains('delt') || t.contains('shoulder')) return 'front-shoulders';
-    if (t.contains('trap') || t.contains('rhomboid') || t.contains('upper back')) return 'traps';
+    if (t.contains('trap') ||
+        t.contains('rhomboid') ||
+        t.contains('upper back')) {
+      return 'traps';
+    }
     if (t.contains('lat') || t.contains('middle back')) return 'lats';
-    if (t.contains('erector') || t.contains('lower back') || t.contains('spine')) return 'lowerback';
+    if (t.contains('erector') ||
+        t.contains('lower back') ||
+        t.contains('spine')) {
+      return 'lowerback';
+    }
     if (t.contains('glute')) return 'glutes';
     if (t.contains('hamstring')) return 'hamstrings';
     if (t.contains('quad')) return 'quads';
@@ -131,7 +153,10 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
         .replaceAll('class="hidden"', 'display="none"');
 
     // 2. Colorize all bodymap muscle groups (<g class="bodymap..." ...>)
-    final groupRegex = RegExp(r'<g\s+([^>]*?)class="bodymap[^"]*"([^>]*?)>(.*?)</g>', dotAll: true);
+    final groupRegex = RegExp(
+      r'<g\s+([^>]*?)class="bodymap[^"]*"([^>]*?)>(.*?)</g>',
+      dotAll: true,
+    );
     result = result.replaceAllMapped(groupRegex, (m) {
       final prefix = m.group(1) ?? '';
       final suffix = m.group(2) ?? '';
@@ -140,9 +165,11 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
       final idMatch = RegExp(r'id="([^"]+)"').firstMatch(attrs);
       final id = idMatch?.group(1);
 
-      final isSelected = activeId != null &&
+      final isSelected =
+          activeId != null &&
           (id == activeId ||
-              (activeId == 'traps' && (id == 'traps' || id == 'traps-middle')) ||
+              (activeId == 'traps' &&
+                  (id == 'traps' || id == 'traps-middle')) ||
               (activeId == 'front-shoulders' && id == 'front-shoulders') ||
               (activeId == 'rear-shoulders' && id == 'rear-shoulders'));
 
@@ -213,7 +240,10 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
                         borderRadius: BorderRadius.circular(8),
                         onTap: () => widget.onTargetSelected(null),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red.shade50,
                             borderRadius: BorderRadius.circular(8),
@@ -292,10 +322,7 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
                     alignment: Alignment.center,
                     children: [
                       if (processedSvg != null)
-                        SvgPicture.string(
-                          processedSvg,
-                          fit: BoxFit.contain,
-                        )
+                        SvgPicture.string(processedSvg, fit: BoxFit.contain)
                       else
                         const Center(
                           child: SizedBox(
@@ -307,7 +334,10 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
                       Positioned(
                         bottom: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(8),
@@ -315,10 +345,16 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.sync, size: 10, color: Colors.black54),
+                              const Icon(
+                                Icons.sync,
+                                size: 10,
+                                color: Colors.black54,
+                              ),
                               const SizedBox(width: 3),
                               Text(
-                                _showBack ? 'Back (Tap to flip)' : 'Front (Tap to flip)',
+                                _showBack
+                                    ? 'Back (Tap to flip)'
+                                    : 'Front (Tap to flip)',
                                 style: const TextStyle(
                                   fontSize: 8,
                                   fontWeight: FontWeight.w600,
@@ -359,7 +395,9 @@ class _BodyMapWidgetState extends State<BodyMapWidget> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
-                          color: isSel ? const Color(0xFFEF4444) : Colors.transparent,
+                          color: isSel
+                              ? const Color(0xFFEF4444)
+                              : Colors.transparent,
                         ),
                       ),
                       onSelected: (selected) {

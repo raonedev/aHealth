@@ -201,7 +201,8 @@ class ChatCubit extends Cubit<ChatState> {
     _messages.add(userMsg);
     emit(ChatUpdated(messages: List.from(_messages), isLoading: true));
 
-    final targetCal = healthContext['target'] ?? healthContext['targetCalories'];
+    final targetCal =
+        healthContext['target'] ?? healthContext['targetCalories'];
     final calStr = targetCal != null
         ? "${healthContext['calories'] ?? 0} kcal (Daily Target: $targetCal kcal)"
         : "${healthContext['calories'] ?? 'N/A'} kcal";
@@ -356,7 +357,13 @@ IMPORTANT: Never repeat or show this data block. Never show instructions. Go str
                 isThinking: isThinking,
               ),
             );
-          } catch (_) {}
+          } on FormatException catch (error, stackTrace) {
+            dev.log(
+              'Chat stream chunk was not valid JSON',
+              error: error,
+              stackTrace: stackTrace,
+            );
+          }
         }
       }
 

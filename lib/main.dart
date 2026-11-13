@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:ahealth/app_routes.dart';
 import 'package:ahealth/apptheme.dart';
 import 'package:ahealth/blocs/charts/calorie_chart/calorie_chart_cubit.dart';
@@ -5,6 +7,7 @@ import 'package:ahealth/features/streak/presentation/cubit/streak_cubit.dart';
 import 'package:ahealth/services/chat_hive_service.dart';
 import 'package:ahealth/services/nutrition_service.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter/foundation.dart';
 import 'blocs/charts/nutrient_chart/nutrient_chart_cubit.dart';
 import 'blocs/charts/sleep_chart/sleep_chart_cubit.dart';
 import 'blocs/charts/step_chart/step_chart_cubit.dart';
@@ -46,39 +49,105 @@ import 'presentation/nutririon/nutrition_group/models/food_scan_group_model.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _installErrorHandlers();
+  Bloc.observer = _AppBlocObserver();
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  try {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
-  // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
-  //   await FlutterForegroundTask.requestNotificationPermission();
-  // }
-  await Hive.initFlutter(); // Initialize Hive for Flutter
-  Hive.registerAdapter(FoodsAdapter()); // Register the Foods adapter
-  Hive.registerAdapter(FoodWithServingsModelAdapter());
-  Hive.registerAdapter(FoodAdapter());
-  Hive.registerAdapter(ServingsAdapter());
-  Hive.registerAdapter(ServingAdapter());
-  Hive.registerAdapter(ChatMessageAdapter());
-  Hive.registerAdapter(ChatSessionAdapter());
-  await setupLocator();
-  await ChatHiveService.instance.openBoxes();
+    // if (await FlutterForegroundTask.checkNotificationPermission() != NotificationPermission.granted) {
+    //   await FlutterForegroundTask.requestNotificationPermission();
+    // }
+    await Hive.initFlutter(); // Initialize Hive for Flutter
+    Hive.registerAdapter(FoodsAdapter()); // Register the Foods adapter
+    Hive.registerAdapter(FoodWithServingsModelAdapter());
+    Hive.registerAdapter(FoodAdapter());
+    Hive.registerAdapter(ServingsAdapter());
+    Hive.registerAdapter(ServingAdapter());
+    Hive.registerAdapter(ChatMessageAdapter());
+    Hive.registerAdapter(ChatSessionAdapter());
+    await setupLocator();
+    await ChatHiveService.instance.openBoxes();
 
-  Hive.registerAdapter(FoodScanGroupAdapter());
-  Hive.registerAdapter(ValueFoodHiveAdapter());
-  await NutritionService.init();
+    Hive.registerAdapter(FoodScanGroupAdapter());
+    Hive.registerAdapter(ValueFoodHiveAdapter());
+    await NutritionService.init();
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    // Make the status bar transparent (or use your preferred color)
-    statusBarIconBrightness: Brightness.dark,
-    // Makes the icons black
-    statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
-  ));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        // Make the status bar transparent (or use your preferred color)
+        statusBarIconBrightness: Brightness.dark,
+        // Makes the icons black
+        statusBarBrightness: Brightness.light, // For iOS: ensures compatibility
+      ),
+    );
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  } on Exception catch (error, stackTrace) {
+    _logError('App initialization failed', error, stackTrace);
+    runApp(const _InitializationFailureApp());
+  }
+}
+
+void _installErrorHandlers() {
+  FlutterError.onError = (details) {
+    try {
+      FlutterError.presentError(details);
+      _logError(
+        'Flutter framework error',
+        details.exception,
+        details.stack ?? StackTrace.current,
+      );
+    } catch (_) {
+      // Error reporting must not recursively fail inside an error handler.
+    }
+  };
+
+  PlatformDispatcher.instance.onError = (error, stackTrace) {
+    try {
+      _logError('Uncaught asynchronous error', error, stackTrace);
+    } catch (_) {
+      // Error reporting must not recursively fail inside an error handler.
+    }
+    return true;
+  };
+}
+
+void _logError(String context, Object error, StackTrace stackTrace) {
+  debugPrint('$context: $error\n$stackTrace');
+}
+
+class _AppBlocObserver extends BlocObserver {
+  @override
+  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+    _logError('${bloc.runtimeType} error', error, stackTrace);
+    super.onError(bloc, error, stackTrace);
+  }
+}
+
+class _InitializationFailureApp extends StatelessWidget {
+  const _InitializationFailureApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'The app could not start. Please close and reopen it.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

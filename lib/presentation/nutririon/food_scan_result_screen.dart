@@ -362,9 +362,20 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
               : () async {
                   setState(() => _logging = true);
 
-                  await context.read<NutritionCubit>().addMultipleNutritionData(
-                    selectedFoods: selectedFoods,
-                  );
+                  final logged = await context
+                      .read<NutritionCubit>()
+                      .addMultipleNutritionData(selectedFoods: selectedFoods);
+                  if (!logged) {
+                    if (context.mounted) {
+                      setState(() => _logging = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Could not save all selected foods.'),
+                        ),
+                      );
+                    }
+                    return;
+                  }
 
                   try {
                     await NutritionService.saveScanGroup(
@@ -375,8 +386,21 @@ class _FoodScanResultScreenState extends State<FoodScanResultScreen> {
                       foods: selectedFoods,
                     );
                     dev.log('Group saved successfully');
-                  } catch (e, s) {
-                    dev.log('saveScanGroup failed', error: e, stackTrace: s);
+                  } on Exception catch (error, stackTrace) {
+                    dev.log(
+                      'saveScanGroup failed',
+                      error: error,
+                      stackTrace: stackTrace,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Food was logged, but scan history could not be saved.',
+                          ),
+                        ),
+                      );
+                    }
                   }
                   if (context.mounted) {
                     Navigator.popUntil(context, (r) => r.isFirst);

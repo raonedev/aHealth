@@ -134,8 +134,19 @@ class _NutritionState extends State<Nutrition> {
                     groupUuid: prepared.uuid,
                     imagePath: prepared.imagePath,
                   );
-                } catch (e, s) {
-                  dev.log('Exception', error: e, stackTrace: s);
+                } on Exception catch (error, stackTrace) {
+                  dev.log(
+                    'Could not prepare food image',
+                    error: error,
+                    stackTrace: stackTrace,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Could not prepare the food image.'),
+                      ),
+                    );
+                  }
                 }
               },
               uiChild: Container(

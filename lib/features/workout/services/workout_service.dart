@@ -57,14 +57,20 @@ class WorkoutService {
   }
 
   // Plan: Save planned exercises for a specific weekday
-  Future<void> savePlanForDay(int dayOfWeek, List<PlannedExercise> exercises) async {
+  Future<void> savePlanForDay(
+    int dayOfWeek,
+    List<PlannedExercise> exercises,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(exercises.map((e) => e.toJson()).toList());
     await prefs.setString('${_kWeeklyPlanKey}_day_$dayOfWeek', jsonStr);
   }
 
   // Plan: Add an exercise to day's plan
-  Future<void> addExerciseToPlan(int dayOfWeek, PlannedExercise exercise) async {
+  Future<void> addExerciseToPlan(
+    int dayOfWeek,
+    PlannedExercise exercise,
+  ) async {
     final current = await getPlanForDay(dayOfWeek);
     current.add(exercise);
     await savePlanForDay(dayOfWeek, current);
@@ -109,7 +115,10 @@ class WorkoutService {
   // Health Connect: Check WORKOUT permission
   Future<bool> hasHealthPermission() async {
     try {
-      final has = await Health().hasPermissions([HealthDataType.WORKOUT]);
+      final has = await Health().hasPermissions(
+        [HealthDataType.WORKOUT],
+        permissions: [HealthDataAccess.WRITE],
+      );
       return has ?? false;
     } catch (_) {
       return false;
@@ -121,7 +130,7 @@ class WorkoutService {
     try {
       final granted = await Health().requestAuthorization(
         [HealthDataType.WORKOUT],
-        permissions: [HealthDataAccess.READ_WRITE],
+        permissions: [HealthDataAccess.WRITE],
       );
       return granted;
     } catch (e) {
@@ -183,7 +192,10 @@ class WorkoutService {
     final prefs = await SharedPreferences.getInstance();
     final logs = await getWorkoutLogs();
     logs.insert(0, newLog);
-    await prefs.setString(_kLogsKey, jsonEncode(logs.map((e) => e.toJson()).toList()));
+    await prefs.setString(
+      _kLogsKey,
+      jsonEncode(logs.map((e) => e.toJson()).toList()),
+    );
 
     return newLog;
   }
@@ -265,7 +277,10 @@ class WorkoutService {
     final prefs = await SharedPreferences.getInstance();
     final logs = await getWorkoutLogs();
     logs.removeWhere((l) => l.id == logId);
-    await prefs.setString(_kLogsKey, jsonEncode(logs.map((e) => e.toJson()).toList()));
+    await prefs.setString(
+      _kLogsKey,
+      jsonEncode(logs.map((e) => e.toJson()).toList()),
+    );
   }
 
   // Update a logged workout session
@@ -275,7 +290,10 @@ class WorkoutService {
     final index = logs.indexWhere((l) => l.id == updatedLog.id);
     if (index != -1) {
       logs[index] = updatedLog;
-      await prefs.setString(_kLogsKey, jsonEncode(logs.map((e) => e.toJson()).toList()));
+      await prefs.setString(
+        _kLogsKey,
+        jsonEncode(logs.map((e) => e.toJson()).toList()),
+      );
     }
   }
 }

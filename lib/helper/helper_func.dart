@@ -254,7 +254,7 @@ Future showHeightDialog(BuildContext context) {
                           autofocus: true,
                           decoration: const BoxDecoration(),
                           padding: EdgeInsets.zero,
-                          placeholder: unit == 0 ? "e.g. 178" : "e.g. 5.10 = 5ft 10in",
+                          placeholder: unit == 0 ? "e.g. 178 cm" : "e.g. 5.10 = 5ft 10in",
                           keyboardType: const TextInputType.numberWithOptions(
                               signed: false, decimal: true),
                           onChanged: (value) {

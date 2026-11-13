@@ -77,7 +77,7 @@ class NutritionCubit extends Cubit<NutritionState> {
           NutritionSuccess(nutritionModel: nutritionModel0, date: targetDate),
         );
       }
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       dev.log("Exception nutrition", error: e, stackTrace: s);
       emit(NutritionFailed(errorMessage: e.toString()));
     }
@@ -241,7 +241,11 @@ class NutritionCubit extends Cubit<NutritionState> {
         endTime: endTime,
       );
     } catch (error, stackTrace) {
-      dev.log('Exception $failureContext', error: error, stackTrace: stackTrace);
+      dev.log(
+        'Exception $failureContext',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }
@@ -420,7 +424,7 @@ class NutritionCubit extends Cubit<NutritionState> {
           ),
         );
       }
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       allSuccess = false;
       dev.log(
         "Exception adding addMultipleNutritionData ",

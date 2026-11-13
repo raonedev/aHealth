@@ -1,4 +1,3 @@
-
 import 'dart:developer' as dev;
 
 import '../../models/step_model.dart';
@@ -13,20 +12,20 @@ class StepsCubit extends Cubit<StepsState> {
 
   Future<void> getStepData() async {
     emit(StepLoadingState());
-    
+
     try {
       final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day);
-    dev.log('getStepData');
-    
-    bool stepsPermission =
-        await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
-    if (!stepsPermission) {
-      stepsPermission = await Health().requestAuthorization(
-        [HealthDataType.STEPS],
-        permissions: [HealthDataAccess.READ],
-      );
-    }
+      final midnight = DateTime(now.year, now.month, now.day);
+      dev.log('getStepData');
+
+      bool stepsPermission =
+          await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+      if (!stepsPermission) {
+        stepsPermission = await Health().requestAuthorization(
+          [HealthDataType.STEPS],
+          permissions: [HealthDataAccess.READ],
+        );
+      }
       List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
         types: [HealthDataType.STEPS],
         startTime: midnight,
@@ -43,8 +42,8 @@ class StepsCubit extends Cubit<StepsState> {
         }
         emit(StepSuccessState(stepModel: stepModel0));
       }
-    } catch (e,s) {
-      dev.log("Exception StepFailed",error: e,stackTrace: s);
+    } catch (e, s) {
+      dev.log("Exception StepFailed", error: e, stackTrace: s);
       emit(StepFailed(errorMessage: e.toString()));
     }
   }
@@ -54,11 +53,15 @@ class StepsCubit extends Cubit<StepsState> {
       final now = DateTime.now();
       final midnight = DateTime(now.year, now.month, now.day);
       bool stepsPermission =
-          await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+          await Health().hasPermissions(
+            [HealthDataType.STEPS],
+            permissions: [HealthDataAccess.READ],
+          ) ??
+          false;
       if (!stepsPermission) {
         stepsPermission = await Health().requestAuthorization(
           [HealthDataType.STEPS],
-          permissions: [HealthDataAccess.READ_WRITE],
+          permissions: [HealthDataAccess.READ],
         );
       }
       final data = await Health().getHealthDataFromTypes(
@@ -68,9 +71,9 @@ class StepsCubit extends Cubit<StepsState> {
       );
 
       return data.fold<int>(
-          0,
-          (sum, e) =>
-              sum + (e.value as NumericHealthValue).numericValue.toInt());
+        0,
+        (sum, e) => sum + (e.value as NumericHealthValue).numericValue.toInt(),
+      );
     } catch (e) {
       return 0;
     }

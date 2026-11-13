@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:developer' as dev;
+
 import 'package:live_activities/live_activities.dart';
 
 class LiveTracking {
@@ -49,13 +51,25 @@ class LiveTracking {
       } else {
         await _la.updateActivity(_actId!, data);
       }
-    } catch (_) {}
+    } on Exception catch (error, stackTrace) {
+      dev.log(
+        'Unable to update live tracking activity',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   static Future<void> stop() async {
     try {
       if (_actId != null) await _la.endActivity(_actId!);
-    } catch (_) {}
+    } on Exception catch (error, stackTrace) {
+      dev.log(
+        'Unable to end live tracking activity',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     _actId = null;
   }
 }
