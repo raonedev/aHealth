@@ -1,7 +1,7 @@
-# Graph Report - aHealth  (2026-11-13)
+# Graph Report - aHealth  (2026-11-14)
 
 ## Corpus Check
-- 466 files · ~790,706 words
+- 466 files · ~790,714 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 49 file(s) not represented in the graph (top: .xml 12, .ttf 9, (none) 6)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `29a6b383`
+- Built from commit: `a9b39438`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1772,16 +1772,16 @@ Nodes (3): fromEntity, fromMap, toMap
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `TrackingLiveActivity` connect `reduced_motion.dart` to `Widget`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **What connects `alignment`, `animation`, `animationController` to the rest of the system?**
   _2065 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `spring_button_widget.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.022727272727272728 - nodes in this community are weakly interconnected._
-- **Why does `.body` connect `Widget` to `reduced_motion.dart`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `Vals` connect `Widget` to `String`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Should `water.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
+- **Why does `TimeView` connect `Widget` to `CustomLiveActivityManager.kt`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Should `nutrition_card.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `nutrition_model.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected._
