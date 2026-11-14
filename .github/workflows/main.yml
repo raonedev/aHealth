@@ -31,7 +31,7 @@ jobs:
       # Step 4: Decode and Setup Android Keystore from GitHub Secrets
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
       # Step 5: Create key.properties for signing release builds
       - name: Create key.properties
