@@ -79,15 +79,18 @@ Rules:
     required String groupUuid,
     required String imagePath,
   }) async {
-    if (!await _canScanToday()) {
-      emit(FoodScanError(
-          message:
-              'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.'));
-      return;
-    }
-    emit(FoodScanLoading());
-
     try {
+      if (!await _canScanToday()) {
+        emit(
+          FoodScanError(
+            message:
+                'Daily limit of $_maxScansPerDay food scans reached. Try again tomorrow.',
+          ),
+        );
+        return;
+      }
+      emit(FoodScanLoading());
+
       final body = jsonEncode({
         'contents': [
           {
@@ -124,8 +127,8 @@ Rules:
             final err = await res.stream.bytesToString();
             throw Exception('API error ${res.statusCode}: $err');
           }
-        } catch (e) {
-          dev.log('Model $model failed: $e');
+        } on Exception catch (error, stackTrace) {
+          dev.log('Model $model failed', error: error, stackTrace: stackTrace);
           continue;
         }
       }
@@ -158,8 +161,12 @@ Rules:
               csvBuffer += text;
             }
           }
-        } catch (e) {
-          dev.log('SSE chunk parse error: $e');
+        } on FormatException catch (error, stackTrace) {
+          dev.log(
+            'SSE chunk parse error',
+            error: error,
+            stackTrace: stackTrace,
+          );
         }
       }
       dev.log('CSV:\n$csvBuffer');
@@ -176,9 +183,9 @@ Rules:
           imagePath: imagePath,
         ));
       }
-    } catch (e, s) {
-      dev.log('FoodScanCubit error', error: e, stackTrace: s);
-      emit(FoodScanError(message: e.toString()));
+    } on Exception catch (error, stackTrace) {
+      dev.log('FoodScanCubit error', error: error, stackTrace: stackTrace);
+      emit(FoodScanError(message: error.toString()));
     }
   }
 
@@ -244,8 +251,8 @@ Rules:
             final err = await res.stream.bytesToString();
             throw Exception('API error ${res.statusCode}: $err');
           }
-        } catch (e) {
-          dev.log('Model $model failed: $e');
+        } on Exception catch (error, stackTrace) {
+          dev.log('Model $model failed', error: error, stackTrace: stackTrace);
           continue;
         }
       }
@@ -278,8 +285,12 @@ Rules:
               csvBuffer += text;
             }
           }
-        } catch (e) {
-          dev.log('SSE chunk parse error: $e');
+        } on FormatException catch (error, stackTrace) {
+          dev.log(
+            'SSE chunk parse error',
+            error: error,
+            stackTrace: stackTrace,
+          );
         }
       }
       dev.log('CSV:\n$csvBuffer');
@@ -296,9 +307,9 @@ Rules:
           imagePath: '',
         ));
       }
-    } catch (e, s) {
-      dev.log('FoodScanCubit error', error: e, stackTrace: s);
-      emit(FoodScanError(message: e.toString()));
+    } on Exception catch (error, stackTrace) {
+      dev.log('FoodScanCubit error', error: error, stackTrace: stackTrace);
+      emit(FoodScanError(message: error.toString()));
     }
   }
 
@@ -350,8 +361,12 @@ Rules:
         }
 
         foods.add(ValueFood.fromJson(map));
-      } catch (e) {
-        dev.log('CSV parse error for line: $line', error: e);
+      } on Exception catch (error, stackTrace) {
+        dev.log(
+          'CSV parse error for line: $line',
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
     }
 

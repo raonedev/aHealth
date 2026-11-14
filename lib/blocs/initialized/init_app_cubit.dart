@@ -14,50 +14,54 @@ part 'init_app_state.dart';
 class InitAppCubit extends Cubit<InitAppState> {
   InitAppCubit() : super(InitAppLoading());
 
-
-
   late SharedPreferences prefs;
   // All types available depending on platform (iOS ot Android).
   List<HealthDataType> get types => (Platform.isAndroid)
       ? dataTypesAndroid
       : (Platform.isIOS)
-          ? dataTypesIOS
-          : [];
+      ? dataTypesIOS
+      : [];
 
   //  both READ and WRITE
-   List<HealthDataAccess> get permissions => types
-      .map(
-        (type) =>
-            // can only request READ permissions to the following list of types on iOS
-            [
-              HealthDataType.GENDER,
-              HealthDataType.BLOOD_TYPE,
-              HealthDataType.BIRTH_DATE,
-              HealthDataType.APPLE_MOVE_TIME,
-              HealthDataType.APPLE_STAND_HOUR,
-              HealthDataType.APPLE_STAND_TIME,
-              HealthDataType.WALKING_HEART_RATE,
-              HealthDataType.ELECTROCARDIOGRAM,
-              HealthDataType.HIGH_HEART_RATE_EVENT,
-              HealthDataType.LOW_HEART_RATE_EVENT,
-              HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-              HealthDataType.EXERCISE_TIME,
-              HealthDataType.SLEEP_WRIST_TEMPERATURE,
-            ].contains(type)
-            ? HealthDataAccess.READ
-            : HealthDataAccess.READ_WRITE,
-      )
-      .toList();
+  List<HealthDataAccess> get permissions => types.map((type) {
+    if (Platform.isAndroid && type == HealthDataType.STEPS) {
+      return HealthDataAccess.READ;
+    }
+    if (Platform.isAndroid && type == HealthDataType.WORKOUT) {
+      return HealthDataAccess.WRITE;
+    }
+
+    // These data types are read-only on Apple Health.
+    return [
+          HealthDataType.GENDER,
+          HealthDataType.BLOOD_TYPE,
+          HealthDataType.BIRTH_DATE,
+          HealthDataType.APPLE_MOVE_TIME,
+          HealthDataType.APPLE_STAND_HOUR,
+          HealthDataType.APPLE_STAND_TIME,
+          HealthDataType.WALKING_HEART_RATE,
+          HealthDataType.ELECTROCARDIOGRAM,
+          HealthDataType.HIGH_HEART_RATE_EVENT,
+          HealthDataType.LOW_HEART_RATE_EVENT,
+          HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+          HealthDataType.EXERCISE_TIME,
+          HealthDataType.SLEEP_WRIST_TEMPERATURE,
+        ].contains(type)
+        ? HealthDataAccess.READ
+        : HealthDataAccess.READ_WRITE;
+  }).toList();
 
   Future<void> initializeHealthSdk() async {
     await Health().configure();
-    HealthConnectSdkStatus? healthSdkStatus = await Health().getHealthConnectSdkStatus();
+    HealthConnectSdkStatus? healthSdkStatus = await Health()
+        .getHealthConnectSdkStatus();
     prefs = await SharedPreferences.getInstance();
 
     if (healthSdkStatus == HealthConnectSdkStatus.sdkUnavailable) {
       emit(InitAppSdkUnavailable());
       //await Health().installHealthConnect();
-    } else if (Platform.isIOS ||healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
+    } else if (Platform.isIOS ||
+        healthSdkStatus == HealthConnectSdkStatus.sdkAvailable) {
       await Permission.activityRecognition.request();
 
       ///sdk available now we will check for health permission from user
@@ -70,33 +74,38 @@ class InitAppCubit extends Cubit<InitAppState> {
         // getAllHealthData();
         emit(InitAppSuccess());
       }
-    }else{
+    } else {
       emit(InitAppSdkUnavailable());
-      log('healthSdkStatus',error: healthSdkStatus);
+      log('healthSdkStatus', error: healthSdkStatus);
     }
   }
 
-  Future<void> installHealthConnect() async => await Health().installHealthConnect();
+  Future<void> installHealthConnect() async =>
+      await Health().installHealthConnect();
 
   Future<void> checkPermissions() async {
-    // Check if we have health permissions
-    bool? hasPermissions = await Health().hasPermissions(types, permissions: permissions);
-    hasPermissions = false;
-    bool authorized = false;
-    if (!hasPermissions) {
-      // requesting access to the data types before reading them
-      try {
-        authorized = await Health().requestAuthorization(types, permissions: permissions);
-        await prefs.setBool(healthSdkSharedPreferenceKey, authorized);
-        if (authorized) {
-          // await getAllHealthData();
-          log('InitAppSuccess');
-          emit(InitAppSuccess());
-        }
-      } catch (error) {
-        log("Exception in authorize: $error");
-        emit(InitAppFailed());
+    try {
+      final hasPermissions =
+          await Health().hasPermissions(types, permissions: permissions) ??
+          false;
+      if (hasPermissions) {
+        await prefs.setBool(healthSdkSharedPreferenceKey, true);
+        emit(InitAppSuccess());
+        return;
       }
+
+      final authorized = await Health().requestAuthorization(
+        types,
+        permissions: permissions,
+      );
+      await prefs.setBool(healthSdkSharedPreferenceKey, authorized);
+      if (authorized) {
+        log('InitAppSuccess');
+        emit(InitAppSuccess());
+      }
+    } catch (error, stackTrace) {
+      log('Exception in authorize', error: error, stackTrace: stackTrace);
+      emit(InitAppFailed());
     }
   }
 }

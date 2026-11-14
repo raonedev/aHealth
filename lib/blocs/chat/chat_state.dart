@@ -9,19 +9,18 @@ final class ChatInitial extends ChatState {
   List<Object> get props => [];
 }
 
-
 final class ChatUpdated extends ChatState {
   final List<ChatMessage> messages;
   final bool isLoading;
   final bool isThinking;
-  const ChatUpdated({required this.messages, this.isLoading = false,this.isThinking = false,});
+  final String? logFoodText;
+  const ChatUpdated({
+    required this.messages,
+    this.isLoading = false,
+    this.isThinking = false,
+    this.logFoodText,
+  });
 
   @override
-  List<Object?> get props => [
-    isLoading,
-    messages,
-    isThinking,
-  ];
+  List<Object?> get props => [isLoading, messages, isThinking, logFoodText];
 }
-
-

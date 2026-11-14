@@ -22,8 +22,15 @@ class NutritionTargets {
     required this.activityLabel,
   });
 }
-
 class TargetCalorieCalculator {
+  static NutritionTargets? _last;
+
+  /// Always calculates new targets, then returns them.
+  static Future<NutritionTargets> get targets => calculate();
+
+  /// Last calculated value. Null if never calculated.
+  static NutritionTargets? get lastTargets => _last;
+
   static Future<NutritionTargets> calculate() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -59,7 +66,6 @@ class TargetCalorieCalculator {
       'gainMuscle' => 2.0,
       _ => 1.6,
     };
-
     final protein = weight * proteinPerKg; // g
 
     // Fat
@@ -79,7 +85,7 @@ class TargetCalorieCalculator {
       ActivityLevel.extraActive: 'Extra active',
     };
 
-    return NutritionTargets(
+    final val = NutritionTargets(
       bmr: bmr.round(),
       tdee: tdee.round(),
       target: targetCalories.round(),
@@ -88,5 +94,7 @@ class TargetCalorieCalculator {
       fat: fat,
       activityLabel: labels[activityLevel]!,
     );
+    _last = val;
+    return val;
   }
 }

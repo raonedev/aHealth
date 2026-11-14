@@ -1,29 +1,106 @@
 import 'package:ahealth/common/spring_button_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/nutrition/nutrition_cubit.dart';
 import '../../models/nutrition_model.dart';
 
 // Premium iOS Light Theme Palette
-const Color _bg = Color(0xFFF2F2F7);          // iOS System Background Light
-const Color _surface = Color(0xFFFFFFFF);     // Pure White for Cards/Sheets
+const Color _bg = Color(0xFFF2F2F7); // iOS System Background Light
+const Color _surface = Color(0xFFFFFFFF); // Pure White for Cards/Sheets
 const Color _textPrimary = Color(0xFF000000); // Sharp Primary Text
-const Color _textSecondary = Color(0xFF8E8E93);// iOS Muted Gray Subtitles
-const Color _separator = Color(0xFFE5E5EA);    // iOS Border Line Color
+const Color _textSecondary = Color(0xFF8E8E93); // iOS Muted Gray Subtitles
+const Color _separator = Color(0xFFE5E5EA); // iOS Border Line Color
 
 // Accent Colors
 const Color _proteinColor = Color(0xFFFF453A); // iOS System Red
-const Color _carbsColor = Color(0xFFFF9F0A);   // iOS System Orange
-const Color _fatColor = Color(0xFF0A84FF);     // iOS System Blue
-const Color _microColor = Color(0xFF30D158);   // iOS System Green
+const Color _carbsColor = Color(0xFFFF9F0A); // iOS System Orange
+const Color _fatColor = Color(0xFF0A84FF); // iOS System Blue
+const Color _microColor = Color(0xFF30D158); // iOS System Green
 
-class NutritionDetailScreen extends StatelessWidget {
+class NutritionDetailScreen extends StatefulWidget {
   final NutritionModel nutritionModel;
 
   const NutritionDetailScreen({super.key, required this.nutritionModel});
 
   @override
+  State<NutritionDetailScreen> createState() => _NutritionDetailScreenState();
+}
+
+class _NutritionDetailScreenState extends State<NutritionDetailScreen> {
+  double _quantity = 1;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final savedQuantity = widget.nutritionModel.value?.quantity;
+    _quantity =
+        savedQuantity != null && savedQuantity.isFinite && savedQuantity > 0
+        ? savedQuantity
+        : 1;
+  }
+
+  Future<void> _editQuantity() async {
+    final quantity = await showCupertinoDialog<double>(
+      context: context,
+      builder: (_) => _EditQuantityDialog(initialQuantity: _quantity),
+    );
+    if (quantity == null || quantity == _quantity || !mounted) return;
+
+    setState(() => _isSaving = true);
+    final success = await context
+        .read<NutritionCubit>()
+        .updateNutritionQuantity(
+          model: widget.nutritionModel,
+          quantity: quantity,
+        );
+    if (!mounted) return;
+
+    setState(() => _isSaving = false);
+    if (success) {
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to update food quantity.')),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final cubit = context.read<NutritionCubit>();
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text("Delete Food Log"),
+        content: const Text("Do you want to delete this food log?"),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted) return;
+    if (confirmed == true) {
+      final ok = await cubit.deleteNutritionData(widget.nutritionModel);
+      if (ok && context.mounted) Navigator.of(context).pop();
+    }
+  }
+
+  // Segment Header Title
+
+  @override
   Widget build(BuildContext context) {
-    final valueFood = nutritionModel.value;
+    final valueFood = widget.nutritionModel.value;
     final totalCalories = valueFood?.calories?.toInt() ?? 0;
 
     return Scaffold(
@@ -33,7 +110,9 @@ class NutritionDetailScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        leading: CupertinoBackButton(onPressed: () => Navigator.of(context).pop()),
+        leading: CupertinoBackButton(
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text(
           "Nutrition Info",
           style: TextStyle(
@@ -43,10 +122,29 @@ class NutritionDetailScreen extends StatelessWidget {
             letterSpacing: -0.4,
           ),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Edit quantity',
+            icon: const Icon(
+              Icons.edit_outlined,
+              semanticLabel: 'Edit quantity',
+            ),
+            onPressed: _isSaving ? null : _editQuantity,
+          ),
+          IconButton(
+            tooltip: 'Delete food log',
+            icon: const Icon(
+              CupertinoIcons.delete,
+              color: Colors.red,
+              semanticLabel: 'Delete food log',
+            ),
+            onPressed: () => _confirmDelete(context),
+          ),
+        ],
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark, // Android dark icons
-          statusBarBrightness: Brightness.light,    // iOS dark text
+          statusBarBrightness: Brightness.light, // iOS dark text
         ),
       ),
       body: SingleChildScrollView(
@@ -55,7 +153,7 @@ class NutritionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Food Name Header
+            // Food Name Headers
             Text(
               valueFood?.name ?? "Unknown Food",
               style: const TextStyle(
@@ -67,18 +165,26 @@ class NutritionDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Per serving size",
-              style: TextStyle(color: _textSecondary, fontSize: 15, fontWeight: FontWeight.w400),
+              '${_quantity.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '')} '
+              '${_quantity == 1 ? 'serving' : 'servings'} logged',
+              style: TextStyle(
+                color: _textSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
             ),
             const SizedBox(height: 24),
 
             // Premium Calorie Indicator
             SpringButton(
               SpringButtonType.onlyScale,
-              onTap: (){},
+              onTap: () {},
               uiChild: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: _surface,
                   borderRadius: BorderRadius.circular(16),
@@ -94,7 +200,11 @@ class NutritionDetailScreen extends StatelessWidget {
                             color: Colors.orange.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.local_fire_department_rounded, color: Colors.orange, size: 28),
+                          child: const Icon(
+                            Icons.local_fire_department_rounded,
+                            color: Colors.orange,
+                            size: 28,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Column(
@@ -102,11 +212,20 @@ class NutritionDetailScreen extends StatelessWidget {
                           children: [
                             const Text(
                               "Energy",
-                              style: TextStyle(fontSize: 14, color: _textSecondary, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                             Text(
                               "$totalCalories kcal",
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: _textPrimary,
+                                letterSpacing: -0.5,
+                              ),
                             ),
                           ],
                         ),
@@ -122,11 +241,26 @@ class NutritionDetailScreen extends StatelessWidget {
             _buildSectionHeader("MACRONUTRIENTS"),
             _iOSListGroup(
               children: [
-                _buildListTile('Protein', valueFood?.protein, 'g', _proteinColor),
+                _buildListTile(
+                  'Protein',
+                  valueFood?.protein,
+                  'g',
+                  _proteinColor,
+                ),
                 _buildListTile('Carbs', valueFood?.carbs, 'g', _carbsColor),
                 _buildListTile('Fat', valueFood?.fat, 'g', _fatColor),
-                _buildListTile('Fiber', valueFood?.fiber, 'g', Colors.brown.shade400),
-                _buildListTile('Sugar', valueFood?.sugar, 'g', Colors.pink.shade300),
+                _buildListTile(
+                  'Fiber',
+                  valueFood?.fiber,
+                  'g',
+                  Colors.brown.shade400,
+                ),
+                _buildListTile(
+                  'Sugar',
+                  valueFood?.sugar,
+                  'g',
+                  Colors.pink.shade300,
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -135,10 +269,25 @@ class NutritionDetailScreen extends StatelessWidget {
             _buildSectionHeader("MICRONUTRIENTS"),
             _iOSListGroup(
               children: [
-                _buildListTile('Calcium', valueFood?.calcium, 'mg', _microColor),
-                _buildListTile('Cholesterol', valueFood?.cholesterol, 'mg', _microColor),
+                _buildListTile(
+                  'Calcium',
+                  valueFood?.calcium,
+                  'mg',
+                  _microColor,
+                ),
+                _buildListTile(
+                  'Cholesterol',
+                  valueFood?.cholesterol,
+                  'mg',
+                  _microColor,
+                ),
                 _buildListTile('Iron', valueFood?.iron, 'mg', _microColor),
-                _buildListTile('Potassium', valueFood?.potassium, 'mg', _microColor),
+                _buildListTile(
+                  'Potassium',
+                  valueFood?.potassium,
+                  'mg',
+                  _microColor,
+                ),
                 _buildListTile('Sodium', valueFood?.sodium, 'mg', _microColor),
               ],
             ),
@@ -148,8 +297,18 @@ class NutritionDetailScreen extends StatelessWidget {
             _buildSectionHeader("VITAMINS"),
             _iOSListGroup(
               children: [
-                _buildListTile('Vitamin A', valueFood?.vitaminA, 'µg', Colors.purple.shade400),
-                _buildListTile('Vitamin C', valueFood?.vitaminC, 'mg', Colors.purple.shade400),
+                _buildListTile(
+                  'Vitamin A',
+                  valueFood?.vitaminA,
+                  'µg',
+                  Colors.purple.shade400,
+                ),
+                _buildListTile(
+                  'Vitamin C',
+                  valueFood?.vitaminC,
+                  'mg',
+                  Colors.purple.shade400,
+                ),
               ],
             ),
             const SizedBox(height: 40),
@@ -161,9 +320,7 @@ class NutritionDetailScreen extends StatelessWidget {
 
   // Segment Header Title
   Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
-    );
+    return Padding(padding: const EdgeInsets.only(left: 8.0, bottom: 8.0));
   }
 
   // Wrapper mimicking Apple's grouped layout setting
@@ -174,7 +331,9 @@ class NutritionDetailScreen extends StatelessWidget {
       if (i != children.length - 1) {
         dividedChildren.add(
           const Padding(
-            padding: EdgeInsets.only(left: 44.0), // Keeps lines alignment matching text offset
+            padding: EdgeInsets.only(
+              left: 44.0,
+            ), // Keeps lines alignment matching text offset
             child: Divider(color: _separator, height: 1, thickness: 0.5),
           ),
         );
@@ -182,9 +341,8 @@ class NutritionDetailScreen extends StatelessWidget {
     }
 
     return SpringButton(
-
       SpringButtonType.onlyScale,
-      onTap: (){},
+      onTap: () {},
       uiChild: Container(
         decoration: BoxDecoration(
           color: _surface,
@@ -196,7 +354,12 @@ class NutritionDetailScreen extends StatelessWidget {
   }
 
   // Sleek row replacing blocky material cards
-  Widget _buildListTile(String title, double? value, String unit, Color indicatorColor) {
+  Widget _buildListTile(
+    String title,
+    double? value,
+    String unit,
+    Color indicatorColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       child: Row(
@@ -232,6 +395,104 @@ class NutritionDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _EditQuantityDialog extends StatefulWidget {
+  const _EditQuantityDialog({required this.initialQuantity});
+
+  final double initialQuantity;
+
+  @override
+  State<_EditQuantityDialog> createState() => _EditQuantityDialogState();
+}
+
+class _EditQuantityDialogState extends State<_EditQuantityDialog> {
+  static const double _quantityStep = 0.5;
+
+  late double _quantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantity = widget.initialQuantity;
+  }
+
+  void _save() {
+    Navigator.of(context).pop(_quantity);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoAlertDialog(
+      title: const Text('Edit quantity'),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${_quantity.toStringAsFixed(1)}x servings',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Semantics(
+                  button: true,
+                  label: 'Decrease quantity by 0.5 servings',
+                  sortKey: const OrdinalSortKey(1),
+                  child: IconButton(
+                    tooltip: 'Decrease by 0.5 servings',
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    onPressed: _quantity > _quantityStep
+                        ? () => setState(() {
+                            _quantity -= _quantityStep;
+                          })
+                        : null,
+                    icon: const Icon(
+                      Icons.remove,
+                      semanticLabel: 'Decrease quantity',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Semantics(
+                  button: true,
+                  label: 'Increase quantity by 0.5 servings',
+                  sortKey: const OrdinalSortKey(2),
+                  child: IconButton(
+                    tooltip: 'Increase by 0.5 servings',
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    onPressed: () => setState(() {
+                      _quantity += _quantityStep;
+                    }),
+                    icon: const Icon(
+                      Icons.add,
+                      semanticLabel: 'Increase quantity',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(onPressed: _save, child: const Text('Save')),
+      ],
     );
   }
 }

@@ -1,10 +1,10 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import '../../../../core/database/app_database.dart';
 import '../models/location_point_model.dart';
 import '../models/activity_model.dart';
 
 abstract class TrackingLocalDataSource {
+  Future<void> insertPoint(LocationPointModel point);
   Future<void> insertPointsBatch(List<LocationPointModel> points);
   Future<void> insertActivity(ActivityModel activity);
   Future<List<ActivityModel>> getActivities();
@@ -13,6 +13,16 @@ abstract class TrackingLocalDataSource {
 
 class TrackingLocalDataSourceImpl implements TrackingLocalDataSource {
   Future<Database> get db => AppDatabase.instance.database;
+
+  @override
+  Future<void> insertPoint(LocationPointModel point) async {
+    final database = await db;
+    await database.insert(
+      'location_points',
+      point.toMap()..remove('id'),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
   @override
   Future<void> insertPointsBatch(List<LocationPointModel> points) async {
     final database = await db;

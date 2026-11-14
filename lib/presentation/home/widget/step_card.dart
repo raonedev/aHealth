@@ -8,25 +8,68 @@ import '../../../app_routes.dart';
 import '../../../blocs/step/step_cubit.dart';
 import '../../../common/spring_button_widget.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../constants.dart';
+
 const _kPrimaryContainer = Color(0xFF2E7D32);
 const _kPrimary = Color(0xFF0D631B);
 const _kOnSurfaceVariant = Color(0xFF40493D);
 
 const _kSurfaceContainerHighest = Color(0xFFE3E2E2);
 
-class StepsCard extends StatelessWidget {
-  const StepsCard({super.key});
+class StepsCard extends StatefulWidget {
+  final int? targetSteps;
+  const StepsCard({super.key, this.targetSteps});
+
+  @override
+  State<StepsCard> createState() => _StepsCardState();
+}
+
+class _StepsCardState extends State<StepsCard> {
+  int _targetSteps = kDefaultTargetSteps;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.targetSteps != null) {
+      _targetSteps = widget.targetSteps!;
+    } else {
+      _loadTarget();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant StepsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.targetSteps != null) {
+      _targetSteps = widget.targetSteps!;
+    } else {
+      _loadTarget();
+    }
+  }
+
+  Future<void> _loadTarget() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _targetSteps =
+            prefs.getInt(PrefKeys.targetSteps) ?? kDefaultTargetSteps;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    const target = 8000;
+    final target = _targetSteps;
 
     return SpringButton(
       SpringButtonType.withOpacity,
       onTap: () async {
         HapticFeedback.mediumImpact();
         await Future.delayed(Durations.medium1);
-        context.push(AppRoutes.stepChartScreen);
+        if (!context.mounted) return;
+        await context.push(AppRoutes.stepChartScreen);
+        _loadTarget();
       },
       uiChild: Container(
         padding: const EdgeInsets.all(20),
@@ -79,8 +122,10 @@ class StepsCard extends StatelessWidget {
                             color: _kPrimaryContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.directions_walk,
-                              color: Colors.white),
+                          child: const Icon(
+                            Icons.directions_walk,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -124,10 +169,12 @@ class StepsCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: percent,
                     minHeight: 8,
-                    backgroundColor:
-                        _kSurfaceContainerHighest.withValues(alpha: 0.5),
-                    valueColor:
-                        const AlwaysStoppedAnimation(_kPrimaryContainer),
+                    backgroundColor: _kSurfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
+                    valueColor: const AlwaysStoppedAnimation(
+                      _kPrimaryContainer,
+                    ),
                   ),
                 ),
               ],

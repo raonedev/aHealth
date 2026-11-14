@@ -44,7 +44,7 @@ class WeightCard extends StatelessWidget {
               children: [
                 Text.rich(
                   TextSpan(
-                    text: value != null ? '$value ' : '0 ',
+                    text: value != null ? '${value.toStringAsFixed(2)} ' : '0 ',
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.w600),
                     children: const [

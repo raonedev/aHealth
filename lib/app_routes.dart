@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blocs/initialized/init_app_cubit.dart';
+import 'blocs/charts/step_chart/step_chart_cubit.dart';
 import 'features/progress_photos/presentation/screens/progress_photos_screen.dart';
 import 'features/step_tracking/presentation/views/tracking_view.dart';
 import 'features/streak/presentation/screens/streak_screen.dart';
@@ -32,6 +33,9 @@ import 'presentation/nutririon/nitritiondetailscreen.dart';
 import 'presentation/nutririon/nutrient_chart_screen.dart';
 import 'presentation/nutririon/widgets/nutrition_group_dialog.dart';
 import 'presentation/steps/step_chart_screen.dart';
+import 'presentation/steps/step_day_detail_screen.dart';
+import 'features/workout/presentation/screens/workout_screen.dart';
+import 'presentation/profile/profile_screen.dart';
 import 'presentation/water/charts/water_chart_screen.dart';
 
 class AppRoutes {
@@ -41,14 +45,16 @@ class AppRoutes {
   static const String onBoarding = "/onBoarding";
   static const String heathDetail = "/heathDetail";
   static const String home = "/home";
+  static const String profile = "/profile";
+  static const String workout = "/workout";
   static const String searchFoodScreen = "/searchFood";
   static const String stepChartScreen = "/chart/step";
   static const String waterChartScreen = "/chart/water";
 
   static final GlobalKey<NavigatorState> rootNavigatorKey =
       GlobalKey<NavigatorState>();
-      static final GlobalKey<NavigatorState> shellNavigatorKey =
-    GlobalKey<NavigatorState>(debugLabel: 'shell');
+  static final GlobalKey<NavigatorState> shellNavigatorKey =
+      GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   static final GoRouter router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -62,9 +68,7 @@ class AppRoutes {
               if (state is InitAppLoading) {
                 return const Scaffold(
                   body: Center(
-                    child: CircularProgressIndicator(
-                      color: primary,
-                    ),
+                    child: CircularProgressIndicator(color: primary),
                   ),
                 );
               } else if (state is InitAppPermissionNotAvailable) {
@@ -76,9 +80,9 @@ class AppRoutes {
                   body: Center(
                     child: Text(
                       'Permission Error : $state',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                            color: red,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge!.copyWith(color: red),
                     ),
                   ),
                 );
@@ -97,9 +101,7 @@ class AppRoutes {
                       dev.log(" checkOnboardingStatus waiting");
                       return const Scaffold(
                         body: Center(
-                          child: CircularProgressIndicator(
-                            color: primary,
-                          ),
+                          child: CircularProgressIndicator(color: primary),
                         ),
                       );
                     } else if (snapshot.hasError) {
@@ -112,11 +114,13 @@ class AppRoutes {
                       if (hasSeenOnboarding) {
                         dev.log(" hasSeenOnboarding sucess");
                         WidgetsBinding.instance.addPostFrameCallback(
-                            (_) => context.go('/shell/home'));
+                          (_) => context.go('/shell/home'),
+                        );
                         return const Scaffold(
-                            body: Center(
-                                child:
-                                    CircularProgressIndicator(color: primary)));
+                          body: Center(
+                            child: CircularProgressIndicator(color: primary),
+                          ),
+                        );
                       } else {
                         dev.log(" hasSeenOnboarding fail");
                         return const GetStartingScreen();
@@ -185,9 +189,8 @@ class AppRoutes {
       GoRoute(
         path: '/nutrition/detail',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (c, s) => NutritionDetailScreen(
-          nutritionModel: s.extra as NutritionModel,
-        ),
+        builder: (c, s) =>
+            NutritionDetailScreen(nutritionModel: s.extra as NutritionModel),
       ),
       GoRoute(
         path: searchFoodScreen,
@@ -197,9 +200,8 @@ class AppRoutes {
       GoRoute(
         path: '/foodDetail/:foodId',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => FoodDetailScreen(
-          foodId: state.pathParameters['foodId']!,
-        ),
+        builder: (context, state) =>
+            FoodDetailScreen(foodId: state.pathParameters['foodId']!),
       ),
       GoRoute(
         path: GroupFoodDialog.name,
@@ -207,8 +209,9 @@ class AppRoutes {
           final groupItems = state.extra as List<NutritionModel>;
           return ModalSheetPage(
             builder: (_) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                child: GroupFoodDialog(groupItems: groupItems)),
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: GroupFoodDialog(groupItems: groupItems),
+            ),
           );
         },
       ),
@@ -216,6 +219,19 @@ class AppRoutes {
         path: stepChartScreen,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StepChartScreen(),
+      ),
+      GoRoute(
+        name: 'step-day-detail',
+        path: '/chart/step/day/:date',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final day = DateTime.parse(state.pathParameters['date']!);
+          return StepDayDetailScreen(
+            day: day,
+            dayData:
+                context.read<StepChartCubit>().getStepDataForDay(day),
+          );
+        },
       ),
       GoRoute(
         path: waterChartScreen,
@@ -235,9 +251,8 @@ class AppRoutes {
       GoRoute(
         path: NutrientChartScreen.pageName,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => NutrientChartScreen(
-          currentTab: (state.extra as int?) ?? 0,
-        ),
+        builder: (context, state) =>
+            NutrientChartScreen(currentTab: (state.extra as int?) ?? 0),
       ),
       GoRoute(
         path: CalorieChartScreen.pageName,
@@ -248,6 +263,16 @@ class AppRoutes {
         path: StreakScreen.pageName,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const StreakScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.workout,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutScreen(),
       ),
     ],
   );

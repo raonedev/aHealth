@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
+import '../../data/datasources/live_tracking_service.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/location_point.dart';
 import '../../domain/usecases/get_location_stream.dart';
@@ -12,7 +13,6 @@ import '../../domain/usecases/calculate_distance.dart';
 import '../../domain/usecases/save_activity.dart';
 import '../../domain/repositories/tracking_repository.dart';
 import 'tracking_state.dart';
-
 
 class TrackingCubit extends Cubit<TrackingState> {
   final GetLocationStream getLocationStream;
@@ -27,7 +27,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   Duration _elapsed = Duration.zero;
   DateTime? _startTime;
   String _activityId = '';
-  static const int _batchSize = 10;
+  ActivityType _currentType = ActivityType.run;
   static const double _accuracyThreshold = 20;
 
   TrackingCubit({
@@ -37,58 +37,70 @@ class TrackingCubit extends Cubit<TrackingState> {
     required this.repository,
   }) : super(TrackingIdle());
 
-  void start() {
-  Future(() async {
-    final granted = await _ensureLocationPermission();
-    if (!granted) {
-      emit(TrackingPermissionDenied());
-      return;
-    }
+  void start({ActivityType type = ActivityType.run}) {
+    Future(() async {
+      final granted = await _ensureLocationPermission();
+      if (!granted) {
+        emit(TrackingPermissionDenied());
+        return;
+      }
 
-    _activityId = const Uuid().v4();
-    _points.clear();
-    _distance = 0;
-    _elapsed = Duration.zero;
-    _startTime = DateTime.now();
+      _activityId = const Uuid().v4();
+      _currentType = type;
+      _points.clear();
+      _distance = 0;
+      _elapsed = Duration.zero;
+      _startTime = DateTime.now();
 
-    _sub = getLocationStream().listen(_onPosition, onError: (_) {});
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _elapsed = DateTime.now().difference(_startTime!);
-      _emitActive();
+      // Create session in database immediately
+      final initialActivity = Activity(
+        id: _activityId,
+        type: _currentType,
+        startTime: _startTime!,
+        endTime: null,
+        distanceMeters: 0,
+        durationSeconds: 0,
+        avgPaceSecPerKm: 0,
+        calories: 0,
+      );
+      await saveActivity(initialActivity);
+
+      _sub = getLocationStream().listen(_onPosition, onError: (_) {});
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        _elapsed = DateTime.now().difference(_startTime!);
+        _emitActive();
+      });
+
+      emit(
+        TrackingActive(
+          points: const [],
+          distanceMeters: 0,
+          elapsed: Duration.zero,
+        ),
+      );
+      _live(); // live update
     });
-
-    emit(TrackingActive(points: const [], distanceMeters: 0, elapsed: Duration.zero));
-  });
-}
-
-
-
-
-Future<bool> _ensureLocationPermission() async {
-  if (!await Geolocator.isLocationServiceEnabled()) return false;
-  var permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
   }
-  if (permission == LocationPermission.whileInUse) {
-    permission = await Geolocator.requestPermission(); // prompts for Always on supported OS versions
-  }
-    if (Platform.isAndroid) {
-    final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
-    if (!batteryStatus.isGranted) {
-      await Permission.ignoreBatteryOptimizations.request();
+
+  Future<bool> _ensureLocationPermission() async {
+    if (Platform.isAndroid) await Permission.notification.request();
+    if (!await Geolocator.isLocationServiceEnabled()) return false;
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
     }
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
   }
-  return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
-}
 
-Future<List<Activity>> getHistory() => repository.getActivities();
+  Future<List<Activity>> getHistory() => repository.getActivities();
 
   void _onPosition(Position pos) {
     if (pos.accuracy > _accuracyThreshold) return;
 
-    dev.log("lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}");
-    
+    dev.log(
+      "lat ${pos.latitude} long ${pos.longitude} alt ${pos.altitude} speed ${pos.speed}",
+    );
 
     final point = LocationPoint(
       activityId: _activityId,
@@ -105,22 +117,80 @@ Future<List<Activity>> getHistory() => repository.getActivities();
     }
     _points.add(point);
 
-    if (_points.length % _batchSize == 0) {
-      repository.savePointsBatch(_points.sublist(_points.length - _batchSize));
-    }
+    // Save data for this session at each interval and update the ongoing session path
+    _saveIntervalData(point);
 
     _emitActive();
+    _live(); // live update
   }
+
+  Future<void> _saveIntervalData(LocationPoint point) async {
+    try {
+      await repository.savePoint(point);
+      await _syncActiveSession();
+    } catch (e, st) {
+      dev.log("Error saving tracking interval data: $e", stackTrace: st);
+    }
+  }
+
+  Future<void> _syncActiveSession() async {
+    if (_startTime == null || _activityId.isEmpty) return;
+    final currentActivity = Activity(
+      id: _activityId,
+      type: _currentType,
+      startTime: _startTime!,
+      endTime: null, // Still active / not stopped
+      distanceMeters: _distance,
+      durationSeconds: _elapsed.inSeconds,
+      avgPaceSecPerKm: _distance <= 0
+          ? 0
+          : _elapsed.inSeconds / (_distance / 1000),
+      calories: _estimateCalories(_distance, _elapsed.inSeconds),
+    );
+    await saveActivity(currentActivity);
+  }
+
+  double _estimateCalories(double distanceMeters, int durationSeconds) {
+    return (distanceMeters / 1000) * 60;
+  }
+
+  String _fmtDistance(double m) {
+    final meters = m.round();
+    if (meters < 1000) return '$meters m';
+    final km = meters ~/ 1000;
+    final rem = meters % 1000;
+    return rem == 0 ? '$km km' : '$km km $rem m';
+  }
+
+  void _live({bool running = true}) => LiveTracking.show(
+    text: _fmtDistance(_distance),
+    elapsed: _elapsed,
+    running: running,
+  );
 
   void _emitActive() {
     if (state is TrackingPaused) return;
-    emit(TrackingActive(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    emit(
+      TrackingActive(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
   }
 
   void pause() {
     _sub?.pause();
     _timer?.cancel();
-    emit(TrackingPaused(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    _syncActiveSession();
+    _live(running: false); // live update
+    emit(
+      TrackingPaused(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
   }
 
   void resume() {
@@ -131,37 +201,55 @@ Future<List<Activity>> getHistory() => repository.getActivities();
       _elapsed = DateTime.now().difference(resumedAt);
       _emitActive();
     });
-    emit(TrackingActive(points: List.unmodifiable(_points), distanceMeters: _distance, elapsed: _elapsed));
+    emit(
+      TrackingActive(
+        points: List.unmodifiable(_points),
+        distanceMeters: _distance,
+        elapsed: _elapsed,
+      ),
+    );
+    _live(); // live update
   }
 
-  Future<void> stop({required ActivityType type, required double calories}) async {
+  Future<void> stop({
+    required ActivityType type,
+    required double calories,
+  }) async {
     _sub?.cancel();
     _timer?.cancel();
+    LiveTracking.stop(); // live update
 
-    final remainder = _points.length % _batchSize;
-    if (remainder != 0) {
-      await repository.savePointsBatch(_points.sublist(_points.length - remainder));
-    }
+    _currentType = type;
+    final finalCalories = calories > 0
+        ? calories
+        : _estimateCalories(_distance, _elapsed.inSeconds);
 
     final activity = Activity(
       id: _activityId,
-      type: type,
-      startTime: _startTime!,
+      type: _currentType,
+      startTime: _startTime ?? DateTime.now(),
       endTime: DateTime.now(),
       distanceMeters: _distance,
       durationSeconds: _elapsed.inSeconds,
-      avgPaceSecPerKm: _distance <= 0 ? 0 : _elapsed.inSeconds / (_distance / 1000),
-      calories: calories,
+      avgPaceSecPerKm: _distance <= 0
+          ? 0
+          : _elapsed.inSeconds / (_distance / 1000),
+      calories: finalCalories,
     );
     await saveActivity(activity);
 
-    emit(TrackingCompleted(activity: activity, points: List.unmodifiable(_points)));
+    emit(
+      TrackingCompleted(activity: activity, points: List.unmodifiable(_points)),
+    );
   }
+
+  void reset() => emit(TrackingIdle());
 
   @override
   Future<void> close() {
     _sub?.cancel();
     _timer?.cancel();
+    LiveTracking.stop(); // live update
     return super.close();
   }
 }

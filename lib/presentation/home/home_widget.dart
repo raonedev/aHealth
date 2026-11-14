@@ -8,7 +8,9 @@ import 'package:ahealth/presentation/home/widget/height_card.dart';
 import 'package:ahealth/presentation/home/widget/hydration_card.dart';
 import 'package:ahealth/presentation/home/widget/sleep_card.dart';
 import 'package:ahealth/presentation/home/widget/weight_card.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -16,11 +18,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_routes.dart';
 import '../../appcolors.dart';
+import '../../blocs/height/height_cubit.dart';
+import '../../blocs/nutrition/nutrition_cubit.dart';
+import '../../blocs/sleep/sleep_cubit.dart';
+import '../../blocs/step/step_cubit.dart';
+import '../../blocs/water/water_cubit.dart';
+import '../../blocs/weight/weight_cubit.dart';
+import '../../constants.dart';
 import '../../features/streak/presentation/cubit/streak_cubit.dart';
 import '../../features/streak/presentation/cubit/streak_state.dart';
 import '../../features/streak/presentation/screens/streak_screen.dart';
 import 'widget/nutrition_card.dart';
 import 'widget/step_card.dart';
+import 'widget/workout_card.dart';
 
 const _kOnSurfaceVariant = Color(0xFF40493D);
 const _kSurfaceContainerLowest = Color(0xFFFFFFFF);
@@ -35,33 +45,60 @@ class HomeWidget extends StatefulWidget {
 class _HomeWidgetState extends State<HomeWidget> {
   String _userName = '';
   File? _userImageFile;
+  int _targetSteps = kDefaultTargetSteps;
+  double _targetWater = kDefaultTargetWaterLiters;
+  // for refresh nuritioncard whencame from profile screen
+  int _nutritionKey = 0;
+
   @override
   void initState() {
     super.initState();
-    _loadUserName();
-    _loadUserImage();
+    _loadProfileData();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('userNameSharedPreferenceKey') ?? '';
+    final name =
+        prefs.getString(PrefKeys.userName) ??
+        prefs.getString('userNameSharedPreferenceKey') ??
+        '';
+    final path =
+        prefs.getString(PrefKeys.profileImagePath) ??
+        prefs.getString('userProfileImagePathSharedPreferenceKey');
+    final steps = prefs.getInt(PrefKeys.targetSteps) ?? kDefaultTargetSteps;
+    final water =
+        prefs.getDouble(PrefKeys.targetWaterLiters) ??
+        kDefaultTargetWaterLiters;
+
+    File? imageFile;
+    if (path != null && await File(path).exists()) {
+      imageFile = File(path);
+      // Evict cached image to ensure immediate refresh if file path or content updated
+      PaintingBinding.instance.imageCache.evict(FileImage(imageFile));
+    }
+
     if (mounted) {
       setState(() {
         _userName = name;
+        _userImageFile = imageFile;
+        _targetSteps = steps;
+        _targetWater = water;
       });
     }
   }
 
-  Future<void> _loadUserImage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString('userProfileImagePathSharedPreferenceKey');
-    if (path != null && await File(path).exists()) {
-      if (mounted) {
-        setState(() {
-          _userImageFile = File(path);
-        });
-      }
-    }
+  Future<void> _onRefresh() async {
+    await Future.wait([
+      _loadProfileData(),
+      if (mounted) context.read<StreakCubit>().loadStreak(),
+      if (mounted) context.read<StepsCubit>().getStepData(),
+      if (mounted) context.read<WaterCubit>().getWaterData(),
+      if (mounted) context.read<WeightCubit>().getWeightData(),
+      if (mounted) context.read<HeightCubit>().getHeight(),
+      if (mounted) context.read<SleepCubit>().getSleepData(),
+      if (mounted)
+        context.read<NutritionCubit>().getNutritionData(forceRefresh: true),
+    ]);
   }
 
   @override
@@ -69,26 +106,40 @@ class _HomeWidgetState extends State<HomeWidget> {
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-          children: [
-            _buildTopBar(context),
-            const SizedBox(height: 8),
-            NutritionCard(),
-            const SizedBox(height: 16),
-            StepsCard(),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: HydrationCard()),
-                const SizedBox(width: 16),
-                Expanded(child: WeightCard()),
-              ],
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            CupertinoSliverRefreshControl(onRefresh: _onRefresh),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildTopBar(context),
+                  const SizedBox(height: 8),
+                  NutritionCard(key: ValueKey(_nutritionKey)),
+                  const SizedBox(height: 16),
+                  StepsCard(targetSteps: _targetSteps),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: HydrationCard(targetWaterLiters: _targetWater),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(child: WeightCard()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  HeightCard(),
+                  const SizedBox(height: 16),
+                  SleepCard(),
+                  const SizedBox(height: 16),
+                  const WorkoutCard(),
+                ]),
+              ),
             ),
-            const SizedBox(height: 16),
-            HeightCard(),
-            const SizedBox(height: 16),
-            SleepCard(),
           ],
         ),
       ),
@@ -123,56 +174,72 @@ class _HomeWidgetState extends State<HomeWidget> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: grey,
-              backgroundImage:
-                  _userImageFile != null ? FileImage(_userImageFile!) : null,
-              child: _userImageFile == null
-                  ? Icon(Icons.person, color: _kOnSurfaceVariant)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'WELCOME BACK,',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                    color: _kOnSurfaceVariant,
+        SpringButton(
+          SpringButtonType.onlyScale,
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            await context.push(AppRoutes.profile);
+            if (mounted) {
+              await _loadProfileData();
+              setState(() => _nutritionKey++);
+            }
+          },
+          uiChild: Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: grey,
+                backgroundImage: _userImageFile != null
+                    ? FileImage(_userImageFile!)
+                    : null,
+                child: _userImageFile == null
+                    ? Icon(Icons.person, color: _kOnSurfaceVariant)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'WELCOME BACK,',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                      color: _kOnSurfaceVariant,
+                    ),
                   ),
-                ),
-                Text(
-                  _userName.isNotEmpty ? _userName : 'there',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-          ],
+                  Text(
+                    _userName.isNotEmpty ? _userName : 'there',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         BlocBuilder<StreakCubit, StreakState>(
           builder: (context, state) {
-            final count =
-                state is StreakLoaded ? state.streak.longestStreak : 0;
+            final count = state is StreakLoaded
+                ? state.streak.currentStreak
+                : 0;
             return SpringButton(
               SpringButtonType.withOpacity,
               onTap: () => context.push(StreakScreen.pageName),
               uiChild: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _kSurfaceContainerLowest,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8)),
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
                   ],
                 ),
                 child: Row(
@@ -180,8 +247,10 @@ class _HomeWidgetState extends State<HomeWidget> {
                   children: [
                     const Text('🔥', style: TextStyle(fontSize: 16)),
                     const SizedBox(width: 4),
-                    Text('$count',
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(
+                      '$count',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ],
                 ),
               ),

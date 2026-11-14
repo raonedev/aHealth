@@ -67,13 +67,23 @@ class _CalorieChartScreenState extends State<CalorieChartScreen> {
                         .compareTo(a.value?.calories ?? 0)))
                   : [];
 
-              return ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 24),
-                children: [
-                  CalorieLineChart(
-                      points: pts, label: 'Calories - last 7 days'),
-                  const SizedBox(height: 16),
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await Future.wait([
+                    context.read<CalorieChartCubit>().getWeekData(),
+                    context
+                        .read<NutritionCubit>()
+                        .getNutritionData(forceRefresh: true),
+                  ]);
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics()),
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    CalorieLineChart(
+                        points: pts, label: 'Calories - last 7 days'),
+                    const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -158,7 +168,8 @@ class _CalorieChartScreenState extends State<CalorieChartScreen> {
                           ),
                         )),
                 ],
-              );
+              ),
+            );
             },
           );
         },

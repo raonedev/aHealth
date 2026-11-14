@@ -16,10 +16,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1+13
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -36,7 +37,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   health: ^13.3.1
-  permission_handler: ^12.0.3
+  permission_handler: ^13.0.2
   shared_preferences: ^2.3.2
   equatable: ^2.0.5
   bloc: ^9.1.0
@@ -56,15 +57,15 @@ dependencies:
   flutter_svg: ^2.0.16
   go_router: ^18.0.1
   hugeicons: ^1.1.7
-  sensors_plus: ^7.0.0
+  sensors_plus: ^7.1.0
   flutter_markdown_plus: ^1.0.7
   uuid: ^4.5.3
-  syncfusion_flutter_charts: ^33.2.10
+  syncfusion_flutter_charts: ^34.2.6
   flutter_local_notifications: ^22.0.0
   timezone: ^0.11.0
   flutter_image_compress: ^2.4.0
   path_provider: ^2.1.5
-  syncfusion_flutter_gauges: ^33.2.12
+  syncfusion_flutter_gauges: ^34.2.6
   android_intent_plus: ^6.0.0
   geolocator: ^14.0.2
   sqflite: ^2.4.3
@@ -73,12 +74,16 @@ dependencies:
   latlong2: ^0.10.1
   get_it: ^9.2.1
   platform_maps_flutter: ^1.0.2
-  share_plus: ^12.0.2
+  share_plus: ^13.3.0
   camera: ^0.12.0+2
   gal: ^2.3.3
   screenshot: ^3.0.0
   confetti: ^0.8.0
   speech_to_text: ^7.4.0
+  video_player: ^2.14.1
+  cached_network_image: ^4.0.5
+  device_info_plus: ^13.3.0
+  live_activities: ^2.6.0
 
 dev_dependencies:
   flutter_test:
@@ -109,6 +114,7 @@ flutter:
     - assets/lottieanimations/
     - assets/icons/
     - assets/svgs/
+    - assets/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

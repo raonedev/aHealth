@@ -5,6 +5,8 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../blocs/charts/step_chart/step_chart_cubit.dart';
 import '../../features/step_tracking/presentation/views/tracking_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../constants.dart';
 import '../common/widgets/custom_segment.dart';
 import 'monthly_tab.dart';
 import 'weekly_tab.dart';
@@ -20,11 +22,22 @@ class StepChartScreen extends StatefulWidget {
 
 class _StepChartScreenState extends State<StepChartScreen> {
   int _selectedTab = 0;
+  double _targetSteps = kDailyTarget;
 
   @override
   void initState() {
     super.initState();
+    _loadTarget();
     context.read<StepChartCubit>().getDataFromNow();
+  }
+
+  Future<void> _loadTarget() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _targetSteps = (prefs.getInt(PrefKeys.targetSteps) ?? kDefaultTargetSteps).toDouble();
+      });
+    }
   }
 
   @override
@@ -57,9 +70,15 @@ class _StepChartScreenState extends State<StepChartScreen> {
                 IndexedStack(
                   index: _selectedTab,
                   children: [
-                    WeeklyTab(weekData: state.weekData),
+                    WeeklyTab(
+                      weekData: state.weekData,
+                      targetSteps: _targetSteps,
+                    ),
                     MonthlyTab(
-                        monthData: state.monthData, loaded: state.monthLoaded),
+                      monthData: state.monthData,
+                      loaded: state.monthLoaded,
+                      targetSteps: _targetSteps,
+                    ),
                   ],
                 ),
                 Positioned(

@@ -1,4 +1,3 @@
-import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -18,13 +17,13 @@ class SleepCard extends StatelessWidget {
 
   DateTime? _bedTime(SleepState state) =>
       state is SleepSuccessState && state.sleepModel.isNotEmpty
-          ? DateTime.tryParse(state.sleepModel[0].dateFrom ?? '')
-          : null;
+      ? DateTime.tryParse(state.sleepModel[0].dateFrom ?? '')
+      : null;
 
   DateTime? _wakeTime(SleepState state) =>
       state is SleepSuccessState && state.sleepModel.isNotEmpty
-          ? DateTime.tryParse(state.sleepModel[0].dateTo ?? '')
-          : null;
+      ? DateTime.tryParse(state.sleepModel[0].dateTo ?? '')
+      : null;
 
   String _formatClock(DateTime? dt) {
     if (dt == null) return '--';
@@ -35,22 +34,25 @@ class SleepCard extends StatelessWidget {
   }
 
   String _remLabel(SleepState state) {
-  if (state is! SleepSuccessState || state.sleepModel.isEmpty) return '--';
+    if (state is! SleepSuccessState || state.sleepModel.isEmpty) return '--';
 
-  if (Platform.isAndroid) {
-    final mins = state.sleepModel[0].value?.numericValue ?? 0;
+    if (Platform.isAndroid) {
+      final mins = state.sleepModel[0].value?.numericValue ?? 0;
+      final h = mins ~/ 60;
+      final m = (mins % 60).round();
+      return 'Time Asleep: ${h}h ${m}m';
+    }
+
+    final remEntry = state.sleepModel.where((m) => m.type == 'SLEEP_REM');
+    if (remEntry.isEmpty) return 'REM Sleep: --';
+    final mins = remEntry.fold<double>(
+      0,
+      (sum, m) => sum + (m.value?.numericValue ?? 0),
+    );
     final h = mins ~/ 60;
     final m = (mins % 60).round();
-    return 'Time Asleep: ${h}h ${m}m';
+    return 'REM Sleep: ${h}h ${m}m';
   }
-
-  final remEntry = state.sleepModel.where((m) => m.type == 'SLEEP_REM');
-  if (remEntry.isEmpty) return 'REM Sleep: --';
-  final mins = remEntry.fold<double>(0, (sum, m) => sum + (m.value?.numericValue ?? 0));
-  final h = mins ~/ 60;
-  final m = (mins % 60).round();
-  return 'REM Sleep: ${h}h ${m}m';
-}
 
   @override
   Widget build(BuildContext context) {
@@ -125,13 +127,17 @@ class SleepCard extends StatelessWidget {
                             if (state is SleepLoadingState)
                               const CupertinoActivityIndicator()
                             else if (state is SleepFailedState)
-                              const Text('failed to load sleep',
-                                  style: TextStyle(fontSize: 12))
+                              const Text(
+                                'failed to load sleep',
+                                style: TextStyle(fontSize: 12),
+                              )
                             else
                               Text(
                                 duration,
                                 style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w600),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                           ],
                         ),
@@ -139,17 +145,22 @@ class SleepCard extends StatelessWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: _kPrimary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border:
-                            Border.all(color: _kPrimary.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: _kPrimary.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Text(
                         'SCORE: $score',
                         style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -161,20 +172,24 @@ class SleepCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [0.3, 0.6, 0.85, 0.45, 0.75, 0.35, 0.65, 1.0, 0.4]
-                        .map((h) => Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 2),
-                                child: Container(
-                                  height: 80 * h,
-                                  decoration: BoxDecoration(
-                                    color: _kTertiary.withValues(
-                                        alpha: 0.3 + h * 0.4),
-                                    borderRadius: BorderRadius.circular(999),
+                        .map(
+                          (h) => Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              child: Container(
+                                height: 80 * h,
+                                decoration: BoxDecoration(
+                                  color: _kTertiary.withValues(
+                                    alpha: 0.3 + h * 0.4,
                                   ),
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                               ),
-                            ))
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -182,19 +197,29 @@ class SleepCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(_formatClock(_bedTime(state)),
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: _kOnSurfaceVariant.withValues(alpha: 0.6))),
-                    Text(_remLabel(state),
-                        style: const TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w700)),
-                    Text(_formatClock(_wakeTime(state)),
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: _kOnSurfaceVariant.withValues(alpha: 0.6))),
+                    Text(
+                      _formatClock(_bedTime(state)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _kOnSurfaceVariant.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    Text(
+                      _remLabel(state),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      _formatClock(_wakeTime(state)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _kOnSurfaceVariant.withValues(alpha: 0.6),
+                      ),
+                    ),
                   ],
                 ),
               ],

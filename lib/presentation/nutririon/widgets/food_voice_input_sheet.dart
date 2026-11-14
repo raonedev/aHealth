@@ -54,9 +54,9 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
   void _submit() {
     if (_controller.text.trim().isEmpty) return;
     context.read<FoodScanCubit>().scanFoodText(
-          textInput: _controller.text.trim(),
-          groupUuid: DateTime.now().millisecondsSinceEpoch.toString(),
-        );
+      textInput: _controller.text.trim(),
+      groupUuid: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
   }
 
   @override
@@ -70,43 +70,43 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return BlocListener<FoodScanCubit, FoodScanState>(
-        listener: (context, state) {
-          if (state is FoodScanSuccess) {
-            Navigator.pop(context); // close sheet
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: context.read<FoodScanCubit>(),
-                  child: FoodScanResultScreen(
-                    foods: state.foods,
-                    imagePath: state.imagePath,
-                    groupUuid: state.groupUuid,
-                  ),
+      listener: (context, state) {
+        if (state is FoodScanSuccess) {
+          final foodScanCubit = context.read<FoodScanCubit>();
+          Navigator.pop(context); // close sheet
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: foodScanCubit,
+                child: FoodScanResultScreen(
+                  foods: state.foods,
+                  imagePath: state.imagePath,
+                  groupUuid: state.groupUuid,
                 ),
               ),
-            );
-          } else if (state is FoodScanError || state is FoodScanNoItems) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  state is FoodScanError
-                      ? state.message
-                      : 'No food items detected.',
-                ),
+            ),
+          );
+        } else if (state is FoodScanError || state is FoodScanNoItems) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state is FoodScanError
+                    ? state.message
+                    : 'No food items detected.',
               ),
-            );
-          }
-        },
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomInset),
-          child: BlocBuilder<FoodScanCubit, FoodScanState>(
-              builder: (context, state) {
-                
+            ),
+          );
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: BlocBuilder<FoodScanCubit, FoodScanState>(
+          builder: (context, state) {
             if (state is FoodScanLoading) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: kToolbarHeight*2),
+                padding: const EdgeInsets.only(bottom: kToolbarHeight * 2),
                 child: SizedBox(
                   height: 160,
                   width: 160,
@@ -140,9 +140,10 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
                         _text.isEmpty ? 'Listening...' : _text,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
@@ -150,19 +151,22 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
                         style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
+                            horizontal: 32,
+                            vertical: 12,
+                          ),
                         ),
                         child: const Text('Done'),
                       ),
                     ],
-                  )
+                  ),
                 ] else ...[
                   Container(
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -172,7 +176,9 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
                             const Text(
                               'Edit Description',
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             IconButton(
                               icon: const Icon(Icons.mic_none),
@@ -201,13 +207,16 @@ class _FoodVoiceInputSheetState extends State<FoodVoiceInputSheet> {
                             child: const Text('Log Food'),
                           ),
                         ),
+                        const SizedBox(height: kBottomNavigationBarHeight),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ],
             );
-          }),
-        ));
+          },
+        ),
+      ),
+    );
   }
 }

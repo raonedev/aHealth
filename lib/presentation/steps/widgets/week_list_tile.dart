@@ -10,13 +10,16 @@ class WeekSummary {
 
   final double total;
   final double avg;
+  final double targetSteps;
 
-  WeekSummary(
-      {required this.weekNum,
-      required this.start,
-      required this.end,
-      required this.total,
-      required this.avg});
+  WeekSummary({
+    required this.weekNum,
+    required this.start,
+    required this.end,
+    required this.total,
+    required this.avg,
+    this.targetSteps = kDailyTarget,
+  });
 }
 
 class WeekListTile extends StatelessWidget {
@@ -27,8 +30,9 @@ class WeekListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hit = summary.avg >= kDailyTarget;
-    final pct = (summary.avg / kDailyTarget).clamp(0.0, 1.0);
+    final target = summary.targetSteps;
+    final hit = summary.avg >= target;
+    final pct = (summary.avg / target).clamp(0.0, 1.0);
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       padding: const EdgeInsets.all(12),

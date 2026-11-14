@@ -26,11 +26,11 @@ class LocationPointModel extends LocationPoint {
   factory LocationPointModel.fromMap(Map<String, dynamic> map) => LocationPointModel(
         id: map['id'] as int?,
         activityId: map['activityId'] as String,
-        lat: map['lat'] as double,
-        lng: map['lng'] as double,
-        altitude: map['altitude'] as double,
-        speed: map['speed'] as double,
-        accuracy: map['accuracy'] as double,
+        lat: (map['lat'] as num).toDouble(),
+        lng: (map['lng'] as num).toDouble(),
+        altitude: (map['altitude'] as num).toDouble(),
+        speed: (map['speed'] as num).toDouble(),
+        accuracy: (map['accuracy'] as num).toDouble(),
         timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
       );
 
